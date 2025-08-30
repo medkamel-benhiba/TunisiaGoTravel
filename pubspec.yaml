@@ -1,0 +1,61 @@
+name: tunisiagotravel
+description: "Tunisia Go Travel Mobile App"
+publish_to: 'none' # Private package
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.8.1
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+  intl: ^0.20.2
+  http: ^1.5.0
+  shared_preferences: ^2.5.3
+  easy_localization: ^3.0.8
+  provider: ^6.1.5
+  flutter_svg: ^2.1.6
+  flutter_html: ^3.0.0
+  cached_network_image: ^3.2.3
+  path_provider: ^2.1.1
+  url_launcher: ^6.1.10
+  table_calendar: ^3.2.0
+  dropdown_button2: ^2.3.9
+  speech_to_text: ^7.3.0
+  permission_handler: ^11.3.0
+
+
+
+
+
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/images/card/
+    - assets/icon/
+
+  fonts:
+    - family: Poppins
+      fonts:
+        - asset: assets/fonts/Poppins-Regular.ttf
+    - family: Pacifico
+      fonts:
+        - asset: assets/fonts/Pacifico-Regular.ttf
+    - family: Saira_Condensed
+      fonts:
+        - asset: assets/fonts/Saira_Condensed-Regular.ttf
+    - family: Barlow Semi Condensed
+      fonts:
+        - asset: assets/fonts/BarlowSemiCondensed-SemiBold.ttf
+        - asset: assets/fonts/BarlowSemiCondensed-Thin.ttf

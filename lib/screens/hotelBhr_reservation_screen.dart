@@ -1,0 +1,201 @@
+import 'package:flutter/material.dart';
+import '../models/hotel.dart';
+import '../models/hotelBhr.dart';
+import '../theme/color.dart';
+import '../widgets/reservation/HotelHeaderBhr.dart';
+import '../widgets/reservation/BoardingRoomSelectionBhr.dart';
+import '../widgets/reservation/reservation_bottom_bar.dart';
+import '../widgets/reservation/search_summary.dart';
+
+class HotelBhrReservationScreen extends StatefulWidget {
+  final HotelBhr hotelBhr;
+  final List<Hotel> allHotels;
+  final Map<String, dynamic> searchCriteria;
+
+  const HotelBhrReservationScreen({
+    super.key,
+    required this.hotelBhr,
+    required this.allHotels,
+    required this.searchCriteria,
+  });
+
+  @override
+  State<HotelBhrReservationScreen> createState() =>
+      _HotelBhrReservationScreenState();
+}
+
+class _HotelBhrReservationScreenState extends State<HotelBhrReservationScreen> {
+  Map<String, Map<String, int>> selectedRoomsByBoarding = {};
+
+  @override
+  void initState() {
+    super.initState();
+    for (var room in widget.hotelBhr.disponibility.rooms) {
+      for (var boarding in room.boardings) {
+        selectedRoomsByBoarding[boarding.id] = {};
+      }
+    }
+  }
+
+  int maxRoomsAllowed() {
+    final rooms = widget.searchCriteria['rooms'] as List<Map<String, dynamic>>? ?? [];
+    return rooms.length;
+  }
+
+  int totalSelectedRooms() {
+    int total = 0;
+    selectedRoomsByBoarding.forEach((_, rooms) {
+      total += rooms.values.fold(0, (a, b) => a + b);
+    });
+    return total;
+  }
+
+  double calculateTotal() {
+    double total = 0;
+    selectedRoomsByBoarding.forEach((boardingId, selectedRooms) {
+      if (selectedRooms.isNotEmpty) {
+        final boarding = widget.hotelBhr.disponibility.rooms
+            .expand((room) => room.boardings)
+            .firstWhere((b) => b.id == boardingId);
+
+        selectedRooms.forEach((roomId, qty) {
+          total += boarding.rate * qty;
+        });
+      }
+    });
+    return total;
+  }
+
+  String _getTravelersSummary() {
+    final rooms = widget.searchCriteria['rooms'] as List<Map<String, dynamic>>? ?? [];
+    final totalAdults = rooms.fold<int>(
+        0, (s, r) => s + int.tryParse(r['adults']?.toString() ?? '0')!);
+    final totalChildren = rooms.fold<int>(
+        0, (s, r) => s + int.tryParse(r['children']?.toString() ?? '0')!);
+    return "$totalAdults adultes, $totalChildren enfants";
+  }
+
+  void _updateRoomSelection(String boardingId, String roomId, int qty) {
+    final boardingRooms = selectedRoomsByBoarding[boardingId] ?? {};
+    int totalOtherBoardings =
+        totalSelectedRooms() - boardingRooms.values.fold(0, (a, b) => a + b);
+
+    if (totalOtherBoardings + qty <= maxRoomsAllowed()) {
+      if (qty > 0) {
+        boardingRooms[roomId] = qty;
+      } else {
+        boardingRooms.remove(roomId);
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Vous ne pouvez pas dépasser ${maxRoomsAllowed()} chambres au total.',
+          ),
+        ),
+      );
+    }
+
+    setState(() {
+      selectedRoomsByBoarding[boardingId] = boardingRooms;
+    });
+  }
+
+  Hotel? getHotelFromBhr() {
+    try {
+      return widget.allHotels.firstWhere(
+            (h) => (h.id ?? '').trim() == widget.hotelBhr.id.trim(),
+      );
+    } catch (_) {
+      debugPrint('No hotel found for HotelBhr ID: ${widget.hotelBhr.id}');
+      return null;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final mappedHotel = getHotelFromBhr();
+    final hotelCover = mappedHotel?.cover ?? '';
+    final hotelName = mappedHotel?.name ?? widget.hotelBhr.name;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          hotelName,
+          style: const TextStyle(
+            color: AppColorstatic.lightTextColor,
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        backgroundColor: AppColorstatic.primary,
+        iconTheme: const IconThemeData(color: Colors.white),
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            HotelHeaderBhr(
+              hotelName: hotelName,
+              address: widget.hotelBhr.disponibility.address,
+              cover: hotelCover,
+              category: widget.hotelBhr.disponibility.category,
+            ),
+            const SizedBox(height: 16),
+            SearchCriteriaCard(
+              searchCriteria: widget.searchCriteria,
+              travelersSummary: _getTravelersSummary(),
+            ),
+            const SizedBox(height: 16),
+            BoardingRoomSelectionBhr(
+              rooms: widget.hotelBhr.disponibility.rooms,
+              selectedRoomsByBoarding: selectedRoomsByBoarding,
+              maxRooms: maxRoomsAllowed(),
+              totalSelected: totalSelectedRooms(),
+              onUpdate: _updateRoomSelection,
+            ),
+          ],
+        ),
+      ),
+      bottomNavigationBar: ReservationBottomBar(
+        total: calculateTotal(),
+        currency: 'TND',
+        onReserve: () => _handleFinalReservation(context, hotelName),
+      ),
+    );
+  }
+
+  void _handleFinalReservation(BuildContext context, String hotelName) {
+    final total = calculateTotal();
+    final selectedRoomDetails = widget.hotelBhr.disponibility.rooms.map((room) {
+      final roomDetails = room.boardings.map((boarding) {
+        final rooms = selectedRoomsByBoarding[boarding.id] ?? {};
+        if (rooms.isEmpty) return null;
+        return rooms.entries.map((e) => '${room.title} (${boarding.title}) x ${e.value}').join(', ');
+      }).whereType<String>().join('\n');
+      return roomDetails;
+    }).whereType<String>().join('\n');
+
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Réservation confirmée'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Hôtel: $hotelName"),
+            if (selectedRoomDetails.isNotEmpty)
+              Text("Chambres:\n$selectedRoomDetails"),
+            Text("Prix total: ${total.toStringAsFixed(2)} TND"),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("OK"),
+          ),
+        ],
+      ),
+    );
+  }
+}
