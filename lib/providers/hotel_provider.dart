@@ -159,6 +159,55 @@ class HotelProvider with ChangeNotifier {
     _isLoadingAvailableHotels = false;
     notifyListeners();
   }
+  // 🔹 Fetch all pages for simple availability
+  Future<void> fetchAllAvailableHotels({
+    required String destinationId,
+    required String dateStart,
+    required String dateEnd,
+    required String adults,
+    required String rooms,
+    required String children,
+    int babies = 0,
+  }) async {
+    _isLoadingAvailableHotels = true;
+    _errorAvailableHotels = null;
+    notifyListeners();
+
+    List<Hotel> allHotels = [];
+    int page = 1;
+
+    try {
+      while (true) {
+        final hotelsPage = await _apiService.getAvailableHotels(
+          destinationId: destinationId,
+          dateStart: dateStart,
+          dateEnd: dateEnd,
+          adults: adults,
+          rooms: rooms,
+          children: children,
+          babies: babies,
+          page: page,
+        );
+
+        if (hotelsPage.isEmpty) break; // no more hotels
+        allHotels.addAll(hotelsPage);
+
+        // If less than full page returned, stop
+        if (hotelsPage.length < 10) break; // adjust if page size differs
+        page++;
+      }
+
+      _availableHotels = allHotels;
+    } catch (e) {
+      _errorAvailableHotels = e.toString();
+      _availableHotels = [];
+      debugPrint("Error fetching all available hotels: $e");
+    }
+
+    _isLoadingAvailableHotels = false;
+    notifyListeners();
+  }
+
 
   // ======================================================
   // 🔹 Disponibility avec pontion (pagination)
@@ -193,7 +242,7 @@ class HotelProvider with ChangeNotifier {
         page: page,
       );
 
-      if (page == 1) {
+      if (page == 8) {
         _hotelDisponibilityPontion = res;
       } else {
         _hotelDisponibilityPontion = HotelAvailabilityResponse(

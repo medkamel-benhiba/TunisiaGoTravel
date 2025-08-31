@@ -19,7 +19,8 @@ class HomeScreenContent extends StatefulWidget {
 class _HomeScreenContentState extends State<HomeScreenContent> {
   late stt.SpeechToText _speech;
   bool _isListening = false;
-  bool _showIntro = false; // controls greeting overlay
+  bool _showChatbotOverlay = false;
+  bool _isProcessingVoice = false; // Add processing state
   String _voiceText = '';
 
   @override
@@ -43,9 +44,14 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
     );
 
     if (available) {
-      setState(() => _isListening = true);
+      setState(() {
+        _isListening = true;
+        _voiceText = ''; // Reset voice text when starting
+      });
       _speech.listen(
         onResult: (val) => setState(() => _voiceText = val.recognizedWords),
+        listenFor: const Duration(seconds: 10),
+        pauseFor: const Duration(seconds: 3),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -59,35 +65,73 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
     setState(() => _isListening = false);
 
     if (_voiceText.isNotEmpty) {
+      setState(() => _isProcessingVoice = true);
+
       try {
-        await ApiService().sendVoiceQuestion(_voiceText);
+        print('Processing voice question: $_voiceText');
+
+        // Store the voice message in GlobalProvider and navigate to chatbot
         if (mounted) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => ChatBotScreen(initialMessage: _voiceText),
-            ),
-          );
+          final provider = Provider.of<GlobalProvider>(context, listen: false);
+
+          // Store the initial message for the chatbot
+          provider.setChatbotInitialMessage(_voiceText);
+
+          // Navigate to chatbot page through GlobalProvider
+          provider.setPage(AppPage.chatbot);
         }
+
+        // Reset overlay state
+        setState(() {
+          _showChatbotOverlay = false;
+          _voiceText = '';
+        });
+
       } catch (e) {
+        print('Error processing voice question: $e');
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to send question: $e')),
+          SnackBar(
+            content: Text('Erreur lors du traitement: $e'),
+            backgroundColor: Colors.red,
+          ),
         );
       } finally {
-        setState(() => _voiceText = '');
+        setState(() => _isProcessingVoice = false);
       }
     }
   }
 
-  void _handleVoiceButtonTap() {
-    if (!_showIntro) {
-      setState(() => _showIntro = true);
+  void _handleChatbotTap() {
+    if (!_showChatbotOverlay) {
+      setState(() => _showChatbotOverlay = true);
     }
   }
 
-  void _handleIntroTap() {
-    setState(() => _showIntro = false);
-    _startListening();
+  void _handleChatbotOverlayTap() {
+    if (_isProcessingVoice) return; // Prevent interaction while processing
+
+    if (_isListening) {
+      _stopListening();
+    } else {
+      _startListening();
+    }
+  }
+
+  void _dismissChatbotOverlay() {
+    if (_isListening) {
+      _speech.stop();
+      setState(() => _isListening = false);
+    }
+    setState(() {
+      _showChatbotOverlay = false;
+      _voiceText = '';
+    });
+  }
+
+  @override
+  void dispose() {
+    _speech.stop();
+    super.dispose();
   }
 
   @override
@@ -146,73 +190,188 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
             ),
           ],
         ),
-        // Floating chatbot button (only if intro not showing)
-        if (!_showIntro)
+
+        // Floating chatbot button (chatbot2.png) - only visible when overlay is not showing
+        if (!_showChatbotOverlay)
           Positioned(
             right: 16,
             top: size.height / 2 - 40,
             child: GestureDetector(
-              onTap: _handleVoiceButtonTap,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  Image.asset('assets/images/chatbot2.png', width: 80),
-                  if (_isListening)
-                    const Icon(Icons.mic, color: Colors.redAccent, size: 40),
-                ],
+              onTap: _handleChatbotTap,
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(40),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.2),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Image.asset(
+                  'assets/images/chatbot2.png',
+                  width: 80,
+                ),
               ),
             ),
           ),
-        // Intro greeting overlay
-        if (_showIntro)
-          Positioned(
-            top: 1,
-            left: 16,
-            bottom: size.height / 2,
+
+        // Chatbot overlay (chatbot1.png) - shown when chatbot2.png is tapped
+        if (_showChatbotOverlay)
+          Positioned.fill(
             child: GestureDetector(
-              onTap: _handleIntroTap,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Greeting image
-                  Image.asset(
-                    'assets/images/chatbot1.png',
-                    width: 80,
-                  ),
-                  const SizedBox(width: 12),
-                  // Text on the right with red mic overlay
-                  Stack(
-                    alignment: Alignment.centerRight,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(10),
+              onTap: _dismissChatbotOverlay,
+              child: Container(
+                color: Colors.black.withOpacity(0.3),
+                child: GestureDetector(
+                  onTap: () {}, // Prevent dismissing when tapping on content
+                  child: Positioned(
+                    top: 100,
+                    left: 16,
+                    right: 16,
+                    child: GestureDetector(
+                      onTap: _handleChatbotOverlayTap,
+                      child: Container(
                         decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(16),
                           boxShadow: [
-                            BoxShadow(color: Colors.black26, blurRadius: 5, offset: Offset(0, 2))
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.3),
+                              blurRadius: 15,
+                              offset: const Offset(0, 5),
+                            ),
                           ],
                         ),
-                        child: const Text(
-                          "Bonjour 👋 Je suis votre guide pour \ndécouvrir la Tunisie.\nComment puis-je vous aider ?",
-                          style: TextStyle(fontSize: 14, color: Colors.black),
-                          textAlign: TextAlign.center,
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(40),
+                                    color: Colors.white,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.1),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  padding: const EdgeInsets.all(8),
+                                  child: Image.asset(
+                                    'assets/images/chatbot1.png',
+                                    width: 64,
+                                  ),
+                                ),
+                                if (_isListening)
+                                  Positioned(
+                                    bottom: -5,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(4),
+                                      decoration: const BoxDecoration(
+                                        color: Colors.red,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(
+                                        Icons.mic,
+                                        color: Colors.white,
+                                        size: 20,
+                                      ),
+                                    ),
+                                  ),
+                                if (_isProcessingVoice)
+                                  Positioned(
+                                    bottom: -5,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(4),
+                                      decoration: BoxDecoration(
+                                        color: AppColorstatic.primary,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const SizedBox(
+                                        width: 16,
+                                        height: 16,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(width: 12),
+                            // Text bubble
+                            Expanded(
+                              child: Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(16),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.1),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      _isProcessingVoice
+                                          ? "Traitement en cours...\nVeuillez patienter"
+                                          : _isListening
+                                          ? "👂 Écoute en cours...\nDites votre question"
+                                          : "👋 Bonjour ! Je suis votre guide pour \ndécouvrir la Tunisie.\nTapez ici pour poser votre question !",
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.black87,
+                                        height: 1.4,
+                                        fontWeight: _isListening || _isProcessingVoice ? FontWeight.w600 : FontWeight.normal,
+                                      ),
+                                    ),
+                                    if (_voiceText.isNotEmpty) ...[
+                                      const SizedBox(height: 12),
+                                      Container(
+                                        width: double.infinity,
+                                        padding: const EdgeInsets.all(12),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFE3F2FD),
+                                          borderRadius: BorderRadius.circular(8),
+                                          border: Border.all(color: const Color(0xFF90CAF9)),
+                                        ),
+                                        child: Text(
+                                          "💬 Reconnu: $_voiceText",
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.blue[700],
+                                            fontStyle: FontStyle.italic,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      // Red mic icon on top of text
-                      const Positioned(
-                        right: 4,
-                        bottom: 4,
-                        child: Icon(Icons.mic, color: Colors.redAccent, size: 24),
-                      ),
-                    ],
+                    ),
                   ),
-                ],
+                ),
               ),
             ),
           ),
       ],
     );
-
   }
 }

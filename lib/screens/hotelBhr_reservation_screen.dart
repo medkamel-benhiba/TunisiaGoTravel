@@ -6,6 +6,7 @@ import '../widgets/reservation/HotelHeaderBhr.dart';
 import '../widgets/reservation/BoardingRoomSelectionBhr.dart';
 import '../widgets/reservation/reservation_bottom_bar.dart';
 import '../widgets/reservation/search_summary.dart';
+import 'hotel_reservation_form.dart';
 
 class HotelBhrReservationScreen extends StatefulWidget {
   final HotelBhr hotelBhr;
@@ -166,35 +167,73 @@ class _HotelBhrReservationScreenState extends State<HotelBhrReservationScreen> {
 
   void _handleFinalReservation(BuildContext context, String hotelName) {
     final total = calculateTotal();
-    final selectedRoomDetails = widget.hotelBhr.disponibility.rooms.map((room) {
-      final roomDetails = room.boardings.map((boarding) {
-        final rooms = selectedRoomsByBoarding[boarding.id] ?? {};
-        if (rooms.isEmpty) return null;
-        return rooms.entries.map((e) => '${room.title} (${boarding.title}) x ${e.value}').join(', ');
-      }).whereType<String>().join('\n');
-      return roomDetails;
-    }).whereType<String>().join('\n');
+    final totalSelected = totalSelectedRooms();
+    final maxAllowed = maxRoomsAllowed();
 
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Réservation confirmée'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text("Hôtel: $hotelName"),
-            if (selectedRoomDetails.isNotEmpty)
-              Text("Chambres:\n$selectedRoomDetails"),
-            Text("Prix total: ${total.toStringAsFixed(2)} TND"),
-          ],
+    // Check if the exact number of rooms are selected
+    if (totalSelected == 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Veuillez sélectionner au moins une chambre.'),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("OK"),
-          ),
-        ],
+      );
+      return;
+    }
+
+    if (totalSelected != maxAllowed) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Vous devez sélectionner exactement $maxAllowed chambre(s). Actuellement: $totalSelected sélectionnée(s).'),
+        ),
+      );
+      return;
+    }
+
+    // Prepare selected rooms data for API
+    List<String> boardingIds = [];
+    List<String> roomIds = [];
+    List<int> quantities = [];
+
+    // Create rooms summary for display
+    String selectedRoomsSummary = '';
+    selectedRoomsByBoarding.forEach((boardingId, rooms) {
+      if (rooms.isNotEmpty) {
+        final boarding = widget.hotelBhr.disponibility.rooms
+            .expand((room) => room.boardings)
+            .firstWhere((b) => b.id == boardingId);
+
+        rooms.forEach((roomId, qty) {
+          final room = widget.hotelBhr.disponibility.rooms
+              .firstWhere((r) => r.boardings.any((b) => b.id == boardingId));
+
+          boardingIds.add(boardingId);
+          roomIds.add(roomId);
+          quantities.add(qty);
+
+          if (selectedRoomsSummary.isNotEmpty) selectedRoomsSummary += ', ';
+          selectedRoomsSummary += '${room.title} (${boarding.title}) x$qty';
+        });
+      }
+    });
+
+    // Navigate to form screen
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => HotelReservationFormScreen(
+          hotelName: hotelName,
+          hotelId: widget.hotelBhr.id,
+          searchCriteria: widget.searchCriteria,
+          totalPrice: total,
+          currency: 'TND',
+          selectedRoomsData: {
+            'boardingIds': boardingIds,
+            'roomIds': roomIds,
+            'quantities': quantities,
+            'selectedRoomsSummary': selectedRoomsSummary,
+          },
+          hotelType: 'bhr',
+        ),
       ),
     );
   }

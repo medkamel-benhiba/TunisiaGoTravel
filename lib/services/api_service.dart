@@ -912,6 +912,91 @@ class ApiService {
     return null;
   }
 
+  Future<Map<String, dynamic>?> sendChatbotQuestion(String question) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$_baseUrl/utilisateur/askQuestion'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({
+          'question': question,
+        }),
+      );
+
+      print('Chatbot API Response Status: ${response.statusCode}');
+      print('Chatbot API Response Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final decodedResponse = json.decode(response.body);
+
+        // Validate response structure
+        if (decodedResponse is Map<String, dynamic>) {
+          return decodedResponse;
+        } else {
+          print('Invalid response format: expected Map<String, dynamic>');
+          return null;
+        }
+      } else {
+        print('API Error: ${response.statusCode} - ${response.body}');
+        return null;
+      }
+    } catch (e) {
+      print('Network Error in sendChatbotQuestion: $e');
+      return null;
+    }
+  }
+  Future<dynamic> postHotelReservation(
+      dynamic hotelId,
+      dynamic startDate,
+      dynamic endDate,
+      dynamic adults,
+      dynamic children,
+      dynamic babies,
+      dynamic name,
+      dynamic email,
+      dynamic phone,
+      dynamic city,
+      dynamic country,
+      dynamic cin,
+      List<String> accommodationIds,
+      List<String> roomIds,
+      List<int> quantities,
+      dynamic totalPrice,
+      List<Map<String, dynamic>> paxList,
+      ) async {
+    final url = '$_baseUrl/utilisateur/hotels/reservationhotel';
+    final headers = {'Content-Type': 'application/json'};
+    final body = jsonEncode({
+      "name": name,
+      "email": email,
+      "phone": phone,
+      "city": city,
+      "country": country,
+      "cin": cin,
+      "hotel_id": hotelId,
+      "date_start": startDate,
+      "date_end": endDate,
+      "adults": adults,
+      "children": children,
+      "babies": babies,
+      "total_price": totalPrice,
+      "accommodation_id": accommodationIds,
+      "room_id": roomIds,
+      "number": quantities.reduce((a, b) => a + b),
+      "pax": paxList,
+    });
+
+    final response =
+    await http.post(Uri.parse(url), headers: headers, body: body);
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to submit reservation: ${response.body}');
+    }
+  }
+
+
 
 
 }
@@ -1223,65 +1308,6 @@ class ApiService {
       print('Failed to post circuit: ${response.statusCode} ${response.body}');
       // Return a Success instance with success set to false
       return Success(success: false);
-    }
-  }
-
-  Future<User?> login(String email, String password) async {
-    final url = Uri.parse('$_baseUrl/utilisateur/login');
-    var body = json.encode({
-      "email": email,
-      "password": password,
-    });
-    var headers = {'Content-Type': 'application/json'};
-
-    print('Success $url');
-    final response = await http.post(
-      url,
-      headers: headers,
-      body: body,
-    );
-    print('Success d c $url $body ${response.statusCode}');
-    if (response.statusCode == 200) {
-      print('Success d c $url ${response.body}');
-      final prefs = await SharedPreferences.getInstance();
-
-      final Login login = loginFromJson(response.body);
-      prefs.setString("token", login.token ?? "");
-      prefs.setString('user', json.encode(login.user));
-      final user = login.user; // Parse the response directly into a User object
-
-      return user;
-    } else {
-      throw Exception('Failed to post login: ${response.reasonPhrase}');
-    }
-  }
-
-  Future<bool> registerUser({
-    required String name,
-    required String email,
-    required String password,
-    required String phone,
-    required String city,
-  }) async {
-    final response = await http.post(
-      Uri.parse('$_baseUrl/utilisateur/registeruser'),
-      body: {
-        'name': name,
-        'email': email,
-        'password': password,
-        'tel': phone,
-        'ville': city,
-        'privacy': "true",
-      },
-    );
-
-
-    if (response.statusCode == 200) {
-      // Store user ID in shared preferences
-      Success success = Success(success: true);
-      return success.success; // Registration successful
-    } else {
-      return false; // Registration failed
     }
   }
 

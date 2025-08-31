@@ -7,10 +7,13 @@ class EventProvider with ChangeNotifier {
   final String _baseUrl = "https://backend.tunisiagotravel.com";
 
   List<Event> _events = [];
+  Event? _selectedEvent;
+
   bool _isLoading = false;
   String? _errorMessage;
 
   List<Event> get events => _events;
+  Event? get selectedEvent => _selectedEvent;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
 
@@ -58,6 +61,20 @@ class EventProvider with ChangeNotifier {
   // Optional: update cache or state when a destination is selected
   void setEventsByDestination(String destinationId) {
     // Currently nothing extra needed, but you could implement caching here
+    notifyListeners();
+  }
+
+  Future<void> fetchEventBySlug(String slug) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      _selectedEvent = _events.firstWhere((event) => event.slug == slug);
+    } catch (e) {
+      _selectedEvent = null;
+      _errorMessage = "Événement introuvable";
+      debugPrint("Erreur fetchEventBySlug: $e");
+    }
+    _isLoading = false;
     notifyListeners();
   }
 }

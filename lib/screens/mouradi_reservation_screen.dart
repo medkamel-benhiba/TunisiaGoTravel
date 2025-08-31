@@ -5,6 +5,7 @@ import '../widgets/reservation/HotelHeader.dart';
 import '../widgets/reservation/boarding_selection.dart';
 import '../widgets/reservation/reservation_bottom_bar.dart';
 import '../widgets/reservation/search_summary.dart';
+import 'hotel_reservation_form.dart';
 
 class MouradiReservationScreen extends StatefulWidget {
   final MouradiHotel hotel;
@@ -153,39 +154,76 @@ class _MouradiReservationScreenState extends State<MouradiReservationScreen> {
 
   void _handleFinalReservation(BuildContext context) {
     final total = calculateTotal();
+    final totalSelected = totalSelectedRooms();
+    final maxAllowed = maxRoomsAllowed();
 
-    final selectedRoomDetails = widget.hotel.boardings.map((boarding) {
-      final rooms = selectedRoomsByBoarding[boarding.id] ?? {};
-      if (rooms.isEmpty) return null;
-      final roomDetails = rooms.entries.map((e) {
-        final room = boarding.pax
-            .expand((p) => p.rooms)
-            .firstWhere((r) => r.id == e.key);
-        return '${room.name} x ${e.value}';
-      }).join(', ');
-      return '${boarding.name}: $roomDetails';
-    }).whereType<String>().join('\n');
-
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Réservation confirmée'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text("Hôtel: ${widget.hotel.name}"),
-            if (selectedRoomDetails.isNotEmpty)
-              Text("Chambres:\n$selectedRoomDetails"),
-            Text("Prix total: ${total.toStringAsFixed(2)} ${widget.hotel.currency}"),
-          ],
+    // Check if the exact number of rooms are selected
+    if (totalSelected == 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Veuillez sélectionner au moins une chambre.'),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("OK"),
-          ),
-        ],
+      );
+      return;
+    }
+
+    if (totalSelected != maxAllowed) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+              'Vous devez sélectionner exactement $maxAllowed chambre(s). Actuellement: $totalSelected sélectionnée(s).'),
+        ),
+      );
+      return;
+    }
+
+    // Prepare selected rooms data for API
+    List<String> boardingIds = [];
+    List<String> roomIds = [];
+    List<int> quantities = [];
+
+    // Create rooms summary for display
+    String selectedRoomsSummary = '';
+
+    selectedRoomsByBoarding.forEach((boardingId, rooms) {
+      if (rooms.isNotEmpty) {
+        final boarding = widget.hotel.boardings.firstWhere((b) =>
+        b.id == boardingId);
+
+        rooms.forEach((roomId, qty) {
+          final room = boarding.pax
+              .expand((p) => p.rooms)
+              .firstWhere((r) => r.id == roomId);
+
+          boardingIds.add(boardingId.toString());
+          roomIds.add(roomId.toString());
+          quantities.add(qty);
+
+          if (selectedRoomsSummary.isNotEmpty) selectedRoomsSummary += ', ';
+          selectedRoomsSummary += '${room.name} (${boarding.name}) x$qty';
+        });
+      }
+    });
+
+    // Navigate to form screen
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) =>
+            HotelReservationFormScreen(
+              hotelName: widget.hotel.name,
+              hotelId: widget.hotel.id.toString(),
+              searchCriteria: widget.searchCriteria,
+              totalPrice: total,
+              currency: widget.hotel.currency,
+              selectedRoomsData: {
+                'boardingIds': boardingIds,
+                'roomIds': roomIds,
+                'quantities': quantities,
+                'selectedRoomsSummary': selectedRoomsSummary,
+              },
+              hotelType: 'mouradi',
+            ),
       ),
     );
   }

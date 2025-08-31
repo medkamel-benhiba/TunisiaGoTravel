@@ -4,7 +4,9 @@ import 'package:tunisiagotravel/theme/color.dart';
 import '../../models/hotel.dart';
 import '../../models/hotelAvailabilityResponse.dart';
 import '../../models/hotelBhr.dart';
+import '../../models/hotelTgt.dart';
 import '../../screens/hotelBhr_reservation_screen.dart';
+import '../../screens/hotelTgt_reservation_screen.dart';
 import '../../screens/mouradi_reservation_screen.dart';
 import '../../providers/hotel_provider.dart';
 import '../../providers/global_provider.dart';
@@ -74,15 +76,14 @@ class HotelCard extends StatelessWidget {
     }
   }
 
-  void _handleReservation(BuildContext context, Hotel hotel) async {
+  void _handleReservation(BuildContext context, dynamic hotel) async {
     final globalProvider = Provider.of<GlobalProvider>(context, listen: false);
 
-    // Get the original rooms data from search criteria
+    // Préparer les rooms à partir des critères de recherche
     List<Map<String, dynamic>> originalRooms = [];
     if (globalProvider.searchCriteria['rooms'] is List) {
       originalRooms = List<Map<String, dynamic>>.from(globalProvider.searchCriteria['rooms']);
     } else {
-      // Fallback: create one room with total adults/children
       originalRooms = [
         {
           "adults": globalProvider.searchCriteria['adults'] ?? 1,
@@ -92,7 +93,6 @@ class HotelCard extends StatelessWidget {
       ];
     }
 
-    // Format rooms for API (ensure childAges exists)
     final rooms = originalRooms.map((room) => {
       "adults": room['adults'] ?? 1,
       "children": room['children'] ?? 0,
@@ -102,13 +102,13 @@ class HotelCard extends StatelessWidget {
     final dateStart = globalProvider.searchCriteria['dateStart'] as String;
     final dateEnd = globalProvider.searchCriteria['dateEnd'] as String;
 
-    // Check if hotel is Mouradi
-    if (hotel.name.toLowerCase().contains('mouradi') &&
+    final hotelProvider = Provider.of<HotelProvider>(context, listen: false);
+
+    // --- 1. Mouradi ---
+    if (hotel is Hotel &&
+        hotel.name.toLowerCase().contains('mouradi') &&
         hotel.idHotelMouradi != null &&
         hotel.idCityMouradi != null) {
-
-      final hotelProvider = Provider.of<HotelProvider>(context, listen: false);
-
       showDialog(
         context: context,
         barrierDismissible: false,
@@ -123,7 +123,7 @@ class HotelCard extends StatelessWidget {
         rooms: rooms,
       );
 
-      Navigator.pop(context);
+      Navigator.pop(context); // fermer le loader
 
       if (hotelProvider.selectedMouradiHotel == null) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -135,7 +135,6 @@ class HotelCard extends StatelessWidget {
         return;
       }
 
-      // Pass the complete search criteria including the correct rooms data
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -144,30 +143,30 @@ class HotelCard extends StatelessWidget {
             searchCriteria: {
               'dateStart': dateStart,
               'dateEnd': dateEnd,
-              'rooms': rooms, // This now contains the correct number of rooms
+              'rooms': rooms,
               'destinationId': globalProvider.searchCriteria['destinationId'],
               'destinationName': globalProvider.searchCriteria['destinationName'],
               'adults': globalProvider.searchCriteria['adults'],
               'children': globalProvider.searchCriteria['children'],
-              'roomsCount': rooms.length.toString(), // Explicitly set room count
+              'roomsCount': rooms.length.toString(),
             },
           ),
         ),
       );
+      return;
     }
-    else {
-      // Normal hotels (BHR) - Use existing disponibility pontion API
-      final hotelProvider = Provider.of<HotelProvider>(context, listen: false);
 
+    // --- 2. BHR normal ---
+    if (hotel is Hotel) {
       showDialog(
         context: context,
         barrierDismissible: false,
         builder: (_) => const Center(child: CircularProgressIndicator()),
       );
 
-      Navigator.pop(context);
+      Navigator.pop(context); // fermer le loader
 
-      // Find the specific hotel in the availability response
+      // Chercher l'hôtel dans la disponibilité
       HotelData? foundHotelData;
       if (hotelProvider.hotelDisponibilityPontion != null) {
         try {
@@ -188,14 +187,7 @@ class HotelCard extends StatelessWidget {
         return;
       }
 
-      // Convert HotelData to HotelBhr format for the reservation screen
       final hotelBhr = _convertToHotelBhr(foundHotelData, hotel);
-      final _ = Provider.of<HotelProvider>(context, listen: false);
-
-      for (var hotel in hotelProvider.allHotels) {
-        debugPrint('Hotel ID: ${hotel.id}, BHR ID: ${hotel.idHotelBhr}, Name: ${hotel.name}, Destination: ${hotel.destinationName}');
-      }
-
 
       Navigator.push(
         context,
@@ -216,8 +208,29 @@ class HotelCard extends StatelessWidget {
           ),
         ),
       );
+      return;
+    }
+      else{
+    // --- 3. TGT ---
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => HotelTgtReservationScreen(
+            hotelTgt: hotel,
+            searchCriteria: {
+              'dateStart': dateStart,
+              'dateEnd': dateEnd,
+              'rooms': rooms,
+              'adults': globalProvider.searchCriteria['adults'],
+              'children': globalProvider.searchCriteria['children'],
+            },
+          ),
+        ),
+      );
+      return;
     }
   }
+
 
 
   @override

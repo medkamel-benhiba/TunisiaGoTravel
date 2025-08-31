@@ -39,6 +39,11 @@ class GlobalProvider with ChangeNotifier {
   String? get selectedCityForHotels => _selectedCityForHotels;
   List<Hotel> get availableHotels => _availableHotels;
 
+  // 🔹 Add chatbot initial message storage
+  String? _chatbotInitialMessage;
+  String? get chatbotInitialMessage => _chatbotInitialMessage;
+
+
   void setPage(AppPage page) {
     _currentPage = page;
     _rebuildCounter++;
@@ -88,4 +93,17 @@ class GlobalProvider with ChangeNotifier {
     _searchCriteria = {};
     notifyListeners();
   }
+
+  // 🔹 Add method to store chatbot initial message
+  void setChatbotInitialMessage(String? message) {
+    _chatbotInitialMessage = message;
+    notifyListeners();
+  }
+
+  // 🔹 Clear chatbot initial message after use
+  void clearChatbotInitialMessage() {
+    _chatbotInitialMessage = null;
+    // Don't call notifyListeners() here as it's used after navigation
+  }
+
 }

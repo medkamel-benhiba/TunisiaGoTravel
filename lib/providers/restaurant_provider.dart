@@ -18,6 +18,10 @@ class RestaurantProvider with ChangeNotifier {
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
+  Restaurant? _selectedRestaurant;
+  Restaurant? get selectedRestaurant => _selectedRestaurant;
+
+
   // ===== Fetch all restaurants once =====
   Future<void> fetchAllRestaurants() async {
     _isLoading = true;
@@ -50,4 +54,16 @@ class RestaurantProvider with ChangeNotifier {
   List<Restaurant> getRestaurantsByDestination(String destinationId) {
     return _restaurantsByDestination[destinationId] ?? [];
   }
+
+  Future<void> selectRestaurantBySlug(String slug) async {
+    final i = _allRestaurants.indexWhere(
+          (r) => r.slug?.toLowerCase() == slug.toLowerCase(),
+    );
+    _selectedRestaurant = i != -1 ? _allRestaurants[i] : null;
+    notifyListeners();
+  }
+
+
+
+
 }

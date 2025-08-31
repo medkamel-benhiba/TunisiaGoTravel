@@ -115,8 +115,17 @@ class _MainWrapperScreenState extends State<MainWrapperScreen> {
                     screen = SignUpScreen();
                     break;
                   case AppPage.chatbot:
-                    screen = ChatBotScreen();
+                  // Get the initial message and clear it after use
+                    final initialMessage = provider.chatbotInitialMessage;
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      provider.clearChatbotInitialMessage();
+                    });
 
+                    screen = ChatBotScreen(
+                      apiResponse: {},
+                      initialMessage: initialMessage,
+                    );
+                    break;
                 }
                 return KeyedSubtree(
                   key: ValueKey(provider.rebuildCounter),
