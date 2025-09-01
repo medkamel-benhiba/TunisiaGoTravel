@@ -36,6 +36,21 @@ class HotelAvailabilityResponse {
     "last_page": lastPage,
     "next_page_url": nextPageUrl,
   };
+
+  /// 🔹 Ajout du copyWith
+  HotelAvailabilityResponse copyWith({
+    int? currentPage,
+    List<HotelData>? data,
+    int? lastPage,
+    String? nextPageUrl,
+  }) {
+    return HotelAvailabilityResponse(
+      currentPage: currentPage ?? this.currentPage,
+      data: data ?? this.data,
+      lastPage: lastPage ?? this.lastPage,
+      nextPageUrl: nextPageUrl ?? this.nextPageUrl,
+    );
+  }
 }
 
 class HotelData {
@@ -56,30 +71,30 @@ class HotelData {
   });
 
   factory HotelData.fromJson(Map<String, dynamic> json) {
-    // Debug for empty/invalid disponibility
-    if (json["disponibility"] is! Map<String, dynamic>) {
-      print("Hotel ${json['name']} has empty or invalid disponibility");
+    Disponibility disponibility;
+
+    if (json["disponibility"] is Map<String, dynamic>) {
+      disponibility = Disponibility.fromJson(json["disponibility"]);
+    } else {
+      disponibility = Disponibility.empty();
     }
 
     return HotelData(
-      id: json["id"],
-      name: json["name"],
-      slug: json["slug"],
-      idCityBbx: json["id_city_bbx"],
-      idHotelBbx: json["id_hotel_bbx"],
-      disponibility: (json["disponibility"] is Map<String, dynamic>)
-          ? Disponibility.fromJson(json["disponibility"])
-          : Disponibility.empty(), // fallback if [] or null
+      id: json["id"]?.toString() ?? '',
+      name: json["name"] ?? '',
+      slug: json["slug"] ?? '',
+      idCityBbx: json["id_city_bbx"]?.toString(),
+      idHotelBbx: json["id_hotel_bbx"]?.toString(),
+      disponibility: disponibility,
     );
   }
+
   factory HotelData.empty() => HotelData(
     id: '',
     name: '',
     slug: '',
     disponibility: Disponibility.empty(),
   );
-
-
 
   Map<String, dynamic> toJson() => {
     "id": id,
@@ -117,7 +132,6 @@ class Disponibility {
       pensions: pensionsList,
     );
   }
-
 
   factory Disponibility.empty() =>
       Disponibility(disponibilityType: "", pensions: []);

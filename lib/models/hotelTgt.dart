@@ -1,10 +1,11 @@
+
 class HotelTgt {
   final String id;
   final String name;
   final String slug;
   final String? idCityBbx;
   final String? idHotelBbx;
-  final Disponibility disponibility;
+  final DisponibilityTgt disponibility;
 
   HotelTgt({
     required this.id,
@@ -16,34 +17,72 @@ class HotelTgt {
   });
 
   factory HotelTgt.fromJson(Map<String, dynamic> json) {
+    DisponibilityTgt disponibility = json["disponibility"] != null
+        ? DisponibilityTgt.fromJson(Map<String, dynamic>.from(json["disponibility"]))
+        : DisponibilityTgt.empty();
+
     return HotelTgt(
-      id: json['id'] ?? '',
-      name: json['name'] ?? '',
-      slug: json['slug'] ?? '',
-      idCityBbx: json['id_city_bbx']?.toString(),
-      idHotelBbx: json['id_hotel_bbx']?.toString(),
-      disponibility: Disponibility.fromJson(json['disponibility'] ?? {}),
+      id: json["id"]?.toString() ?? '',
+      name: json["name"] ?? '',
+      slug: json["slug"] ?? '',
+      idCityBbx: json["id_city_bbx"]?.toString(),
+      idHotelBbx: json["id_hotel_bbx"]?.toString(),
+      disponibility: disponibility,
     );
   }
+
+  factory HotelTgt.empty() => HotelTgt(
+    id: '',
+    name: '',
+    slug: '',
+    disponibility: DisponibilityTgt.empty(),
+  );
+
+  Map<String, dynamic> toJson() => {
+    "id": id,
+    "name": name,
+    "slug": slug,
+    "id_city_bbx": idCityBbx,
+    "id_hotel_bbx": idHotelBbx,
+    "disponibility": disponibility.toJson(),
+  };
 }
 
-class Disponibility {
+class DisponibilityTgt {
   final String disponibilitytype;
   final List<PensionTgt> pensions;
 
-  Disponibility({
+  DisponibilityTgt({
     required this.disponibilitytype,
     required this.pensions,
   });
 
-  factory Disponibility.fromJson(Map<String, dynamic> json) {
-    return Disponibility(
-      disponibilitytype: json['disponibilitytype'] ?? '',
-      pensions: (json['pensions'] as List<dynamic>?)
-          ?.map((pension) => PensionTgt.fromJson(pension))
-          .toList() ?? [],
+  factory DisponibilityTgt.fromJson(Map<String, dynamic> json) {
+    List<PensionTgt> pensionsList = [];
+    final pensionsData = json["pensions"];
+
+    if (pensionsData is List) {
+      pensionsList = pensionsData
+          .where((p) => p is Map)
+          .map((p) => PensionTgt.fromJson(Map<String, dynamic>.from(p)))
+          .toList();
+    } else if (pensionsData is Map) {
+      pensionsList = [PensionTgt.fromJson(Map<String, dynamic>.from(pensionsData))];
+    }
+
+    return DisponibilityTgt(
+      disponibilitytype: json["disponibilitytype"] ?? '',
+      pensions: pensionsList,
     );
   }
+
+  factory DisponibilityTgt.empty() =>
+      DisponibilityTgt(disponibilitytype: '', pensions: []);
+
+  Map<String, dynamic> toJson() => {
+    "disponibilitytype": disponibilitytype,
+    "pensions": pensions.map((p) => p.toJson()).toList(),
+  };
 }
 
 class PensionTgt {
@@ -70,20 +109,42 @@ class PensionTgt {
   });
 
   factory PensionTgt.fromJson(Map<String, dynamic> json) {
+    List<RoomTgt> roomsList = [];
+    final roomsData = json["rooms"];
+
+    if (roomsData is List) {
+      roomsList = roomsData
+          .where((r) => r is Map)
+          .map((r) => RoomTgt.fromJson(Map<String, dynamic>.from(r)))
+          .toList();
+    } else if (roomsData is Map) {
+      roomsList = [RoomTgt.fromJson(Map<String, dynamic>.from(roomsData))];
+    }
+
     return PensionTgt(
-      id: json['id'] ?? '',
-      name: json['name'] ?? '',
-      nameAr: json['name_ar'],
-      nameEn: json['name_en'],
-      devise: json['devise'] ?? '',
-      description: json['description'] ?? '',
-      descriptionAr: json['description_ar'],
-      descriptionEn: json['description_en'],
-      rooms: (json['rooms'] as List<dynamic>?)
-          ?.map((room) => RoomTgt.fromJson(room))
-          .toList() ?? [],
+      id: json["id"]?.toString() ?? '',
+      name: json["name"] ?? '',
+      nameAr: json["name_ar"],
+      nameEn: json["name_en"],
+      devise: json["devise"] ?? 'TND',
+      description: json["description"] ?? '',
+      descriptionAr: json["description_ar"],
+      descriptionEn: json["description_en"],
+      rooms: roomsList,
     );
   }
+
+  Map<String, dynamic> toJson() => {
+    "id": id,
+    "name": name,
+    "name_ar": nameAr,
+    "name_en": nameEn,
+    "devise": devise,
+    "description": description,
+    "description_ar": descriptionAr,
+    "description_en": descriptionEn,
+    "rooms": rooms.map((r) => r.toJson()).toList(),
+  };
 }
 
 class RoomTgt {
@@ -106,24 +167,56 @@ class RoomTgt {
   });
 
   factory RoomTgt.fromJson(Map<String, dynamic> json) {
+    List<Capacity> capacityList = [];
+    final capacityData = json["capacity"];
+    if (capacityData is List) {
+      capacityList = capacityData
+          .where((c) => c is Map)
+          .map((c) => Capacity.fromJson(Map<String, dynamic>.from(c)))
+          .toList();
+    }
+
+    List<PurchasePrice> purchasePriceList = [];
+    final priceData = json["purchase_price"];
+    if (priceData is List) {
+      purchasePriceList = priceData
+          .where((p) => p is Map)
+          .map((p) => PurchasePrice.fromJson(Map<String, dynamic>.from(p)))
+          .toList();
+    }
+
+    List<String> attributesList = [];
+    final attributesData = json["attributes"];
+    if (attributesData is List) {
+      attributesList = attributesData.map((a) => a.toString()).toList();
+    }
+
+    Map<String, double>? conversionRatesMap;
+    if (json["conversion_rates"] is Map) {
+      conversionRatesMap = (json["conversion_rates"] as Map)
+          .map((k, v) => MapEntry(k.toString(), (v as num).toDouble()));
+    }
+
     return RoomTgt(
-      id: json['id'] ?? '',
-      title: json['title'] ?? '',
-      capacity: (json['capacity'] as List<dynamic>?)
-          ?.map((cap) => Capacity.fromJson(cap))
-          .toList() ?? [],
-      attributes: (json['attributes'] as List<dynamic>?)
-          ?.map((attr) => attr.toString())
-          .toList() ?? [],
-      stillAvailable: json['still_available'] ?? 0,
-      purchasePrice: (json['purchase_price'] as List<dynamic>?)
-          ?.map((price) => PurchasePrice.fromJson(price))
-          .toList() ?? [],
-      conversionRates: json['conversion_rates'] != null
-          ? Map<String, double>.from(json['conversion_rates'])
-          : null,
+      id: json["id"]?.toString() ?? '',
+      title: json["title"] ?? '',
+      capacity: capacityList,
+      attributes: attributesList,
+      stillAvailable: json["still_available"] ?? 0,
+      purchasePrice: purchasePriceList,
+      conversionRates: conversionRatesMap,
     );
   }
+
+  Map<String, dynamic> toJson() => {
+    "id": id,
+    "title": title,
+    "capacity": capacity.map((c) => c.toJson()).toList(),
+    "attributes": attributes,
+    "still_available": stillAvailable,
+    "purchase_price": purchasePrice.map((p) => p.toJson()).toList(),
+    "conversion_rates": conversionRates,
+  };
 }
 
 class Capacity {
@@ -141,12 +234,19 @@ class Capacity {
 
   factory Capacity.fromJson(Map<String, dynamic> json) {
     return Capacity(
-      adults: json['adults'] ?? 0,
-      children: json['children'] ?? 0,
-      babies: json['babies'] ?? 0,
-      maxBabiesAge: json['max_babies_age'],
+      adults: json["adults"] ?? 0,
+      children: json["children"] ?? 0,
+      babies: json["babies"] ?? 0,
+      maxBabiesAge: json["max_babies_age"],
     );
   }
+
+  Map<String, dynamic> toJson() => {
+    "adults": adults,
+    "children": children,
+    "babies": babies,
+    "max_babies_age": maxBabiesAge,
+  };
 }
 
 class PurchasePrice {
@@ -185,30 +285,60 @@ class PurchasePrice {
   });
 
   factory PurchasePrice.fromJson(Map<String, dynamic> json) {
+    List<Partner> partnersList = [];
+    final partnersData = json["partners"];
+    if (partnersData is List) {
+      partnersList = partnersData
+          .where((p) => p is Map)
+          .map((p) => Partner.fromJson(Map<String, dynamic>.from(p)))
+          .toList();
+    }
+
+    Map<String, double>? conversionRatesMap;
+    if (json["conversion_rates"] is Map) {
+      conversionRatesMap = (json["conversion_rates"] as Map)
+          .map((k, v) => MapEntry(k.toString(), (v as num).toDouble()));
+    }
+
     return PurchasePrice(
-      id: json['id'] ?? '',
-      roomId: json['room_id'] ?? '',
-      accomodationId: json['accomodation_id'] ?? '',
-      purchasePrice: (json['purchase_price'] ?? 0).toDouble(),
-      commission: (json['commission'] ?? 0).toDouble(),
-      dateStart: json['date_start'] ?? '',
-      dateEnd: json['date_end'] ?? '',
-      status: json['status'] ?? false,
-      partners: (json['partners'] as List<dynamic>?)
-          ?.map((partner) => Partner.fromJson(partner))
-          .toList() ?? [],
-      marchiId: json['marchi_id'] ?? '',
-      currency: json['currency'] ?? '',
-      conversionRates: json['conversion_rates'] != null
-          ? Map<String, double>.from(json['conversion_rates'])
-          : null,
-      updatedAt: json['updated_at'] ?? '',
-      createdAt: json['created_at'] ?? '',
-      accommodation: json['accommodation'] != null
-          ? AccommodationDetails.fromJson(json['accommodation'])
+      id: json["id"]?.toString() ?? '',
+      roomId: json["room_id"]?.toString() ?? '',
+      accomodationId: json["accomodation_id"]?.toString() ?? '',
+      purchasePrice: (json["purchase_price"] ?? 0).toDouble(),
+      commission: (json["commission"] ?? 0).toDouble(),
+      dateStart: json["date_start"] ?? '',
+      dateEnd: json["date_end"] ?? '',
+      status: json["status"] ?? false,
+      partners: partnersList,
+      marchiId: json["marchi_id"]?.toString() ?? '',
+      currency: json["currency"] ?? 'TND',
+      conversionRates: conversionRatesMap,
+      updatedAt: json["updated_at"] ?? '',
+      createdAt: json["created_at"] ?? '',
+      accommodation: json["accommodation"] != null
+          ? AccommodationDetails.fromJson(
+          Map<String, dynamic>.from(json["accommodation"]))
           : null,
     );
   }
+
+  Map<String, dynamic> toJson() => {
+    "id": id,
+    "room_id": roomId,
+    "accomodation_id": accomodationId,
+    "purchase_price": purchasePrice,
+    "commission": commission,
+    "date_start": dateStart,
+    "date_end": dateEnd,
+    "status": status,
+    "partners": partners.map((p) => p.toJson()).toList(),
+    "marchi_id": marchiId,
+    "currency": currency,
+    "conversion_rates": conversionRates,
+    "updated_at": updatedAt,
+    "created_at": createdAt,
+    "accommodation": accommodation?.toJson(),
+  };
 }
 
 class Partner {
@@ -224,96 +354,128 @@ class Partner {
 
   factory Partner.fromJson(Map<String, dynamic> json) {
     return Partner(
-      partnerId: json['partner_id'] ?? '',
-      commission: (json['commission'] ?? 0).toDouble(),
-      discount: (json['discount'] ?? 0).toDouble(),
+      partnerId: json["partner_id"]?.toString() ?? '',
+      commission: (json["commission"] ?? 0).toDouble(),
+      discount: (json["discount"] ?? 0).toDouble(),
     );
   }
+
+  Map<String, dynamic> toJson() => {
+    "partner_id": partnerId,
+    "commission": commission,
+    "discount": discount,
+  };
 }
 
 class AccommodationDetails {
-  final String id;
   final String hotelId;
   final String accommodationId;
   final String marchiId;
   final String updatedAt;
   final String createdAt;
-  final AccommodationInfo? accommodation;
+  final String id;
+  final AccommodationInfo accommodation;
 
   AccommodationDetails({
-    required this.id,
     required this.hotelId,
     required this.accommodationId,
     required this.marchiId,
     required this.updatedAt,
     required this.createdAt,
-    this.accommodation,
+    required this.id,
+    required this.accommodation,
   });
 
   factory AccommodationDetails.fromJson(Map<String, dynamic> json) {
     return AccommodationDetails(
-      id: json['id'] ?? '',
-      hotelId: json['hotel_id'] ?? '',
-      accommodationId: json['accommodation_id'] ?? '',
-      marchiId: json['marchi_id'] ?? '',
-      updatedAt: json['updated_at'] ?? '',
-      createdAt: json['created_at'] ?? '',
-      accommodation: json['accommodation'] != null
-          ? AccommodationInfo.fromJson(json['accommodation'])
-          : null,
+      hotelId: json["hotel_id"]?.toString() ?? '',
+      accommodationId: json["accommodation_id"]?.toString() ?? '',
+      marchiId: json["marchi_id"]?.toString() ?? '',
+      updatedAt: json["updated_at"] ?? '',
+      createdAt: json["created_at"] ?? '',
+      id: json["id"]?.toString() ?? '',
+      accommodation: AccommodationInfo.fromJson(
+          Map<String, dynamic>.from(json["accommodation"] ?? {})),
     );
   }
+
+  Map<String, dynamic> toJson() => {
+    "hotel_id": hotelId,
+    "accommodation_id": accommodationId,
+    "marchi_id": marchiId,
+    "updated_at": updatedAt,
+    "created_at": createdAt,
+    "id": id,
+    "accommodation": accommodation.toJson(),
+  };
 }
 
 class AccommodationInfo {
-  final String id;
   final String name;
   final String? nameZh;
   final String? nameKo;
   final String? nameJa;
-  final String? nameAr;
-  final String? nameEn;
   final String description;
   final String? descriptionZh;
   final String? descriptionKo;
   final String? descriptionJa;
+  final String status;
+  final String? nameAr;
+  final String? nameEn;
   final String? descriptionAr;
   final String? descriptionEn;
-  final String status;
+  final String id;
 
   AccommodationInfo({
-    required this.id,
     required this.name,
     this.nameZh,
     this.nameKo,
     this.nameJa,
-    this.nameAr,
-    this.nameEn,
     required this.description,
     this.descriptionZh,
     this.descriptionKo,
     this.descriptionJa,
+    required this.status,
+    this.nameAr,
+    this.nameEn,
     this.descriptionAr,
     this.descriptionEn,
-    required this.status,
+    required this.id,
   });
 
   factory AccommodationInfo.fromJson(Map<String, dynamic> json) {
     return AccommodationInfo(
-      id: json['id'] ?? '',
-      name: json['name'] ?? '',
-      nameZh: json['name_zh'],
-      nameKo: json['name_ko'],
-      nameJa: json['name_ja'],
-      nameAr: json['name_ar'],
-      nameEn: json['name_en'],
-      description: json['description'] ?? '',
-      descriptionZh: json['description_zh'],
-      descriptionKo: json['description_ko'],
-      descriptionJa: json['description_ja'],
-      descriptionAr: json['description_ar'],
-      descriptionEn: json['description_en'],
-      status: json['status'] ?? '',
+      name: json["name"] ?? '',
+      nameZh: json["name_zh"],
+      nameKo: json["name_ko"],
+      nameJa: json["name_ja"],
+      description: json["description"] ?? '',
+      descriptionZh: json["description_zh"],
+      descriptionKo: json["description_ko"],
+      descriptionJa: json["description_ja"],
+      status: json["status"] ?? '',
+      nameAr: json["name_ar"],
+      nameEn: json["name_en"],
+      descriptionAr: json["description_ar"],
+      descriptionEn: json["description_en"],
+      id: json["id"]?.toString() ?? '',
     );
   }
+
+  Map<String, dynamic> toJson() => {
+    "name": name,
+    "name_zh": nameZh,
+    "name_ko": nameKo,
+    "name_ja": nameJa,
+    "description": description,
+    "description_zh": descriptionZh,
+    "description_ko": descriptionKo,
+    "description_ja": descriptionJa,
+    "status": status,
+    "name_ar": nameAr,
+    "name_en": nameEn,
+    "description_ar": descriptionAr,
+    "description_en": descriptionEn,
+    "id": id,
+  };
 }

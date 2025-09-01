@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter_tts/flutter_tts.dart'; // ✅ TTS
+
 import '../providers/global_provider.dart';
 import '../theme/color.dart';
 import '../widgets/menu_card.dart';
 import '../widgets/search_section.dart';
-import '../services/api_service.dart';
-import 'chatbot_screen.dart';
 
 class HomeScreenContent extends StatefulWidget {
   const HomeScreenContent({super.key});
@@ -18,15 +18,25 @@ class HomeScreenContent extends StatefulWidget {
 
 class _HomeScreenContentState extends State<HomeScreenContent> {
   late stt.SpeechToText _speech;
+  late FlutterTts _flutterTts;
+
   bool _isListening = false;
   bool _showChatbotOverlay = false;
-  bool _isProcessingVoice = false; // Add processing state
+  bool _isProcessingVoice = false;
   String _voiceText = '';
 
   @override
   void initState() {
     super.initState();
     _speech = stt.SpeechToText();
+    _flutterTts = FlutterTts();
+
+    _flutterTts.setSpeechRate(0.7);
+  }
+
+  Future<void> _speak(String text) async {
+    await _flutterTts.stop();
+    await _flutterTts.speak(text);
   }
 
   Future<void> _startListening() async {
@@ -46,7 +56,7 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
     if (available) {
       setState(() {
         _isListening = true;
-        _voiceText = ''; // Reset voice text when starting
+        _voiceText = '';
       });
       _speech.listen(
         onResult: (val) => setState(() => _voiceText = val.recognizedWords),
@@ -70,23 +80,28 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
       try {
         print('Processing voice question: $_voiceText');
 
-        // Store the voice message in GlobalProvider and navigate to chatbot
-        if (mounted) {
-          final provider = Provider.of<GlobalProvider>(context, listen: false);
+        if (_voiceText.toLowerCase().contains("bonjour")) {
+          await _speak("Bonjour, comment puis-je vous aider?");
 
-          // Store the initial message for the chatbot
-          provider.setChatbotInitialMessage(_voiceText);
-
-          // Navigate to chatbot page through GlobalProvider
-          provider.setPage(AppPage.chatbot);
+          setState(() {
+            _voiceText = '';
+            _isProcessingVoice = false;
+          });
+          return; // on sort sans fermer l’overlay
         }
 
-        // Reset overlay state
+        await _speak("J'ai compris, voici le résultat.");
+
+        if (mounted) {
+          final provider = Provider.of<GlobalProvider>(context, listen: false);
+          provider.setChatbotInitialMessage(_voiceText); // envoyer la voix
+          provider.setPage(AppPage.chatbot); // naviguer
+        }
+
         setState(() {
-          _showChatbotOverlay = false;
+          _showChatbotOverlay = false; // on ferme seulement dans ce cas
           _voiceText = '';
         });
-
       } catch (e) {
         print('Error processing voice question: $e');
         ScaffoldMessenger.of(context).showSnackBar(
@@ -98,17 +113,27 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
       } finally {
         setState(() => _isProcessingVoice = false);
       }
+    } else {
+      await _speak("Je n'ai pas compris, pouvez-vous répéter ?");
     }
   }
+
+
+
 
   void _handleChatbotTap() {
     if (!_showChatbotOverlay) {
       setState(() => _showChatbotOverlay = true);
+
+      _speak(
+        "Bonjour ! Je suis votre guide pour découvrir la Tunisie. "
+            "Tapez ici pour poser votre question !",
+      );
     }
   }
 
   void _handleChatbotOverlayTap() {
-    if (_isProcessingVoice) return; // Prevent interaction while processing
+    if (_isProcessingVoice) return;
 
     if (_isListening) {
       _stopListening();
@@ -131,6 +156,9 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
   @override
   void dispose() {
     _speech.stop();
+    _flutterTts.stop();
+    _flutterTts.setSpeechRate(0.7);
+
     super.dispose();
   }
 
@@ -191,10 +219,10 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
           ],
         ),
 
-        // Floating chatbot button (chatbot2.png) - only visible when overlay is not showing
+        // Floating chatbot button (chatbot2.png)
         if (!_showChatbotOverlay)
           Positioned(
-            right: 16,
+            right: 1,
             top: size.height / 2 - 40,
             child: GestureDetector(
               onTap: _handleChatbotTap,
@@ -217,7 +245,7 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
             ),
           ),
 
-        // Chatbot overlay (chatbot1.png) - shown when chatbot2.png is tapped
+        // Chatbot overlay (chatbot1.png)
         if (_showChatbotOverlay)
           Positioned.fill(
             child: GestureDetector(
@@ -225,7 +253,7 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
               child: Container(
                 color: Colors.black.withOpacity(0.3),
                 child: GestureDetector(
-                  onTap: () {}, // Prevent dismissing when tapping on content
+                  onTap: () {},
                   child: Positioned(
                     top: 100,
                     left: 16,
@@ -252,7 +280,6 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
                                 Container(
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(40),
-                                    color: Colors.white,
                                     boxShadow: [
                                       BoxShadow(
                                         color: Colors.black.withOpacity(0.1),
@@ -305,7 +332,6 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
                               ],
                             ),
                             const SizedBox(width: 12),
-                            // Text bubble
                             Expanded(
                               child: Container(
                                 padding: const EdgeInsets.all(16),

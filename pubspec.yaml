@@ -26,6 +26,7 @@ dependencies:
   dropdown_button2: ^2.3.9
   speech_to_text: ^7.3.0
   permission_handler: ^11.3.0
+  flutter_tts: ^4.2.3
 
 
 

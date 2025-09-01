@@ -430,7 +430,7 @@ class ApiService {
       dynamic room,
       int def) async {
     final url = Uri.parse(
-        'https://backend.tunisiagotravel.com/utilisateur/circuitsmobile');
+        '$_baseUrl/utilisateur/circuitsmobile');
     var body = json.encode({
       "budget": budget,
       "endDate": end,
@@ -445,7 +445,7 @@ class ApiService {
     var headers = {'Content-Type': 'application/json'};
 
     print(
-        ' url https://backend.tunisiagotravel.com/utilisateur/circuitsmobile body $body');
+        ' url $_baseUrl/utilisateur/circuitsmobile body $body');
 
     final response = await http.post(url, body: body, headers: headers);
 
@@ -480,7 +480,7 @@ class ApiService {
       String child,
       String room,
       int def) async {
-    final url = Uri.parse('https://backend.tunisiagotravel.com/utilisateur/newcircuit');
+    final url = Uri.parse('$_baseUrl/utilisateur/newcircuit');
 
     var body = json.encode({
       "budget": budget,
@@ -522,7 +522,7 @@ class ApiService {
       String adults,
       String child,
       ) async {
-    final url = Uri.parse('https://backend.tunisiagotravel.com/utilisateur/createcircuit');
+    final url = Uri.parse('$_baseUrl/utilisateur/createcircuit');
 
     // Construire la liste des destinations avec startedCity
     final formattedDestinations = destinations.map((d) {
@@ -712,7 +712,7 @@ class ApiService {
 
   }) async {
     try {
-      final url = Uri.parse('https://test.tunisiagotravel.com/utilisateur/hoteldisponible?page=$page');
+      final url = Uri.parse('$_baseUrl/utilisateur/hoteldisponible?page=$page');
 
       final requestBody = {
         'destination_id': destinationId,
@@ -853,7 +853,6 @@ class ApiService {
     try {
       final url = Uri.parse('$_baseUrl/utilisateur/Mouradi/showdisponibility');
 
-      // Supposons que dateStart et dateEnd sont déjà au bon format "30-05-2025"
       final requestBody = {
         'hotel_id': hotelId,
         'city': city,
@@ -1003,60 +1002,6 @@ class ApiService {
 
 
 /*
-
-
-
-  Future<dynamic> postHotelReservation(
-    dynamic hotelId,
-    dynamic startDate,
-    dynamic endDate,
-    dynamic adults,
-    dynamic children,
-    dynamic babies,
-    dynamic name,
-    dynamic email,
-    dynamic phone,
-    dynamic city,
-    dynamic country,
-    dynamic cin,
-    List<String> accommodationIds,
-    List<String> roomIds,
-    List<int> quantities,
-    dynamic totalPrice,
-    List<Map<String, dynamic>> paxList,
-  ) async {
-    final url = '$_baseUrl/utilisateur/hotels/reservationhotel';
-    final headers = {'Content-Type': 'application/json'};
-    final body = jsonEncode({
-      "name": name,
-      "email": email,
-      "phone": phone,
-      "city": city,
-      "country": country,
-      "cin": cin,
-      "hotel_id": hotelId,
-      "date_start": startDate,
-      "date_end": endDate,
-      "adults": adults,
-      "children": children,
-      "babies": babies,
-      "total_price": totalPrice,
-      "accommodation_id": accommodationIds,
-      "room_id": roomIds,
-      "number": quantities.reduce((a, b) => a + b),
-      "pax": paxList,
-    });
-
-    final response =
-        await http.post(Uri.parse(url), headers: headers, body: body);
-    if (response.statusCode >= 200 && response.statusCode < 300) {
-      return jsonDecode(response.body);
-    } else {
-      throw Exception('Failed to submit reservation: ${response.body}');
-    }
-  }
-
-
 
   Future<HotelPreReservation> getHotelPreReservation({
     required String hotelId,
@@ -1474,7 +1419,7 @@ class ApiService {
 
   // Future<Success> postreservation(Listjour listjour, dynamic user, List<List<Disponibility>> selectedDisponibilityList) async {
   //   final url = Uri.parse(
-  //       'https://backend.tunisiagotravel.com/utilisateur/reservationcercuitmobil');
+  //       '$_baseUrl/utilisateur/reservationcercuitmobil');
   //
   //   // Convert the iterable to a list
   //   Map<String, dynamic> planing = {

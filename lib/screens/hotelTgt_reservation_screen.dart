@@ -1,5 +1,223 @@
 import 'package:flutter/material.dart';
 import '../models/hotelTgt.dart';
+import '../theme/color.dart';
+import '../widgets/reservation/HotelHeaderTgt.dart';
+import '../widgets/reservation/RoomSelectionTgt.dart';
+import '../widgets/reservation/reservation_bottom_bar.dart';
+import '../widgets/reservation/search_summary.dart';
+import 'hotel_reservation_form.dart';
+
+class HotelTgtReservationScreen extends StatefulWidget {
+  final HotelTgt hotelTgt;
+  final Map<String, dynamic> searchCriteria;
+
+  const HotelTgtReservationScreen({
+    super.key,
+    required this.hotelTgt,
+    required this.searchCriteria,
+  });
+
+  @override
+  State<HotelTgtReservationScreen> createState() =>
+      _HotelTgtReservationScreenState();
+}
+
+class _HotelTgtReservationScreenState extends State<HotelTgtReservationScreen> {
+  Map<String, Map<String, int>> selectedRoomsByPension = {};
+
+  @override
+  void initState() {
+    super.initState();
+    for (var pension in widget.hotelTgt.disponibility.pensions) {
+      selectedRoomsByPension[pension.id] = {};
+    }
+  }
+
+  int maxRoomsAllowed() {
+    final rooms = widget.searchCriteria['rooms'] as List<Map<String, dynamic>>? ?? [];
+    return rooms.length;
+  }
+
+  int totalSelectedRooms() {
+    int total = 0;
+    selectedRoomsByPension.forEach((_, rooms) {
+      total += rooms.values.fold(0, (a, b) => a + b);
+    });
+    return total;
+  }
+
+  double calculateTotal() {
+    double total = 0;
+    selectedRoomsByPension.forEach((pensionId, selectedRooms) {
+      if (selectedRooms.isNotEmpty) {
+        final pension = widget.hotelTgt.disponibility.pensions
+            .firstWhere((p) => p.id == pensionId);
+
+        selectedRooms.forEach((roomId, qty) {
+          final room = pension.rooms.firstWhere((r) => r.id == roomId);
+          if (room.purchasePrice.isNotEmpty) {
+            total += room.purchasePrice.first.purchasePrice * qty;
+          }
+        });
+      }
+    });
+    return total;
+  }
+
+  String _getTravelersSummary() {
+    final rooms = widget.searchCriteria['rooms'] as List<Map<String, dynamic>>? ?? [];
+    final totalAdults = rooms.fold<int>(
+        0, (s, r) => s + int.tryParse(r['adults']?.toString() ?? '0')!);
+    final totalChildren = rooms.fold<int>(
+        0, (s, r) => s + int.tryParse(r['children']?.toString() ?? '0')!);
+    return "$totalAdults adultes, $totalChildren enfants";
+  }
+
+  void _updateRoomSelection(String pensionId, String roomId, int qty) {
+    final pensionRooms = selectedRoomsByPension[pensionId] ?? {};
+    int totalOtherPensions =
+        totalSelectedRooms() - pensionRooms.values.fold(0, (a, b) => a + b);
+
+    if (totalOtherPensions + qty <= maxRoomsAllowed()) {
+      if (qty > 0) {
+        pensionRooms[roomId] = qty;
+      } else {
+        pensionRooms.remove(roomId);
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Vous ne pouvez pas dépasser ${maxRoomsAllowed()} chambres au total.',
+          ),
+        ),
+      );
+    }
+
+    setState(() {
+      selectedRoomsByPension[pensionId] = pensionRooms;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          widget.hotelTgt.name,
+          style: const TextStyle(
+            color: AppColorstatic.lightTextColor,
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        backgroundColor: AppColorstatic.primary,
+        iconTheme: const IconThemeData(color: Colors.white),
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            HotelHeaderTgt(
+              hotelName: widget.hotelTgt.name,
+              slug: widget.hotelTgt.slug,
+            ),
+            const SizedBox(height: 16),
+            SearchCriteriaCard(
+              searchCriteria: widget.searchCriteria,
+              travelersSummary: _getTravelersSummary(),
+            ),
+            const SizedBox(height: 16),
+            PensionRoomSelectionTgt(
+              pensions: widget.hotelTgt.disponibility.pensions,
+              selectedRoomsByPension: selectedRoomsByPension,
+              maxRooms: maxRoomsAllowed(),
+              totalSelected: totalSelectedRooms(),
+              onUpdate: _updateRoomSelection,
+            ),
+          ],
+        ),
+      ),
+      bottomNavigationBar: ReservationBottomBar(
+        total: calculateTotal(),
+        currency: 'TND',
+        onReserve: () => _handleFinalReservation(context),
+      ),
+    );
+  }
+
+  void _handleFinalReservation(BuildContext context) {
+    final total = calculateTotal();
+    final totalSelected = totalSelectedRooms();
+    final maxAllowed = maxRoomsAllowed();
+
+    // Check if the exact number of rooms are selected
+    if (totalSelected == 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Veuillez sélectionner au moins une chambre.'),
+        ),
+      );
+      return;
+    }
+
+    if (totalSelected != maxAllowed) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Vous devez sélectionner exactement $maxAllowed chambre(s). Actuellement: $totalSelected sélectionnée(s).'),
+        ),
+      );
+      return;
+    }
+
+    // Prepare selected rooms data for API
+    List<String> pensionIds = [];
+    List<String> roomIds = [];
+    List<int> quantities = [];
+
+    // Create rooms summary for display
+    String selectedRoomsSummary = '';
+    selectedRoomsByPension.forEach((pensionId, rooms) {
+      if (rooms.isNotEmpty) {
+        final pension = widget.hotelTgt.disponibility.pensions
+            .firstWhere((p) => p.id == pensionId);
+
+        rooms.forEach((roomId, qty) {
+          final room = pension.rooms.firstWhere((r) => r.id == roomId);
+
+          pensionIds.add(pensionId);
+          roomIds.add(roomId);
+          quantities.add(qty);
+
+          if (selectedRoomsSummary.isNotEmpty) selectedRoomsSummary += ', ';
+          selectedRoomsSummary += '${room.title} (${pension.name}) x$qty';
+        });
+      }
+    });
+
+    // Navigate to form screen
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => HotelReservationFormScreen(
+          hotelName: widget.hotelTgt.name,
+          hotelId: widget.hotelTgt.id,
+          searchCriteria: widget.searchCriteria,
+          totalPrice: total,
+          currency: 'TND',
+          selectedRoomsData: {
+            'pensionIds': pensionIds,
+            'roomIds': roomIds,
+            'quantities': quantities,
+            'selectedRoomsSummary': selectedRoomsSummary,
+          },
+          hotelType: 'tgt',
+        ),
+      ),
+    );
+  }
+}
+/*import 'package:flutter/material.dart';
+import '../models/hotelTgt.dart';
 import '../services/hotelTgt_calcul.dart';
 import '../theme/color.dart';
 import '../widgets/reservation/HotelHeaderTgt.dart';
@@ -24,7 +242,6 @@ class HotelTgtReservationScreen extends StatefulWidget {
 }
 
 class _HotelTgtReservationScreenState extends State<HotelTgtReservationScreen> {
-  /// Map<purchasePriceId, Map<roomId, quantity>>
   Map<String, Map<String, int>> selectedRoomsByPurchasePrice = {};
   late int nights;
 
@@ -339,4 +556,4 @@ class _HotelTgtReservationScreenState extends State<HotelTgtReservationScreen> {
       ),
     );
   }
-}
+}*/

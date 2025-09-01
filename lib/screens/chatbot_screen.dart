@@ -87,8 +87,8 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
           _messages.removeLast();
         }
 
-        if (response != null && response['data'] != null) {
-          _processChatbotResponse(response['data']);
+        if (response != null) {
+          _processChatbotResponse(response);
         } else {
           _messages.add({
             "role": "bot",
@@ -96,6 +96,7 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
             "content": "Désolé, je n'ai pas pu traiter votre demande. Veuillez réessayer."
           });
         }
+
       });
 
       _scrollToBottom();
@@ -104,7 +105,6 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
       setState(() {
         _isLoading = false;
 
-        // Remove loading message
         if (_messages.isNotEmpty && _messages.last["type"] == "loading") {
           _messages.removeLast();
         }
@@ -120,88 +120,60 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
     }
   }
 
-  void _processChatbotResponse(Map<String, dynamic> data) {
-    List<ChatbotResponse> responses = [];
+  void _processChatbotResponse(Map<String, dynamic> response) {
+    final data = response['data'] ?? {};
+    final List<ChatbotResponse> responses = [];
 
-    // Process different types of responses
-    if (data['hotel'] != null && data['hotel']['data'] != null) {
-      final hotels = data['hotel']['data'] as List;
-      for (var hotel in hotels) {
-        responses.add(ChatbotResponse.fromJson({
-          ...hotel,
-          'type': 'hotel'
-        }));
-      }
-    }
-
-    if (data['restaurant'] != null && data['restaurant']['data'] != null) {
-      final restaurants = data['restaurant']['data'] as List;
-      for (var restaurant in restaurants) {
-        responses.add(ChatbotResponse.fromJson({
-          ...restaurant,
-          'type': 'restaurant'
-        }));
-      }
-    }
-
-    if (data['activity'] != null && data['activity']['data'] != null) {
-      final activities = data['activity']['data'] as List;
-      for (var activity in activities) {
-        responses.add(ChatbotResponse.fromJson({
-          ...activity,
-          'type': 'activity'
-        }));
-      }
-    }
-
-    if (data['event'] != null && data['event']['data'] != null) {
-      final events = data['event']['data'] as List;
-      for (var event in events) {
-        responses.add(ChatbotResponse.fromJson({
-          ...event,
-          'type': 'event'
-        }));
-      }
-    }
-
-    if (data['circuit'] != null && data['circuit']['data'] != null) {
-      final circuits = data['circuit']['data'];
-      if (circuits is List) {
-        for (var circuit in circuits) {
-          responses.add(ChatbotResponse.fromJson({
-            ...circuit,
-            'type': 'circuit'
-          }));
+    // Helper function to process a type
+    void addResponses(String key, String type) {
+      if (data[key] != null && data[key]['data'] != null) {
+        final items = data[key]['data'];
+        if (items is List && items.isNotEmpty) {
+          for (var item in items) {
+            responses.add(ChatbotResponse.fromJson({...item, 'type': type}));
+          }
+        } else if (items is Map && items.isNotEmpty) {
+          responses.add(ChatbotResponse.fromJson({...items, 'type': type}));
         }
-      } else if (circuits is Map) {
-        responses.add(ChatbotResponse.fromJson({
-          ...circuits,
-          'type': 'circuit'
-        }));
       }
     }
 
-    // Add the responses as cards
-    if (responses.isNotEmpty) {
-      setState(() {
+    addResponses('hotel', 'hotel');
+    addResponses('restaurant', 'restaurant');
+    addResponses('activity', 'activity');
+    addResponses('event', 'event');
+    addResponses('circuit', 'circuit');
+    addResponses('mussee', 'mussee');
+    addResponses('partenaire', 'partenaire');
+    addResponses('location', 'location');
+
+    setState(() {
+      if (responses.isNotEmpty) {
         _messages.add({
           "role": "bot",
           "type": "cards",
           "content": "Voici ce que j'ai trouvé pour vous :",
-          "responses": responses
+          "responses": responses,
         });
-      });
-    } else {
-      // No cards found, add text response
-      setState(() {
+      } else {
+        // Affiche errormessage de l'API s'il existe
+        String finalMessage = response['errormessage']?.toString().isNotEmpty == true
+            ? response['errormessage']
+            : response['message']?.toString().isNotEmpty == true
+            ? response['message']
+            : "Je n'ai pas trouvé de résultats correspondant à votre recherche.";
+
         _messages.add({
           "role": "bot",
           "type": "text",
-          "content": "Je n'ai pas trouvé de résultats correspondant à votre recherche. Pouvez-vous reformuler votre question ?"
+          "content": finalMessage,
         });
-      });
-    }
+      }
+    });
   }
+
+
+
 
   void _sendMessage() {
     final text = _controller.text.trim();

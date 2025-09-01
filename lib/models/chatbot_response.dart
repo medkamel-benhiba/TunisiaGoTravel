@@ -36,7 +36,6 @@ class ChatbotResponse {
     };
   }
 
-  // Helper method to get navigation page based on type
   String getNavigationRoute() {
     switch (type.toLowerCase()) {
       case 'hotel':
