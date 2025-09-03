@@ -28,7 +28,7 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
 
   @override
   Widget build(BuildContext context) {
-    if (!_isVisible) return const SizedBox.shrink(); // Masquer la section
+    if (!_isVisible) return const SizedBox.shrink();
 
     int totalRooms = roomsData.length;
     int totalAdults = roomsData.fold(0, (sum, room) => sum + room["adults"]!);
@@ -144,32 +144,33 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
 
                         globalProvider.setSearchCriteria(searchCriteria);
 
-                        // Fetch both availability methods simultaneously
-                        await Future.wait([
-                          // Method 1: Simple availability
-                          hotelProvider.fetchAvailableHotels(
-                            destinationId: _selectedCityId!,
-                            dateStart: dateStart,
-                            dateEnd: dateEnd,
-                            adults: totalAdults.toString(),
-                            rooms: totalRooms.toString(),
-                            children: totalChildren.toString(),
-                          ),
-                          // Method 2: Detailed availability with pontion
-                          hotelProvider.fetchHotelDisponibilityPontion(
-                            destinationId: _selectedCityId!,
-                            dateStart: dateStart,
-                            dateEnd: dateEnd,
-                            rooms: roomsForApi,
-                          ),
+                        // Fetch detailed availability first to get filtered hotel IDs
+                        await hotelProvider.fetchAllHotelDisponibilityPontion(
+                          destinationId: _selectedCityId!,
+                          dateStart: dateStart,
+                          dateEnd: dateEnd,
+                          rooms: roomsForApi,
+                        );
 
-                        ]);
+                        // Get filtered hotel IDs
+                        final filteredHotelIds = hotelProvider.hotelDisponibilityPontion?.data.map((hotel) => hotel.id).toList() ?? [];
+
+                        // Fetch simple availability, passing filtered IDs
+                        await hotelProvider.fetchAllAvailableHotels(
+                          destinationId: _selectedCityId!,
+                          dateStart: dateStart,
+                          dateEnd: dateEnd,
+                          adults: totalAdults.toString(),
+                          rooms: totalRooms.toString(),
+                          children: totalChildren.toString(),
+                          filteredHotelIds: filteredHotelIds,
+                        );
 
                         // Debug prints
                         print("DEBUG - Simple hotels fetched: ${hotelProvider.availableHotels.length}");
                         print("DEBUG - Pension hotels fetched: ${hotelProvider.hotelDisponibilityPontion?.data.length ?? 0}");
 
-                        // Update GlobalProvider with simple hotels for listing
+                        // Update GlobalProvider with filtered simple hotels for listing
                         globalProvider.setSelectedCityForHotels(_selectedCityName);
                         globalProvider.setAvailableHotels(hotelProvider.availableHotels);
 
@@ -180,7 +181,6 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
 
                         // Navigate to HotelsScreenContent
                         globalProvider.setPage(AppPage.hotels);
-
                       } catch (e) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text("Erreur lors de la recherche: $e")),
@@ -510,7 +510,7 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
               });
             },
             icon: const Icon(Icons.add_circle_outline, color: AppColorstatic.lightTextColor),
-            label: const Text("Ajouter une chambre",style: TextStyle(color: AppColorstatic.lightTextColor),),
+            label: const Text("Ajouter une chambre", style: TextStyle(color: AppColorstatic.lightTextColor)),
             style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(

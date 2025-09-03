@@ -189,7 +189,7 @@ class _Header extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'Choisissez votre formule et vos chambres ($nights nuit${nights > 1 ? 's' : ''})',
+                  'Choisissez votre pension et vos chambres',
                   style: const TextStyle(fontSize: 13, color: Colors.grey),
                 ),
               ],

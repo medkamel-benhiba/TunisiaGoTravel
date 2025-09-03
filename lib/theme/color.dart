@@ -40,6 +40,8 @@ class AppColorstatic {
   static const blue = Color(0xFF509BE4);
   static const cyan = Color(0xFF4ac2dc);
   static const darkerGreen = Color(0xFFb0d96d);
+  static const darkerYellow = Color(0xffd5b70d);
+
 
   static const listColors = [
     green,

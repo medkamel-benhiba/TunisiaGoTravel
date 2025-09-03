@@ -89,7 +89,7 @@ class _HotelsScreenState extends State<HotelsScreenContent> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+            padding: const EdgeInsets.fromLTRB(10.0,10.0,10.0,5.0),
             child: ScreenTitle(
               icon: selectedDestinationTitle == null ? Icons.location_on : Icons.hotel,
               title: selectedDestinationTitle == null
@@ -101,11 +101,10 @@ class _HotelsScreenState extends State<HotelsScreenContent> {
           ),
           if (selectedDestinationTitle != null)
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12.0),
+              padding: const EdgeInsets.symmetric(horizontal: 1.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // 🔹 Bouton de retour pour revenir à la liste des destinations
                   TextButton.icon(
                     onPressed: () {
                       setState(() {
@@ -130,9 +129,8 @@ class _HotelsScreenState extends State<HotelsScreenContent> {
                 setState(() {
                   selectedDestinationId = destination.id;
                   selectedDestinationTitle = destination.name;
-                  _isFromSearch = false; // 🔹 Sélection normale
+                  _isFromSearch = false;
                 });
-                // 🔹 Charger les hôtels par destination
                 hotelProvider.setHotelsByDestination(destination.id);
               },
             )
