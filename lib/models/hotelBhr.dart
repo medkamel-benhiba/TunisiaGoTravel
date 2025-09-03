@@ -1,5 +1,6 @@
 class HotelBhr {
   final String id;
+  final String? id_hotel_bbx;
   final String name;
   final String slug;
   final String disponibilityType;
@@ -7,6 +8,7 @@ class HotelBhr {
 
   HotelBhr({
     required this.id,
+    this.id_hotel_bbx,
     required this.name,
     required this.slug,
     required this.disponibilityType,
@@ -16,6 +18,7 @@ class HotelBhr {
   factory HotelBhr.fromJson(Map<String, dynamic> json) {
     return HotelBhr(
       id: json['id'] ?? '',
+      id_hotel_bbx: json['id_hotel_bbx'] ?? '',
       name: json['name'] ?? '',
       slug: json['slug'] ?? '',
       disponibilityType: json['disponibility']?['disponibilitytype'] ?? '',

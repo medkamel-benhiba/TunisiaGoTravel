@@ -1,5 +1,6 @@
 class Hotel {
   final String id;
+  final String id_hotel_bbx;
   final String name;
   final String address;
   final String cover;
@@ -17,6 +18,7 @@ class Hotel {
 
   Hotel({
     required this.id,
+    required this.id_hotel_bbx,
     required this.name,
     required this.address,
     required this.cover,
@@ -36,6 +38,7 @@ class Hotel {
 
     return Hotel(
       id: json['id'] ?? '',
+      id_hotel_bbx: json['id_hotel_bbx'] ?? '',
       name: json['name'] ?? '',
       address: json['address'] ?? '',
       cover: json['cover'] ?? '',
@@ -58,6 +61,7 @@ class Hotel {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
+      'id_hotel_bbx': id_hotel_bbx,
       'name': name,
       'address': address,
       'cover': cover,

@@ -135,7 +135,7 @@ class HotelProvider with ChangeNotifier {
     required String rooms,
     required String children,
     int babies = 0,
-    int page = 1,
+    int page = 9,
   }) async {
     _isLoadingAvailableHotels = true;
     _errorAvailableHotels = null;
@@ -172,7 +172,7 @@ class HotelProvider with ChangeNotifier {
     required String rooms,
     required String children,
     int babies = 0,
-    int maxPages = 20, // Safety limit
+    int maxPages = 12,
   }) async {
     _isLoadingAvailableHotels = true;
     _errorAvailableHotels = null;
@@ -202,8 +202,7 @@ class HotelProvider with ChangeNotifier {
         } else {
           allHotels.addAll(hotelsPage);
 
-          // If less than expected page size, we've reached the end
-          if (hotelsPage.length < 10) { // Adjust based on your API's page size
+          if (hotelsPage.length < 13) {
             hasMorePages = false;
           } else {
             page++;
@@ -224,7 +223,7 @@ class HotelProvider with ChangeNotifier {
   }
 
   // ======================================================
-  // 🔹 Disponibility avec pontion (pagination) - IMPROVED
+  // 🔹 Disponibility avec pontion (pagination)
   // ======================================================
   HotelAvailabilityResponse? _hotelDisponibilityPontion;
   HotelAvailabilityResponse? get hotelDisponibilityPontion =>
@@ -242,7 +241,7 @@ class HotelProvider with ChangeNotifier {
     required String dateStart,
     required String dateEnd,
     required List<Map<String, dynamic>> rooms,
-    int page = 1,
+    int page = 9,
   }) async {
     _isLoadingDisponibilityPontion = true;
     _errorDisponibilityPontion = null;
@@ -257,7 +256,7 @@ class HotelProvider with ChangeNotifier {
         page: page,
       );
 
-      if (page == 1) {
+      if (page == 9) {
         _hotelDisponibilityPontion = res;
       } else {
         _hotelDisponibilityPontion = HotelAvailabilityResponse(
@@ -269,7 +268,7 @@ class HotelProvider with ChangeNotifier {
       }
     } catch (e) {
       _errorDisponibilityPontion = e.toString();
-      if (page == 1) _hotelDisponibilityPontion = null;
+      if (page == 9) _hotelDisponibilityPontion = null;
       debugPrint("Error fetching hotel disponibility pontion: $e");
     }
 
@@ -283,14 +282,14 @@ class HotelProvider with ChangeNotifier {
     required String dateStart,
     required String dateEnd,
     required List<Map<String, dynamic>> rooms,
-    int maxPages = 20, // Safety limit
+    int maxPages = 10,
   }) async {
     _isLoadingDisponibilityPontion = true;
     _errorDisponibilityPontion = null;
     notifyListeners();
 
     List<HotelData> allHotelData = [];
-    int page = 1;
+    int page = 9;
     bool hasMorePages = true;
     int? totalPages;
 
@@ -305,6 +304,17 @@ class HotelProvider with ChangeNotifier {
           rooms: rooms,
           page: page,
         );
+
+        final filteredHotels = res.data.where((hotel) {
+          final dispo = hotel.disponibility;
+
+          // Keep hotel ONLY if pensions is not empty
+          return dispo != null &&
+              dispo.pensions != null &&
+              dispo.pensions.isNotEmpty;
+        }).toList();
+        allHotelData.addAll(filteredHotels);
+        totalPages = res.lastPage;
 
         allHotelData.addAll(res.data);
         totalPages = res.lastPage;
@@ -473,30 +483,5 @@ class HotelProvider with ChangeNotifier {
       debugPrint("Error fetching Mouradi hotel: $e");
       notifyListeners();
     }
-  }
-
-  // ======================================================
-  // 🔹 UTILITY METHODS FOR MIXED HOTEL HANDLING
-  // ======================================================
-
-  /// Get mixed list of hotels (Hotel + HotelTgt) based on availability
-  List<dynamic> getMixedAvailableHotels() {
-    List<dynamic> mixedHotels = [];
-
-    // Add regular available hotels
-    mixedHotels.addAll(_availableHotels);
-
-    // Add TGT hotels
-    mixedHotels.addAll(getTgtHotels());
-
-    return mixedHotels;
-  }
-
-  /// Clear all availability data
-  void clearAvailabilityData() {
-    _availableHotels = [];
-    _hotelDisponibilityPontion = null;
-    _selectedMouradiHotel = null;
-    notifyListeners();
   }
 }

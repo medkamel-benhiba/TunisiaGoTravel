@@ -12,6 +12,7 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tunisiagotravel/models/maisondHote.dart';
 import '../models/activity.dart';
+import '../models/agil.dart';
 import '../models/artisanat.dart';
 import '../models/circuitManuel.dart';
 import '../models/destination.dart';
@@ -699,6 +700,35 @@ class ApiService {
     }
   }
 
+  //agil
+  Future<List<Agil>> getagil() async {
+    try {
+      final response = await http.get(Uri.parse('$_baseUrl/utilisateur/agil'));
+
+      if (response.statusCode == 200) {
+        final jsonData = jsonDecode(response.body);
+
+        if (jsonData == null || jsonData['agil'] == null) {
+          throw Exception("API returned null agil");
+        }
+
+        if (jsonData['agil'] is List) {
+          return (jsonData['agil'] as List)
+              .map((agil) => Agil.fromJson(agil))
+              .toList();
+        } else {
+          throw Exception("Unexpected agil format: ${jsonData['agil']}");
+        }
+      } else {
+        throw Exception("Failed to fetch agil: ${response.statusCode}");
+      }
+    } catch (e, stackTrace) {
+      print("Error in getagil: $e");
+      print("StackTrace: $stackTrace");
+      return []; 
+    }
+  }
+
   //hotel disponibility
   Future<List<Hotel>> getAvailableHotels({
     required String destinationId,
@@ -985,13 +1015,62 @@ class ApiService {
       "number": quantities.reduce((a, b) => a + b),
       "pax": paxList,
     });
+    // 🔹 DEBUG: afficher URL, headers et body
+    print('--- API REQUEST ---');
+    print('POST $url');
+    print('Headers: $headers');
+    print('Body: $body');
+    print('------------------');
 
     final response =
     await http.post(Uri.parse(url), headers: headers, body: body);
+
+    // 🔹 DEBUG: afficher response
+    print('--- API RESPONSE ---');
+    print('Status: ${response.statusCode}');
+    print('Body: ${response.body}');
+    print('-------------------');
+
     if (response.statusCode >= 200 && response.statusCode < 300) {
       return jsonDecode(response.body);
     } else {
       throw Exception('Failed to submit reservation: ${response.body}');
+    }
+  }
+
+  Future<dynamic> postHotelReservationBHR(Map<String, dynamic> reservationData) async {
+    final url = '$_baseUrl/utilisateur/bhr/hotelsreservation';
+    final headers = {'Content-Type': 'application/json'};
+    final body = jsonEncode(reservationData);
+
+    print('POST $url');
+    print('Body: $body');
+
+    final response = await http.post(
+      Uri.parse('https://test.tunisiagotravel.com/utilisateur/bhr/hotelsreservation'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(reservationData),
+    );
+
+    print('Status: ${response.statusCode}');
+    print('Body: ${response.body}');
+
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to submit BHR reservation: ${response.body}');
+    }
+  }
+
+  Future<void> postHotelReservationMouradi(Map<String, dynamic> data) async {
+    final response = await http.post(
+      Uri.parse("https://test.tunisiagotravel.com/utilisateur/Mouradi/book"),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode(data),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception("Erreur réservation Mouradi: ${response.body}");
     }
   }
 
@@ -1053,13 +1132,6 @@ class ApiService {
       throw Exception('Failed to reserve hotel: ${response.body}');
     }
   }
-
-
-
-
-
-
-
 
 
 
@@ -1389,33 +1461,7 @@ class ApiService {
     }
   }
 
-  Future<List<Agile>> getagil() async {
-    try {
-      final response = await http.get(Uri.parse('$_baseUrl/utilisateur/agil'));
 
-      if (response.statusCode == 200) {
-        final jsonData = jsonDecode(response.body);
-
-        if (jsonData == null || jsonData['agil'] == null) {
-          throw Exception("API returned null agil");
-        }
-
-        if (jsonData['agil'] is List) {
-          return (jsonData['agil'] as List)
-              .map((agil) => Agile.fromJson(agil))
-              .toList();
-        } else {
-          throw Exception("Unexpected agil format: ${jsonData['agil']}");
-        }
-      } else {
-        throw Exception("Failed to fetch agil: ${response.statusCode}");
-      }
-    } catch (e, stackTrace) {
-      print("Error in getagil: $e");
-      print("StackTrace: $stackTrace");
-      return []; // Return empty list on failure
-    }
-  }
 
   // Future<Success> postreservation(Listjour listjour, dynamic user, List<List<Disponibility>> selectedDisponibilityList) async {
   //   final url = Uri.parse(

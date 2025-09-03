@@ -9,6 +9,8 @@ class PensionRoomSelectionTgt extends StatefulWidget {
   final int maxRooms;
   final int totalSelected;
   final Function(String pensionId, String roomId, int qty) onUpdate;
+  final double Function(String pensionId, String roomId) calculateRoomPrice;
+  final int nights;
 
   const PensionRoomSelectionTgt({
     super.key,
@@ -17,6 +19,8 @@ class PensionRoomSelectionTgt extends StatefulWidget {
     required this.maxRooms,
     required this.totalSelected,
     required this.onUpdate,
+    required this.calculateRoomPrice,
+    required this.nights,
   });
 
   @override
@@ -59,6 +63,7 @@ class _PensionRoomSelectionTgtState extends State<PensionRoomSelectionTgt>
           _Header(
             totalSelected: widget.totalSelected,
             maxRooms: widget.maxRooms,
+            nights: widget.nights,
           ),
           _buildPensionTabs(),
           _buildTabViews(),
@@ -123,6 +128,8 @@ class _PensionRoomSelectionTgtState extends State<PensionRoomSelectionTgt>
                 qty: qty,
                 canAdd: canAdd,
                 onUpdate: widget.onUpdate,
+                calculateRoomPrice: widget.calculateRoomPrice,
+                nights: widget.nights,
               );
             },
           );
@@ -135,8 +142,13 @@ class _PensionRoomSelectionTgtState extends State<PensionRoomSelectionTgt>
 class _Header extends StatelessWidget {
   final int totalSelected;
   final int maxRooms;
+  final int nights;
 
-  const _Header({required this.totalSelected, required this.maxRooms});
+  const _Header({
+    required this.totalSelected,
+    required this.maxRooms,
+    required this.nights,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -164,21 +176,21 @@ class _Header extends StatelessWidget {
             child: Icon(Icons.hotel, color: AppColorstatic.primary, size: 22),
           ),
           const SizedBox(width: 12),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                const Text(
                   'Chambres & Pension',
                   style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: Color(0xFF1A1A1A)),
                 ),
-                SizedBox(height: 2),
+                const SizedBox(height: 2),
                 Text(
-                  'Choisissez votre formule et vos chambres',
-                  style: TextStyle(fontSize: 13, color: Colors.grey),
+                  'Choisissez votre formule et vos chambres ($nights nuit${nights > 1 ? 's' : ''})',
+                  style: const TextStyle(fontSize: 13, color: Colors.grey),
                 ),
               ],
             ),
@@ -244,6 +256,8 @@ class _RoomTgtCard extends StatelessWidget {
   final int qty;
   final bool canAdd;
   final Function(String pensionId, String roomId, int qty) onUpdate;
+  final double Function(String pensionId, String roomId) calculateRoomPrice;
+  final int nights;
 
   const _RoomTgtCard({
     required this.room,
@@ -251,13 +265,14 @@ class _RoomTgtCard extends StatelessWidget {
     required this.qty,
     required this.canAdd,
     required this.onUpdate,
+    required this.calculateRoomPrice,
+    required this.nights,
   });
 
   @override
   Widget build(BuildContext context) {
-    final price = room.purchasePrice.isNotEmpty
-        ? room.purchasePrice.first.purchasePrice
-        : 0.0;
+    final totalPrice = calculateRoomPrice(pension.id, room.id);
+    final pricePerNight = nights > 0 ? totalPrice / nights : 0;
 
     final capacity = room.capacity.isNotEmpty
         ? room.capacity.first
@@ -284,7 +299,7 @@ class _RoomTgtCard extends StatelessWidget {
             children: [
               _buildIcon(),
               const SizedBox(width: 12),
-              _buildRoomInfo(capacity, price),
+              _buildRoomInfo(capacity, totalPrice, pricePerNight.toDouble()),
               _buildCounter(),
             ],
           ),
@@ -303,7 +318,7 @@ class _RoomTgtCard extends StatelessWidget {
     child: Icon(Icons.bed, color: AppColorstatic.primary),
   );
 
-  Widget _buildRoomInfo(Capacity capacity, double price) => Expanded(
+  Widget _buildRoomInfo(Capacity capacity, double totalPrice, double pricePerNight) => Expanded(
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -316,15 +331,37 @@ class _RoomTgtCard extends StatelessWidget {
           'Capacité: ${capacity.adults} adultes, ${capacity.children} enfants',
           style: TextStyle(color: Colors.grey[600], fontSize: 12),
         ),
-        const SizedBox(height: 4),
-        Text(
-          "${price.toStringAsFixed(2)} ${pension.devise}",
-          style: TextStyle(
-            color: AppColorstatic.primary,
-            fontWeight: FontWeight.bold,
+        const SizedBox(height: 6),
+        // Display calculated prices if available
+        if (calculateRoomPrice != null) ...[
+          // Total price for the stay
+          Text(
+            "${totalPrice.toStringAsFixed(2)} TND",
+            style: TextStyle(
+              color: AppColorstatic.primary,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
           ),
-        ),
-        if (room.stillAvailable > 0)
+          // Price per night
+          if (nights > 1)
+            Text(
+              "${pricePerNight.toStringAsFixed(2)} TND/nuit",
+              style: TextStyle(
+                color: Colors.grey[600],
+                fontSize: 12,
+              ),
+            ),
+        ] else ...[
+          Text(
+            "${pricePerNight.toStringAsFixed(2)} ${pension.devise}",
+            style: TextStyle(
+              color: AppColorstatic.primary,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+        /*if (room.stillAvailable > 0)
           Container(
             margin: const EdgeInsets.only(top: 4),
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -340,7 +377,7 @@ class _RoomTgtCard extends StatelessWidget {
                 fontWeight: FontWeight.w500,
               ),
             ),
-          ),
+          ),*/
       ],
     ),
   );

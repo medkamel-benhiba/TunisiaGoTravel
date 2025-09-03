@@ -24,6 +24,7 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final List<Map<String, dynamic>> _messages = [];
+  final List<String> greetings = ["bonjour", "salut", "hello", "hi", "hey","salem", "ahla", "aloha","bro","salam"];
 
   late stt.SpeechToText _speech;
   bool _isVoiceRecording = false;
@@ -54,7 +55,7 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
       _messages.add({
         "role": "user",
         "type": "text",
-        "content": text
+        "content": text, // show the original message in UI
       });
       _isLoading = true;
     });
@@ -66,13 +67,18 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
       _messages.add({
         "role": "bot",
         "type": "loading",
-        "content": "..."
+        "content": "...",
       });
     });
 
+    // Replace greeting with "bonjour" before sending
+    final normalizedText = text.trim().toLowerCase();
+    final textToSend = greetings.contains(normalizedText) ? "bonjour" : text;
+
     // Send to API
-    _sendQuestionToBot(text);
+    _sendQuestionToBot(textToSend);
   }
+
 
   Future<void> _sendQuestionToBot(String question) async {
     try {
@@ -400,7 +406,7 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
                 children: [
                   Expanded(
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      padding: const EdgeInsets.symmetric(horizontal: 16,vertical: 8),
                       child: TextField(
                         controller: _controller,
                         enabled: !_isLoading,
@@ -443,6 +449,7 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
                 ],
               ),
             ),
+            SizedBox(height: 10)
           ],
         ),
       ),

@@ -4,6 +4,7 @@ class MouradiHotel {
   final String category;
   final int star;
   final String cityName;
+  final int cityId;
   final String description;
   final String address;
   final String image;
@@ -13,6 +14,7 @@ class MouradiHotel {
 
   MouradiHotel({
     required this.id,
+    required this.cityId,
     required this.name,
     required this.category,
     required this.star,
@@ -45,6 +47,7 @@ class MouradiHotel {
       category: hotel['Category']?['Title']?.toString() ?? '',
       star: _parseInt(hotel['Category']?['Star']),
       cityName: hotel['City']?['Name']?.toString() ?? '',
+      cityId: _parseInt(hotel['City']?['Id']),
       description: hotel['HotelDescription']?.toString() ?? '',
       address: hotel['Adress']?.toString() ?? '',
       image: hotel['Image']?.toString() ?? '',

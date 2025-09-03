@@ -195,7 +195,7 @@ class _HotelsScreenState extends State<HotelsScreenContent> {
         crossAxisCount: 2,
         mainAxisSpacing: 12,
         crossAxisSpacing: 12,
-        childAspectRatio: _isFromSearch ? 0.75 : 0.46, // 🔹 Ajuster la hauteur pour le bouton
+        childAspectRatio: _isFromSearch ? 0.75 : 0.46,
       ),
       itemBuilder: (_, index) => HotelCard(
         hotel: hotels[index],

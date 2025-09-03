@@ -131,16 +131,14 @@ class _DateRangeCalendarState extends State<DateRangeCalendar> {
                   margin: const EdgeInsets.all(2),
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? AppColorstatic.primary
+                        ? AppColorstatic.primary.withOpacity(0.9)
                         : isInRange
                         ? AppColorstatic.primary.withOpacity(0.3)
                         : isToday
-                        ? Colors.blue.shade100
+                        ? Colors.blue.shade50
                         : null,
                     borderRadius: BorderRadius.circular(8),
-                    border: isToday
-                        ? Border.all(color: Theme.of(context).primaryColor, width: 2)
-                        : null,
+
                   ),
                   child: Center(
                     child: Text(
@@ -151,9 +149,9 @@ class _DateRangeCalendarState extends State<DateRangeCalendar> {
                             : isSelected
                             ? Colors.white
                             : isInRange
-                            ? Theme.of(context).primaryColor
+                            ? Colors.black
                             : isToday
-                            ? Theme.of(context).primaryColor
+                            ? Colors.black.withOpacity(0.5)
                             : Colors.black,
                         fontWeight: isSelected || isToday
                             ? FontWeight.bold

@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
@@ -24,6 +25,20 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
   bool _showChatbotOverlay = false;
   bool _isProcessingVoice = false;
   String _voiceText = '';
+
+  final List<String> greetings = [
+    "bonjour", "salut", "aslema", "hello", "hi", "yo", "salam", "salem", "ahla", "aloha",
+    "hey",
+
+  ];
+
+  final List<String> greetingResponses = [
+    "Bonjour, comment puis-je vous aider ?",
+    "Salut ! Que puis-je faire pour toi ?",
+    "Bienvenue, en quoi puis-je vous aider ?",
+    "Hello ! Dis-moi ce que tu veux découvrir.",
+    "Aslema ! Que cherches-tu aujourd’hui ?",
+  ];
 
   @override
   void initState() {
@@ -80,26 +95,32 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
       try {
         print('Processing voice question: $_voiceText');
 
-        if (_voiceText.toLowerCase().contains("bonjour")) {
-          await _speak("Bonjour, comment puis-je vous aider?");
+        // ✅ Vérifie si c'est un greeting
+        if (greetings.any((g) => _voiceText.toLowerCase().contains(g))) {
+          final random = Random();
+          final response =
+          greetingResponses[random.nextInt(greetingResponses.length)];
+
+          await _speak(response);
 
           setState(() {
             _voiceText = '';
             _isProcessingVoice = false;
           });
-          return; // on sort sans fermer l’overlay
+          return;
         }
 
+        // ✅ Sinon → réponse par défaut + navigation chatbot
         await _speak("J'ai compris, voici le résultat.");
 
         if (mounted) {
           final provider = Provider.of<GlobalProvider>(context, listen: false);
-          provider.setChatbotInitialMessage(_voiceText); // envoyer la voix
-          provider.setPage(AppPage.chatbot); // naviguer
+          provider.setChatbotInitialMessage(_voiceText);
+          provider.setPage(AppPage.chatbot);
         }
 
         setState(() {
-          _showChatbotOverlay = false; // on ferme seulement dans ce cas
+          _showChatbotOverlay = false;
           _voiceText = '';
         });
       } catch (e) {
@@ -114,12 +135,10 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
         setState(() => _isProcessingVoice = false);
       }
     } else {
+      // ✅ Aucun texte reconnu
       await _speak("Je n'ai pas compris, pouvez-vous répéter ?");
     }
   }
-
-
-
 
   void _handleChatbotTap() {
     if (!_showChatbotOverlay) {
@@ -158,7 +177,6 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
     _speech.stop();
     _flutterTts.stop();
     _flutterTts.setSpeechRate(0.7);
-
     super.dispose();
   }
 

@@ -269,6 +269,8 @@ class HotelCard extends StatelessWidget {
           return;
         }
 
+        final mouradiCityId = hotelProvider.selectedMouradiHotel!.cityId;
+
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -283,10 +285,13 @@ class HotelCard extends StatelessWidget {
                 'adults': globalProvider.searchCriteria['adults'],
                 'children': globalProvider.searchCriteria['children'],
                 'roomsCount': rooms.length.toString(),
+                'mouradi_city_id': mouradiCityId, // <-- ici
+
               },
             ),
           ),
         );
+        print("👉mouradi city id : $mouradiCityId");
         return;
       }
 

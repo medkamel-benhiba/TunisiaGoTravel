@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import '../models/chatbot_response.dart';
-import '../providers/global_provider.dart';
+import '../screens/autoCircuits_details.dart';
 import '../services/ChatbotNavigationHelper.dart';
 import '../theme/color.dart';
 
@@ -165,9 +164,41 @@ class ChatbotResponseCard extends StatelessWidget {
       return;
     }
 
-    // Use the navigation helper
+    if (response.type.toLowerCase() == 'circuit') {
+      // Extract the list of destinations
+      final List<dynamic> allDestinations = response.circuit?['alldestination'] ?? [];
+
+      // Create a new map to match the expected format of CircuitDayScreen
+      final Map<String, dynamic> formattedCircuitData = {};
+      for (int i = 0; i < allDestinations.length; i++) {
+        formattedCircuitData['Jour ${i + 1}'] = allDestinations[i];
+      }
+
+      // Check if the formatted data is not empty
+      if (formattedCircuitData.isNotEmpty) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => CircuitDayScreen(
+              listparjours: formattedCircuitData,
+            ),
+          ),
+        );
+      } else {
+        // Handle the case where the data is empty or malformed
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Aucun circuit trouvé pour cette requête.'),
+          ),
+        );
+      }
+      return;
+    }
+
     ChatbotNavigationHelper.navigateToDetails(context, response);
   }
+
+
 
   IconData _getIconForType(String type) {
     switch (type.toLowerCase()) {

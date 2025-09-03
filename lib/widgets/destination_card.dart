@@ -29,14 +29,15 @@ class DestinationCard extends StatelessWidget {
                 fit: BoxFit.cover,
               ),
             Padding(
-              padding: const EdgeInsets.all(12),
-              child: Text(
+              padding: const EdgeInsets.all(14),
+              child: Center(
+                child: Text(
                 destination.name,
                 style: Theme.of(context)
                     .textTheme
                     .titleMedium
-                    ?.copyWith(fontWeight: FontWeight.w600)
-              ),
+                    ?.copyWith(fontWeight: FontWeight.w700),
+              ),)
             ),
           ],
         ),

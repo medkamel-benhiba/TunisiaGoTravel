@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tunisiagotravel/theme/color.dart';
+import 'package:tunisiagotravel/widgets/circuits/city_dropdown.dart';
+
 import '../../providers/global_provider.dart';
 import '../../providers/hotel_provider.dart';
-import '../circuits/city_dropdown.dart';
+import '../../screens/hotels_screen.dart';
 
 class DestinationDropSection extends StatefulWidget {
-  final Function(Map<String, dynamic>)? onSearchComplete;
-
-  const DestinationDropSection({super.key, this.onSearchComplete});
+  const DestinationDropSection({super.key});
 
   @override
   State<DestinationDropSection> createState() => _DestinationDropSectionState();
@@ -20,15 +20,15 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
   DateTime? _startDate;
   DateTime? _endDate;
 
-  bool _isVisible = true;
+  bool _isVisible = true; // Flag pour masquer la section après recherche
 
   List<Map<String, int>> roomsData = [
-    {"adults": 1, "children": 0},
+    {"adults": 2, "children": 0}, // Default room
   ];
 
   @override
   Widget build(BuildContext context) {
-    if (!_isVisible) return const SizedBox.shrink();
+    if (!_isVisible) return const SizedBox.shrink(); // Masquer la section
 
     int totalRooms = roomsData.length;
     int totalAdults = roomsData.fold(0, (sum, room) => sum + room["adults"]!);
@@ -44,7 +44,7 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // City
+              // City dropdown
               _buildSectionTitle("Destination", Icons.location_on_outlined),
               const SizedBox(height: 8),
               CityDropdown(
@@ -56,9 +56,10 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
                   });
                 },
               ),
+
               const SizedBox(height: 16),
 
-              // Dates
+              // Date pickers
               _buildSectionTitle("Dates de Voyage", Icons.calendar_today),
               const SizedBox(height: 8),
               Row(
@@ -84,13 +85,13 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
               ),
               const SizedBox(height: 16),
 
-              // Rooms summary
+              // Room/Adults/Children summary
               _buildSectionTitle("Voyageurs", Icons.group_outlined),
               const SizedBox(height: 8),
               _buildGuestSummary(totalRooms, totalAdults, totalChildren),
               const SizedBox(height: 16),
 
-              // Search button
+              // Validate button
               Consumer<HotelProvider>(
                 builder: (context, hotelProvider, child) {
                   return ElevatedButton(
@@ -123,11 +124,13 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
                         final dateStart = "${_startDate!.day.toString().padLeft(2, '0')}-${_startDate!.month.toString().padLeft(2, '0')}-${_startDate!.year}";
                         final dateEnd = "${_endDate!.day.toString().padLeft(2, '0')}-${_endDate!.month.toString().padLeft(2, '0')}-${_endDate!.year}";
 
+                        // Prepare rooms data for disponibility pontion
                         List<Map<String, dynamic>> roomsForApi = roomsData.map((room) => {
                           'adults': room['adults'],
                           'children': room['children'],
                         }).toList();
 
+                        // Store search criteria
                         final searchCriteria = {
                           'destinationId': _selectedCityId!,
                           'destinationName': _selectedCityName,
@@ -136,15 +139,15 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
                           'adults': totalAdults.toString(),
                           'rooms': roomsForApi,
                           'children': totalChildren.toString(),
+                          'roomsCount': totalRooms.toString(),
                         };
 
-                        // Update GlobalProvider
                         globalProvider.setSearchCriteria(searchCriteria);
-                        globalProvider.setSelectedCityForHotels(_selectedCityName);
 
-                        // Fetch hotels
+                        // Fetch both availability methods simultaneously
                         await Future.wait([
-                          hotelProvider.fetchAllAvailableHotels(
+                          // Method 1: Simple availability
+                          hotelProvider.fetchAvailableHotels(
                             destinationId: _selectedCityId!,
                             dateStart: dateStart,
                             dateEnd: dateEnd,
@@ -152,21 +155,31 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
                             rooms: totalRooms.toString(),
                             children: totalChildren.toString(),
                           ),
-                          hotelProvider.fetchAllHotelDisponibilityPontion(
+                          // Method 2: Detailed availability with pontion
+                          hotelProvider.fetchHotelDisponibilityPontion(
                             destinationId: _selectedCityId!,
                             dateStart: dateStart,
                             dateEnd: dateEnd,
                             rooms: roomsForApi,
                           ),
+
                         ]);
 
-                        // Hide the section
-                        setState(() => _isVisible = false);
+                        // Debug prints
+                        print("DEBUG - Simple hotels fetched: ${hotelProvider.availableHotels.length}");
+                        print("DEBUG - Pension hotels fetched: ${hotelProvider.hotelDisponibilityPontion?.data.length ?? 0}");
 
-                        // **Close the dialog via the callback**
-                        if (widget.onSearchComplete != null) {
-                          widget.onSearchComplete!(searchCriteria);
-                        }
+                        // Update GlobalProvider with simple hotels for listing
+                        globalProvider.setSelectedCityForHotels(_selectedCityName);
+                        globalProvider.setAvailableHotels(hotelProvider.availableHotels);
+
+                        // Hide the section after search
+                        setState(() {
+                          _isVisible = false;
+                        });
+
+                        // Navigate to HotelsScreenContent
+                        globalProvider.setPage(AppPage.hotels);
 
                       } catch (e) {
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -197,7 +210,6 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
     );
   }
 
-  // --- Helper Widgets ---
   Widget _buildSectionTitle(String title, IconData icon) {
     return Row(
       children: [
@@ -205,7 +217,11 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
         const SizedBox(width: 8),
         Text(
           title,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
         ),
       ],
     );
@@ -280,7 +296,6 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
     );
   }
 
-  // --- Room selection bottom sheet remains unchanged ---
   void _openRoomSelectionBottomSheet(BuildContext context) async {
     final result = await showModalBottomSheet(
       context: context,
@@ -299,13 +314,31 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                 child: Column(
                   children: [
-                    Container(width: 40, height: 5, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(10))),
+                    // Drag handle
+                    Container(
+                      width: 40,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
                     const SizedBox(height: 16),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text("Sélectionner les chambres", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
-                        IconButton(icon: const Icon(Icons.close, color: Colors.grey), onPressed: () => Navigator.pop(context)),
+                        const Text(
+                          "Sélectionner les chambres",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close, color: Colors.grey),
+                          onPressed: () => Navigator.pop(context),
+                        ),
                       ],
                     ),
                     const Divider(height: 24),
@@ -314,7 +347,12 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
                         itemCount: roomsData.length,
                         itemBuilder: (context, index) {
                           final room = roomsData[index];
-                          return _buildRoomCard(context, index, room, setModalState);
+                          return _buildRoomCard(
+                            context,
+                            index,
+                            room,
+                            setModalState,
+                          );
                         },
                       ),
                     ),
@@ -330,11 +368,14 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
     );
 
     if (result != null) {
-      setState(() => roomsData = List<Map<String, int>>.from(result));
+      setState(() {
+        roomsData = List<Map<String, int>>.from(result);
+      });
     }
   }
 
-  Widget _buildRoomCard(BuildContext context, int index, Map room, Function setModalState) {
+  Widget _buildRoomCard(
+      BuildContext context, int index, Map room, Function setModalState) {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -346,9 +387,22 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text("Chambre ${index + 1}", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                Text(
+                  "Chambre ${index + 1}",
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
                 if (roomsData.length > 1)
-                  IconButton(icon: const Icon(Icons.delete, color: Colors.redAccent), onPressed: () => setModalState(() => roomsData.removeAt(index))),
+                  IconButton(
+                    icon: const Icon(Icons.delete, color: Colors.redAccent),
+                    onPressed: () {
+                      setModalState(() {
+                        roomsData.removeAt(index);
+                      });
+                    },
+                  ),
               ],
             ),
             const Divider(height: 16),
@@ -356,15 +410,31 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
               icon: Icons.person_outline,
               label: "Adultes",
               count: room["adults"],
-              onIncrement: () => setModalState(() => room["adults"] < 5 ? room["adults"]++ : null),
-              onDecrement: () => setModalState(() => room["adults"] > 1 ? room["adults"]-- : null),
+              onIncrement: () {
+                setModalState(() {
+                  if (room["adults"] < 5) room["adults"]++;
+                });
+              },
+              onDecrement: () {
+                setModalState(() {
+                  if (room["adults"] > 1) room["adults"]--;
+                });
+              },
             ),
             _buildCounterRow(
               icon: Icons.child_friendly,
               label: "Enfants",
               count: room["children"],
-              onIncrement: () => setModalState(() => room["children"] < 5 ? room["children"]++ : null),
-              onDecrement: () => setModalState(() => room["children"] > 0 ? room["children"]-- : null),
+              onIncrement: () {
+                setModalState(() {
+                  if (room["children"] < 5) room["children"]++;
+                });
+              },
+              onDecrement: () {
+                setModalState(() {
+                  if (room["children"] > 0) room["children"]--;
+                });
+              },
             ),
           ],
         ),

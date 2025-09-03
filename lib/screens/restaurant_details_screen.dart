@@ -17,8 +17,13 @@ class RestaurantDetailsScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(
           restaurant.name,
-          style: TextStyle(color: AppColorstatic.lightTextColor),
+          style: const TextStyle(
+            color: AppColorstatic.lightTextColor,
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+          ),
         ),
+        iconTheme: const IconThemeData(color: Colors.white),
         backgroundColor: AppColorstatic.primary,
       ),
       body: SingleChildScrollView(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/activity.dart';
+import '../theme/color.dart';
 import '../widgets/gallery.dart';
 
 class ActivityDetailsScreen extends StatelessWidget {
@@ -71,13 +72,21 @@ class ActivityDetailsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(getLocalizedTitle() ?? ''),
+        backgroundColor: AppColorstatic.primary,
+        title: Text(getLocalizedTitle() ?? '',
+            style: const TextStyle(
+          color: AppColorstatic.lightTextColor,
+          fontSize: 22,
+          fontWeight: FontWeight.bold,
+        ),
+        ),
+        iconTheme: const IconThemeData(color: Colors.white),
+
       ),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Cover image or first image
             GestureDetector(
               onTap: () {
                 if (activity.images != null && activity.images!.isNotEmpty) {
