@@ -305,6 +305,7 @@ class HotelProvider with ChangeNotifier {
           page: page,
         );
 
+      /*hotels that actually have disponibility (non-empty list)
         final filteredHotels = res.data.where((hotel) {
           final dispo = hotel.disponibility;
 
@@ -315,7 +316,7 @@ class HotelProvider with ChangeNotifier {
         }).toList();
         allHotelData.addAll(filteredHotels);
         totalPages = res.lastPage;
-
+       */
         allHotelData.addAll(res.data);
         totalPages = res.lastPage;
 

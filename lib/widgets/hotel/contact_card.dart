@@ -20,7 +20,7 @@ class HotelContactCard extends StatelessWidget {
         children: [
           SectionHeader(
             icon: Icons.contact_phone,
-            title: 'Contact Information',
+            title: 'Informations de contact',
             iconColor: Colors.teal[600]!,
           ),
           const SizedBox(height: 16),
@@ -36,7 +36,7 @@ class HotelContactCard extends StatelessWidget {
     if (hotel.phone.isNotEmpty) {
       items.add({
         'icon': Icons.phone,
-        'label': 'Phone',
+        'label': 'Téléphone',
         'value': hotel.phone,
         'color': Colors.green,
       });
@@ -54,7 +54,7 @@ class HotelContactCard extends StatelessWidget {
     if (hotel.website.isNotEmpty) {
       items.add({
         'icon': Icons.web,
-        'label': 'Website',
+        'label': 'Site Web',
         'value': hotel.website,
         'color': Colors.blue,
       });

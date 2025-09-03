@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../models/hotel.dart';
 import '../models/hotelTgt.dart';
+import '../providers/hotel_provider.dart';
 import '../theme/color.dart';
 import '../widgets/reservation/HotelHeaderTgt.dart';
-import '../widgets/reservation/RoomSelectionTgt.dart';
+import '../widgets/reservation/PensionRoomSelectionTgt.dart';
 import '../widgets/reservation/reservation_bottom_bar.dart';
 import '../widgets/reservation/search_summary.dart';
 import 'hotel_reservation_form.dart';
@@ -30,6 +33,17 @@ class _HotelTgtReservationScreenState extends State<HotelTgtReservationScreen> {
     super.initState();
     for (var pension in widget.hotelTgt.disponibility.pensions) {
       selectedRoomsByPension[pension.id] = {};
+    }
+  }
+  Hotel? getOriginalHotel() {
+    try {
+      final hotelProvider = Provider.of<HotelProvider>(context, listen: false);
+      return hotelProvider.allHotels.firstWhere(
+            (h) => h.id == widget.hotelTgt.id || h.slug == widget.hotelTgt.slug,
+      );
+    } catch (e) {
+      debugPrint('No original hotel found for HotelTgt: ${widget.hotelTgt.name}');
+      return null;
     }
   }
 
@@ -173,6 +187,11 @@ class _HotelTgtReservationScreenState extends State<HotelTgtReservationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final originalHotel = getOriginalHotel();
+    final hotelCover = originalHotel?.cover ?? '';
+    final hotelAddress = originalHotel?.address ?? '';
+    final categoryCode = originalHotel?.categoryCode?.toString() ?? '';
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -192,6 +211,10 @@ class _HotelTgtReservationScreenState extends State<HotelTgtReservationScreen> {
             HotelHeaderTgt(
               hotelName: widget.hotelTgt.name,
               slug: widget.hotelTgt.slug,
+              cover: hotelCover,
+              address: hotelAddress,
+              category: categoryCode.isNotEmpty ? '$categoryCode étoiles' : null,
+
             ),
             const SizedBox(height: 16),
             SearchCriteriaCard(

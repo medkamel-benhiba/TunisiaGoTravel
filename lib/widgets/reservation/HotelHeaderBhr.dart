@@ -17,6 +17,7 @@ class HotelHeaderBhr extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
     return Container(
       height: 220,
       decoration: BoxDecoration(
@@ -86,16 +87,7 @@ class HotelHeaderBhr extends StatelessWidget {
                   style: const TextStyle(
                       fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  address,
-                  style: TextStyle(
-                      color: Colors.white.withOpacity(0.8),
-                      fontSize: 12
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
+
               ],
             ),
           ),

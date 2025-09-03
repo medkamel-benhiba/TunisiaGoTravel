@@ -17,7 +17,7 @@ class HotelDescriptionCard extends StatelessWidget {
         children: [
           SectionHeader(
             icon: Icons.description,
-            title: 'About this hotel',
+            title: "À propos de l'hôtel",
             iconColor: Colors.green[600]!,
           ),
           const SizedBox(height: 16),

@@ -581,9 +581,6 @@ class ApiService {
   }
 
 
-
-
-
   //circuit prédifini
   Future<List<Voyage>> getAllVoyage() async {
     try {
@@ -1074,6 +1071,21 @@ class ApiService {
     }
   }
 
+  Future<void> reserveHotelTgt(Map<String, dynamic> reservationData) async {
+    final url = Uri.parse('$_baseUrl/utilisateur/hotels/reservationhotel');
+    final headers = {'Content-Type': 'application/json'};
+
+    final response = await http.post(
+      url,
+      headers: headers,
+      body: jsonEncode(reservationData),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to reserve hotel: ${response.body}');
+    }
+  }
+
 
 
 
@@ -1118,20 +1130,7 @@ class ApiService {
     }
   }
 
-  Future<void> reserveHotelTgt(Map<String, dynamic> reservationData) async {
-    final url = Uri.parse('$_baseUrl/utilisateur/hotels/reservationhotel');
-    final headers = {'Content-Type': 'application/json'};
 
-    final response = await http.post(
-      url,
-      headers: headers,
-      body: jsonEncode(reservationData),
-    );
-
-    if (response.statusCode != 200) {
-      throw Exception('Failed to reserve hotel: ${response.body}');
-    }
-  }
 
 
 
