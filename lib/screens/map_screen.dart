@@ -169,22 +169,20 @@ class _MapScreenState extends State<MapScreen> {
   Widget build(BuildContext context) {
     return WillPopScope(
         onWillPop: () async {
+          // First set the GlobalProvider to home page
           context.read<GlobalProvider>().setPage(AppPage.home);
-          return false; // Prevent default back behavior
+          // Then pop the MapScreen route to return to MainWrapperScreen
+          Navigator.pop(context);
+          return false;
         },
-        child:Scaffold(
+          child:Scaffold(
           appBar: AppBar(
             title: const Text(
               'Carte détaillée de la zone',
               style: TextStyle(color: Colors.white),
             ),
             backgroundColor: AppColorstatic.primary,
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.white),
-              onPressed: () {
-                context.read<GlobalProvider>().setPage(AppPage.home);
-              },
-            ),
+            iconTheme: const IconThemeData(color: Colors.white),
           ),
 
           body: Consumer<DestinationProvider>(
