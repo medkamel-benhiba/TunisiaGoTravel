@@ -16,6 +16,7 @@ class HotelInfoCard extends StatelessWidget {
       margin: const EdgeInsets.all(10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min, // shrink-wrap the column
         children: [
           // Hotel Name Row
           Row(
@@ -33,7 +34,8 @@ class HotelInfoCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 15),
-              Expanded(
+              Flexible( // replaced Expanded
+                fit: FlexFit.loose,
                 child: Text(
                   hotel.name,
                   style: Appstylestatic.titreStyle1,
@@ -64,7 +66,8 @@ class HotelInfoCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              Expanded(
+              Flexible( // replaced Expanded
+                fit: FlexFit.loose,
                 child: Text(
                   '${hotel.address}, ${hotel.ville}',
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
@@ -79,37 +82,30 @@ class HotelInfoCard extends StatelessWidget {
           const SizedBox(height: 12),
 
           // Itinerary Button
-          // Itinerary Button
-          Row(
-            children: [
-              Expanded(
-                child: TextButton.icon(
-                  onPressed: () {
-                    if (hotel.lat != null && hotel.lng != null) {
-                      final destination = LatLng(hotel.lat!, hotel.lng!);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => ItineraryScreen(destination: destination),
-                        ),
-                      );
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Coordinates not available")),
-                      );
-                    }
-                  },
-                  icon: const Icon(Icons.directions, size: 18),
-                  label: const Text('Itinéraire'),
-                  style: TextButton.styleFrom(
-                    foregroundColor: Theme.of(context).primaryColor,
-                    padding: const EdgeInsets.symmetric(vertical: 8),
+          TextButton.icon(
+            onPressed: () {
+              print('Hotel lat: ${hotel.lat}, lng: ${hotel.lng}'); // Add this line
+              if (hotel.lat != null && hotel.lng != null) {
+                final destination = LatLng(hotel.lat!, hotel.lng!);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => ItineraryScreen(destination: destination),
                   ),
-                ),
-              ),
-            ],
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Coordinates not available")),
+                );
+              }
+            },
+            icon: const Icon(Icons.directions, size: 18),
+            label: const Text('Itinéraire'),
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(context).primaryColor,
+              padding: const EdgeInsets.symmetric(vertical: 8),
+            ),
           ),
-
         ],
       ),
     );
