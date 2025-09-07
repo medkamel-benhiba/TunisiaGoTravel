@@ -15,6 +15,7 @@ import 'package:tunisiagotravel/providers/restaurant_provider.dart';
 import 'package:tunisiagotravel/providers/voyage_provider.dart';
 import 'package:tunisiagotravel/screens/circuit_predifini_screen.dart';
 import 'package:tunisiagotravel/screens/main_wrapper_screen.dart';
+import 'package:tunisiagotravel/screens/splash_screen.dart';
 import 'package:tunisiagotravel/services/api_service.dart';
 import 'providers/global_provider.dart';
 import 'providers/destination_provider.dart';
@@ -58,7 +59,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Tunisia Go Travel',
-      home: const MainWrapperScreen(),
+      home: const SplashScreen(),
       debugShowCheckedModeBanner: false,
     );
   }

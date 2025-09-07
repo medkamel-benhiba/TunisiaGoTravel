@@ -138,7 +138,7 @@ class HotelProvider with ChangeNotifier {
     required String rooms,
     required String children,
     int babies = 0,
-    int page = 9,
+    int page = 1,
   }) async {
     _isLoadingAvailableHotels = true;
     _errorAvailableHotels = null;
@@ -280,7 +280,7 @@ class HotelProvider with ChangeNotifier {
     required String dateStart,
     required String dateEnd,
     required List<Map<String, dynamic>> rooms,
-    int page = 9,
+    int page = 1,
   }) async {
     _isLoadingDisponibilityPontion = true;
     _errorDisponibilityPontion = null;
@@ -295,7 +295,7 @@ class HotelProvider with ChangeNotifier {
         page: page,
       );
 
-      if (page == 9) {
+      if (page == 1) {
         _hotelDisponibilityPontion = res;
       } else {
         _hotelDisponibilityPontion = HotelAvailabilityResponse(
@@ -307,7 +307,7 @@ class HotelProvider with ChangeNotifier {
       }
     } catch (e) {
       _errorDisponibilityPontion = e.toString();
-      if (page == 9) _hotelDisponibilityPontion = null;
+      if (page == 1) _hotelDisponibilityPontion = null;
       debugPrint("Error fetching hotel disponibility pontion: $e");
     }
 

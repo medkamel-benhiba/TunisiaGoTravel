@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:tunisiagotravel/theme/styletext.dart';
 import '../../models/hotel_details.dart';
+import '../../screens/ItineraryScreen.dart';
 import '../base_card.dart';
+import 'package:latlong2/latlong.dart';
 
 class HotelInfoCard extends StatelessWidget {
   final HotelDetail hotel;
@@ -15,6 +17,7 @@ class HotelInfoCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Hotel Name Row
           Row(
             children: [
               Container(
@@ -39,11 +42,12 @@ class HotelInfoCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
+            ],
+          ),
 
-
-            ]
-        ),
           const SizedBox(height: 12),
+
+          // Address Row
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -71,6 +75,41 @@ class HotelInfoCard extends StatelessWidget {
               ),
             ],
           ),
+
+          const SizedBox(height: 12),
+
+          // Itinerary Button
+          // Itinerary Button
+          Row(
+            children: [
+              Expanded(
+                child: TextButton.icon(
+                  onPressed: () {
+                    if (hotel.lat != null && hotel.lng != null) {
+                      final destination = LatLng(hotel.lat!, hotel.lng!);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ItineraryScreen(destination: destination),
+                        ),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Coordinates not available")),
+                      );
+                    }
+                  },
+                  icon: const Icon(Icons.directions, size: 18),
+                  label: const Text('Itinéraire'),
+                  style: TextButton.styleFrom(
+                    foregroundColor: Theme.of(context).primaryColor,
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                  ),
+                ),
+              ),
+            ],
+          ),
+
         ],
       ),
     );

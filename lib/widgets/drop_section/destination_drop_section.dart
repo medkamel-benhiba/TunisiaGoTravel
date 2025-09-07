@@ -2,10 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tunisiagotravel/theme/color.dart';
 import 'package:tunisiagotravel/widgets/circuits/city_dropdown.dart';
-
 import '../../providers/global_provider.dart';
 import '../../providers/hotel_provider.dart';
-import '../../screens/hotels_screen.dart';
 
 class DestinationDropSection extends StatefulWidget {
   const DestinationDropSection({super.key});
@@ -22,8 +20,13 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
 
   bool _isVisible = true; // Flag pour masquer la section après recherche
 
-  List<Map<String, int>> roomsData = [
-    {"adults": 2, "children": 0}, // Default room
+  // Updated room data structure to include child ages
+  List<Map<String, dynamic>> roomsData = [
+    {
+      "adults": 2,
+      "children": 0,
+      "childAges": <int>[] // List of child ages for this room
+    }, // Default room
   ];
 
   @override
@@ -31,8 +34,8 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
     if (!_isVisible) return const SizedBox.shrink();
 
     int totalRooms = roomsData.length;
-    int totalAdults = roomsData.fold(0, (sum, room) => sum + room["adults"]!);
-    int totalChildren = roomsData.fold(0, (sum, room) => sum + room["children"]!);
+    int totalAdults = roomsData.fold(0, (sum, room) => sum + (room["adults"] as int));
+    int totalChildren = roomsData.fold(0, (sum, room) => sum + (room["children"] as int));
 
     return Padding(
       padding: const EdgeInsets.all(16.0),
@@ -117,6 +120,27 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
                         return;
                       }
 
+                      // Validate child ages
+                      bool hasIncompleteChildAges = false;
+                      for (var room in roomsData) {
+                        int children = room['children'] as int;
+                        List<int> childAges = List<int>.from(room['childAges'] ?? []);
+                        if (children > 0 && childAges.length != children) {
+                          hasIncompleteChildAges = true;
+                          break;
+                        }
+                      }
+
+                      if (hasIncompleteChildAges) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Veuillez sélectionner l\'âge de tous les enfants!'),
+                            backgroundColor: Colors.orange,
+                          ),
+                        );
+                        return;
+                      }
+
                       try {
                         final globalProvider = Provider.of<GlobalProvider>(context, listen: false);
 
@@ -124,10 +148,11 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
                         final dateStart = "${_startDate!.day.toString().padLeft(2, '0')}-${_startDate!.month.toString().padLeft(2, '0')}-${_startDate!.year}";
                         final dateEnd = "${_endDate!.day.toString().padLeft(2, '0')}-${_endDate!.month.toString().padLeft(2, '0')}-${_endDate!.year}";
 
-                        // Prepare rooms data for disponibility pontion
+                        // Prepare rooms data for disponibility pention
                         List<Map<String, dynamic>> roomsForApi = roomsData.map((room) => {
                           'adults': room['adults'],
                           'children': room['children'],
+                          'childAges': room['childAges'],
                         }).toList();
 
                         // Store search criteria
@@ -305,7 +330,7 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
         return StatefulBuilder(
           builder: (context, setModalState) {
             return Container(
-              height: MediaQuery.of(context).size.height * 0.6,
+              height: MediaQuery.of(context).size.height * 0.7, // Increased height for child age selectors
               decoration: const BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -369,13 +394,13 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
 
     if (result != null) {
       setState(() {
-        roomsData = List<Map<String, int>>.from(result);
+        roomsData = List<Map<String, dynamic>>.from(result);
       });
     }
   }
 
   Widget _buildRoomCard(
-      BuildContext context, int index, Map room, Function setModalState) {
+      BuildContext context, int index, Map<String, dynamic> room, Function setModalState) {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -409,35 +434,158 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
             _buildCounterRow(
               icon: Icons.person_outline,
               label: "Adultes",
-              count: room["adults"],
+              count: room["adults"] as int,
               onIncrement: () {
                 setModalState(() {
-                  if (room["adults"] < 5) room["adults"]++;
+                  if ((room["adults"] as int) < 5) room["adults"]++;
                 });
               },
               onDecrement: () {
                 setModalState(() {
-                  if (room["adults"] > 1) room["adults"]--;
+                  if ((room["adults"] as int) > 1) room["adults"]--;
                 });
               },
             ),
             _buildCounterRow(
               icon: Icons.child_friendly,
               label: "Enfants",
-              count: room["children"],
+              count: room["children"] as int,
               onIncrement: () {
                 setModalState(() {
-                  if (room["children"] < 5) room["children"]++;
+                  if ((room["children"] as int) < 5) {
+                    room["children"]++;
+                    // Add a default age (2 years) for the new child
+                    List<int> childAges = List<int>.from(room["childAges"] ?? []);
+                    childAges.add(2);
+                    room["childAges"] = childAges;
+                  }
                 });
               },
               onDecrement: () {
                 setModalState(() {
-                  if (room["children"] > 0) room["children"]--;
+                  if ((room["children"] as int) > 0) {
+                    room["children"]--;
+                    // Remove the last child age
+                    List<int> childAges = List<int>.from(room["childAges"] ?? []);
+                    if (childAges.isNotEmpty) {
+                      childAges.removeLast();
+                    }
+                    room["childAges"] = childAges;
+                  }
                 });
               },
             ),
+
+            // Child age selectors - show when there are children
+            if ((room["children"] as int) > 0) ...[
+              const SizedBox(height: 12),
+              _buildChildAgeSelectors(room, setModalState),
+            ],
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildChildAgeSelectors(Map<String, dynamic> room, Function setModalState) {
+    int childrenCount = room["children"] as int;
+    List<int> childAges = List<int>.from(room["childAges"] ?? []);
+
+    // Ensure we have the right number of age entries
+    while (childAges.length < childrenCount) {
+      childAges.add(2); // Default age
+    }
+    while (childAges.length > childrenCount) {
+      childAges.removeLast();
+    }
+
+    room["childAges"] = childAges;
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.cake, color: Colors.orange.shade600, size: 18),
+              const SizedBox(width: 8),
+              const Text(
+                "Âge des enfants",
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                  color: Colors.black87,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 12,
+            runSpacing: 8,
+            children: List.generate(childrenCount, (childIndex) {
+              return Container(
+                width: 80,
+                child: Column(
+                  children: [
+                    Text(
+                      "Enfant ${childIndex + 1}",
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.shade600,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey.shade300),
+                        borderRadius: BorderRadius.circular(8),
+                        color: Colors.white,
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<int>(
+                          value: childAges[childIndex],
+                          isDense: true,
+                          isExpanded: true,
+                          style: const TextStyle(
+                            color: Colors.black87,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          items: List.generate(13, (age) {
+                            return DropdownMenuItem<int>(
+                              value: age,
+                              child: Text(
+                                age == 0 ? "< 1 an" : "$age ans",
+                                style: const TextStyle(fontSize: 13),
+                              ),
+                            );
+                          }),
+                          onChanged: (int? newAge) {
+                            if (newAge != null) {
+                              setModalState(() {
+                                childAges[childIndex] = newAge;
+                                room["childAges"] = childAges;
+                              });
+                            }
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
+          ),
+        ],
       ),
     );
   }
@@ -506,7 +654,11 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
           child: OutlinedButton.icon(
             onPressed: () {
               setModalState(() {
-                roomsData.add({"adults": 2, "children": 0});
+                roomsData.add({
+                  "adults": 2,
+                  "children": 0,
+                  "childAges": <int>[]
+                });
               });
             },
             icon: const Icon(Icons.add_circle_outline, color: AppColorstatic.lightTextColor),

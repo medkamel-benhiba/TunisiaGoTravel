@@ -6,6 +6,8 @@ class Hotel {
   final String cover;
   final bool reservable;
   final String slug;
+  final String lat;
+  final String lng;
   final String destinationId;
   final int? categoryCode;
   final String? destinationName;
@@ -22,6 +24,8 @@ class Hotel {
     required this.name,
     required this.address,
     required this.cover,
+    required this.lat,
+    required this.lng,
     required this.reservable,
     required this.slug,
     required this.destinationId,
@@ -42,6 +46,9 @@ class Hotel {
       name: json['name'] ?? '',
       address: json['address'] ?? '',
       cover: json['cover'] ?? '',
+      lat: json['lat'] ?? '',
+      lng: json['lng'] ?? '',
+
       reservable: json['reservable'] ?? false,
       slug: json['slug'] ?? '',
       destinationId: json['destination_id'] ?? '',

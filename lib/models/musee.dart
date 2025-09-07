@@ -6,8 +6,8 @@ class Musees {
   final List<String> aVoir;
   final String droitsEntree;
   final List<String> horairesOuverture;
-  final double lat;
-  final double lng;
+  final String? lat;
+  final String? lng;
   final List<String> commodites;
   final List<String> images;
   final String vignette;
@@ -90,8 +90,8 @@ class Musees {
       aVoir: parseList(json['A_voir']),
       droitsEntree: json['Droits_d_entre']?.toString() ?? '',
       horairesOuverture: parseList(json['Horaires_d_ouverture']),
-      lat: double.tryParse(json['lat']?.toString() ?? '0') ?? 0,
-      lng: double.tryParse(json['lng']?.toString() ?? '0') ?? 0,
+      lat: json['lat']?.toString() ?? '',
+      lng: json['lng']?.toString() ?? '',
       commodites: parseList(json['Commodites']),
       images: parseList(json['images']),
       vignette: json['vignette']?.toString() ?? '',

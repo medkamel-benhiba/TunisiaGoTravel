@@ -264,35 +264,37 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
           ),
 
         // Chatbot overlay (chatbot1.png)
+        // Chatbot overlay (chatbot1.png)
         if (_showChatbotOverlay)
           Positioned.fill(
             child: GestureDetector(
-              onTap: _dismissChatbotOverlay,
+              onTap: _dismissChatbotOverlay, // ✅ Clicking outside dismisses overlay
               child: Container(
                 color: Colors.black.withOpacity(0.3),
-                child: GestureDetector(
-                  onTap: () {},
-                  child: Positioned(
-                    top: 100,
-                    left: 16,
-                    right: 16,
-                    child: GestureDetector(
-                      onTap: _handleChatbotOverlayTap,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.3),
-                              blurRadius: 15,
-                              offset: const Offset(0, 5),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Stack(
+                child: Positioned(
+                  top: 100,
+                  left: 16,
+                  right: 16,
+                  child: GestureDetector(
+                    onTap: () {}, // ✅ Prevents tap from bubbling up to dismiss
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.3),
+                            blurRadius: 15,
+                            offset: const Offset(0, 5),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // ✅ Only the chatbot image triggers listening
+                          GestureDetector(
+                            onTap: _handleChatbotOverlayTap, // ✅ Only this triggers listening
+                            child: Stack(
                               alignment: Alignment.center,
                               children: [
                                 Container(
@@ -349,65 +351,83 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
                                   ),
                               ],
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Container(
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(16),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.1),
-                                      blurRadius: 8,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      _isProcessingVoice
-                                          ? "Traitement en cours...\nVeuillez patienter"
-                                          : _isListening
-                                          ? "👂 Écoute en cours...\nDites votre question"
-                                          : "👋 Bonjour ! Je suis votre guide pour \ndécouvrir la Tunisie.\nTapez ici pour poser votre question !",
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color: Colors.black87,
-                                        height: 1.4,
-                                        fontWeight: _isListening || _isProcessingVoice ? FontWeight.w600 : FontWeight.normal,
-                                      ),
-                                    ),
-                                    if (_voiceText.isNotEmpty) ...[
-                                      const SizedBox(height: 12),
-                                      Container(
-                                        width: double.infinity,
-                                        padding: const EdgeInsets.all(12),
-                                        decoration: BoxDecoration(
-                                          color: const Color(0xFFE3F2FD),
-                                          borderRadius: BorderRadius.circular(8),
-                                          border: Border.all(color: const Color(0xFF90CAF9)),
-                                        ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.1),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  // ✅ Row for text + close button
+                                  Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Expanded(
                                         child: Text(
-                                          "💬 Reconnu: $_voiceText",
+                                          _isProcessingVoice
+                                              ? "Traitement en cours...\nVeuillez patienter"
+                                              : _isListening
+                                              ? "👂 Écoute en cours...\nDites votre question"
+                                              : "👋 Bonjour ! Je suis votre guide pour \ndécouvrir la Tunisie.\nTapez ici pour poser votre question !",
                                           style: TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.blue[700],
-                                            fontStyle: FontStyle.italic,
-                                            fontWeight: FontWeight.w500,
+                                            fontSize: 14,
+                                            color: Colors.black87,
+                                            height: 1.4,
+                                            fontWeight: _isListening || _isProcessingVoice
+                                                ? FontWeight.w600
+                                                : FontWeight.normal,
                                           ),
                                         ),
                                       ),
+                                      GestureDetector(
+                                        onTap: _dismissChatbotOverlay,
+                                        child: const Icon(
+                                          Icons.close,
+                                          size: 20,
+                                          color: Colors.grey,
+                                        ),
+                                      ),
                                     ],
+                                  ),
+                                  if (_voiceText.isNotEmpty) ...[
+                                    const SizedBox(height: 12),
+                                    Container(
+                                      width: double.infinity,
+                                      padding: const EdgeInsets.all(12),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFE3F2FD),
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(color: const Color(0xFF90CAF9)),
+                                      ),
+                                      child: Text(
+                                        "💬 Reconnu: $_voiceText",
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.blue[700],
+                                          fontStyle: FontStyle.italic,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ),
                                   ],
-                                ),
+                                ],
                               ),
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
                   ),

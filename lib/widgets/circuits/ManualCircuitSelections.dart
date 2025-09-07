@@ -211,7 +211,7 @@ class DestinationSelectionCard extends StatelessWidget {
             ),
 
             // Indicateur de jours restants si nécessaire
-            if (remainingDays <= 2 && remainingDays > 0)
+            /*if (remainingDays <= 2 && remainingDays > 0)
               Container(
                 margin: const EdgeInsets.only(top: 8),
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -227,7 +227,7 @@ class DestinationSelectionCard extends StatelessWidget {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-              ),
+              ),*/
           ],
         ),
       ),

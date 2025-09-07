@@ -15,7 +15,11 @@ class ManualCircuitDayScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(
           "Votre Circuit Manuel",
-          style: Appstylestatic.appBarTitle1.copyWith(color: Colors.white),
+          style: const TextStyle(
+            color: AppColorstatic.lightTextColor,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         centerTitle: true,
         backgroundColor: AppColorstatic.primary,

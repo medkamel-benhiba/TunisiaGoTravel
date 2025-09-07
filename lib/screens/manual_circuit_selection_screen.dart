@@ -95,7 +95,13 @@ class _ManualDestinationSelectionScreenState
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Sélection des Destinations"),
+        title: Text("Sélectionner vos destinations",
+          style: const TextStyle(
+            color: AppColorstatic.lightTextColor,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         backgroundColor: AppColorstatic.primary,
         foregroundColor: Colors.white,
         elevation: 0,
@@ -222,7 +228,7 @@ class _ManualDestinationSelectionScreenState
                   if (isStart) provider.setStartDestination(destination.id);
                 },
                 maxDays: widget.duration,
-                remainingDays: widget.duration - provider.totalSelectedDays + destination.days,
+                remainingDays: widget.duration - provider.totalSelectedDays - destination.days,
               );
             },
           ),

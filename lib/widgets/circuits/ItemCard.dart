@@ -33,7 +33,7 @@ class ItemCard extends StatelessWidget {
       ),
       child: ExpansionTile(
         leading: _buildItemImage(),
-        title: Text(item['Name'] ?? item['name'] ?? 'Nom introuvable'),
+        title: Text(item['Name'] ?? item['name'] ?? item['title'] ?? 'Nom introuvable'),
         subtitle: item['Description'] != null
             ? Text(item['Description'],
             maxLines: 2, overflow: TextOverflow.ellipsis)

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/global_provider.dart';
+import '../screens/map_screen.dart';
 import '../theme/color.dart';
 import '../theme/styletext.dart';
 import 'drop_section/destination_drop_section.dart';
@@ -290,18 +291,30 @@ class TopMenuBar2 extends StatelessWidget {
 
               SizedBox(width: spacing),
 
-              Container(
-                height: boxHeight,
-                width: boxHeight,
-                decoration: const BoxDecoration(
-                  color: AppColorstatic.secondary,
-                  borderRadius: BorderRadius.only(
-                    topRight: Radius.circular(6),
-                    bottomRight: Radius.circular(6),
-                  ),
+              InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const MapScreen()),
+                  );
+                },
+                borderRadius: const BorderRadius.only(
+                  topRight: Radius.circular(6),
+                  bottomRight: Radius.circular(6),
                 ),
-                child: const Icon(Icons.map_outlined, color: Colors.white, size: 28),
-              ),
+                child: Container(
+                  height: boxHeight,
+                  width: boxHeight,
+                  decoration: const BoxDecoration(
+                    color: AppColorstatic.secondary,
+                    borderRadius: BorderRadius.only(
+                      topRight: Radius.circular(6),
+                      bottomRight: Radius.circular(6),
+                    ),
+                  ),
+                  child: const Icon(Icons.map_outlined, color: Colors.white, size: 28),
+                ),
+              )
             ],
           ),
         );

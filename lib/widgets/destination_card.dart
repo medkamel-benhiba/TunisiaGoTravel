@@ -24,7 +24,7 @@ class DestinationCard extends StatelessWidget {
             if (destination.cover != null)
               Image.network(
                 destination.cover.toString(),
-                height: 180,
+                height: 150,
                 width: double.infinity,
                 fit: BoxFit.cover,
               ),

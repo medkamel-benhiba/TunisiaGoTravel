@@ -56,6 +56,9 @@ class _HotelReservationFormScreenState extends State<HotelReservationFormScreen>
 
   void _initializeTravelerData() {
     final rooms = widget.searchCriteria['rooms'] as List<Map<String, dynamic>>? ?? [];
+    final roomIds = _getRoomIds();
+    final boardingIds = _getAccommodationIds();
+    final quantities = _getQuantities();
 
     for (int roomIndex = 0; roomIndex < rooms.length; roomIndex++) {
       final room = rooms[roomIndex];
@@ -66,11 +69,25 @@ class _HotelReservationFormScreenState extends State<HotelReservationFormScreen>
       room['infant'] = room['infants'] ?? 0;
       room['offer_id'] = room['offer_id'] ?? '';
 
-      // Récupérer le boarding_title si disponible
-      final selectedRoomsList = widget.selectedRoomsData['selectedRooms'] as List? ?? [];
-      final boardingTitle = roomIndex < selectedRoomsList.length
-          ? selectedRoomsList[roomIndex]['boarding_title'] ?? ''
-          : '';
+      // Extract room title from selectedRoomsSummary
+      String roomTitle = "Chambre";
+      String boardingTitle = "Logement Seul";
+
+      final selectedRoomsSummary = widget.selectedRoomsData['selectedRoomsSummary'] as String? ?? '';
+      if (selectedRoomsSummary.isNotEmpty) {
+        // Parse the summary to extract room title and boarding info
+        // Example: "Chambre Triple Non Remboursable  (Soft All inclusive) x1"
+        final parts = selectedRoomsSummary.split(' (');
+        if (parts.length >= 2) {
+          roomTitle = parts[0].trim();
+          final boardingPart = parts[1].split(')')[0].trim();
+          if (boardingPart.isNotEmpty) {
+            boardingTitle = boardingPart;
+          }
+        } else {
+          roomTitle = selectedRoomsSummary.split(' x')[0].trim();
+        }
+      }
 
       List<Map<String, dynamic>> travelers = [];
 
@@ -104,11 +121,13 @@ class _HotelReservationFormScreenState extends State<HotelReservationFormScreen>
         'infant': room['infant'],
         'offer_id': room['offer_id'],
         'boarding_title': boardingTitle,
+        'room_title': roomTitle,
+        'room_id': roomIndex < roomIds.length ? roomIds[roomIndex] : '',
+        'boarding_id': roomIndex < boardingIds.length ? boardingIds[roomIndex] : '',
+        'quantity': roomIndex < quantities.length ? quantities[roomIndex] : 1,
       });
     }
   }
-
-
 
   Map<String, TextEditingController> _createTravelerControllers() {
     return {
@@ -149,11 +168,10 @@ class _HotelReservationFormScreenState extends State<HotelReservationFormScreen>
 
   List<Map<String, dynamic>> _generatePaxList() {
     List<Map<String, dynamic>> paxList = [];
-    final roomIds = _getRoomIds();
-    final accommodationIds = _getAccommodationIds();
 
     for (int roomIndex = 0; roomIndex < roomsWithTravelers.length; roomIndex++) {
-      final travelers = roomsWithTravelers[roomIndex]['travelers'] as List<Map<String, dynamic>>;
+      final roomData = roomsWithTravelers[roomIndex];
+      final travelers = roomData['travelers'] as List<Map<String, dynamic>>;
 
       List<Map<String, dynamic>> adults = [];
       List<Map<String, dynamic>> children = [];
@@ -188,8 +206,8 @@ class _HotelReservationFormScreenState extends State<HotelReservationFormScreen>
 
       // Create the room pax structure
       paxList.add({
-        'Id': roomIndex < roomIds.length ? roomIds[roomIndex] : '',
-        'Boarding': roomIndex < accommodationIds.length ? accommodationIds[roomIndex] : '',
+        'Id': roomData['room_id'] ?? '',
+        'Boarding': roomData['boarding_id'] ?? '',
         'View': [],
         'Supplement': [],
         'Pax': {
@@ -215,13 +233,15 @@ class _HotelReservationFormScreenState extends State<HotelReservationFormScreen>
     setState(() => _isLoading = true);
 
     try {
+      print("selectedRoomsData: ${widget.selectedRoomsData}");
+
       if (widget.hotelType.toLowerCase() == "mouradi") {
         final paxList = _generatePaxList();
 
         final mouradiReservationData = {
           "PreBooking": false,
           "Hotel": widget.hotelId,
-          "City": widget.searchCriteria['mouradi_city_id'].toString() ,
+          "City": widget.searchCriteria['mouradi_city_id'].toString(),
           "CheckIn": widget.searchCriteria['dateStart'] ?? '',
           "CheckOut": widget.searchCriteria['dateEnd'] ?? '',
           "Option": [],
@@ -242,12 +262,85 @@ class _HotelReservationFormScreenState extends State<HotelReservationFormScreen>
         print("👉 Mouradi Reservation Data: $mouradiReservationData");
         await _apiService.postHotelReservationMouradi(mouradiReservationData);
 
+      } else if (widget.hotelType.toLowerCase() == "tgt") {
+        // 🔹 reservation TGT
+        final List<Map<String, dynamic>> paxList = [];
+
+        // Calculate total adults and children
+        int totalAdults = 0;
+        int totalChildren = 0;
+        final rooms = widget.searchCriteria['rooms'] as List<Map<String, dynamic>>? ?? [];
+        for (var room in rooms) {
+          totalAdults += int.tryParse(room['adults']?.toString() ?? '0') ?? 0;
+          totalChildren += int.tryParse(room['children']?.toString() ?? '0') ?? 0;
+        }
+
+        for (int roomIndex = 0; roomIndex < roomsWithTravelers.length; roomIndex++) {
+          final room = roomsWithTravelers[roomIndex];
+          List<Map<String, dynamic>> adults = [];
+          List<Map<String, dynamic>> children = [];
+
+          final travelers = room['travelers'] as List? ?? [];
+          for (var traveler in travelers) {
+            final cIndex = traveler['controllerIndex'] as int? ?? -1;
+            if (cIndex < 0 || cIndex >= travelerControllers.length) continue;
+
+            final controllers = travelerControllers[cIndex];
+            final key = 'room_${roomIndex + 1}_${traveler['type']}_${traveler['index']}';
+            final gender = _selectedGenders[key];
+            if (gender == null) continue;
+
+            final paxData = {
+              'Civility': gender == 'M.' ? 'Mr' : 'Mme',
+              'Name': controllers['name']?.text ?? '',
+              'Surname': controllers['firstname']?.text ?? '',
+              'Holder': traveler['type'] == 'adult' && traveler['index'] == 1, // First adult is holder
+            };
+
+            if (traveler['type'] == 'adult') {
+              adults.add(paxData);
+            } else {
+              children.add(paxData);
+            }
+          }
+
+          // Create the pax structure for this room
+          paxList.add({
+            'Id': room['room_id'] ?? '',
+            'Boarding': widget.selectedRoomsData['pensionIds'] ?? '',
+            'View': [],
+            'Supplement': [],
+            'Pax': {
+              'Adult': adults,
+              'Child': children,
+            }
+          });
+        }
+
+        final tgtReservationData = {
+          "name": "${_mainFirstNameController.text} ${_mainNameController.text}",
+          "accommodation_id": widget.selectedRoomsData['pensionIds'] ?? '',
+          "room_id": _getRoomIds(),
+          "hotel_id": widget.hotelId,
+          "date_start": widget.searchCriteria['dateStart'] ?? '',
+          "date_end": widget.searchCriteria['dateEnd'] ?? '',
+          "number": _getQuantities(),
+          "email": _mainEmailController.text,
+          "phone": _mainPhoneController.text,
+          "city": _mainCityController.text,
+          "country": _mainCountryController.text,
+          "cin": _mainCinOrPassportController.text,
+          "pax": paxList,
+          "adults": totalAdults,
+          "children": totalChildren,
+          "total_price": widget.totalPrice,
+        };
+
+        print("👉 TGT Reservation Data: $tgtReservationData");
+        await _apiService.reserveHotelTgt(tgtReservationData);
       } else {
-        /// 🔹 Flux actuel BHR
+        // 🔹 reservation BHR
         final List<Map<String, dynamic>> selectedRooms = [];
-        final roomIds = _getRoomIds();
-        final accommodationIds = _getAccommodationIds();
-        final selectedRoomsDataList = widget.selectedRoomsData['selectedRooms'] as List? ?? [];
 
         for (int roomIndex = 0; roomIndex < roomsWithTravelers.length; roomIndex++) {
           final room = roomsWithTravelers[roomIndex];
@@ -270,23 +363,12 @@ class _HotelReservationFormScreenState extends State<HotelReservationFormScreen>
             });
           }
 
-          final roomTitle = roomIndex < selectedRoomsDataList.length
-              ? selectedRoomsDataList[roomIndex]['title'] ?? "Chambre"
-              : "Chambre";
-
-          final boardingId = roomIndex < accommodationIds.length ? accommodationIds[roomIndex] : "1";
-          final roomId = roomIndex < roomIds.length ? roomIds[roomIndex] : "36";
-
-          final boardingTitle = roomIndex < selectedRoomsDataList.length
-              ? selectedRoomsDataList[roomIndex]['boarding_title'] ?? "Logement Seul"
-              : "Logement Seul";
-
           selectedRooms.add({
-            'id': roomId,
-            'title': roomTitle,
-            'boarding_id': boardingId,
+            'id': room['room_id'] ?? '36',
+            'title': room['room_title'] ?? 'Chambre',
+            'boarding_id': room['boarding_id'] ?? '1',
             'recommandation': '',
-            'boarding_title': boardingTitle,
+            'boarding_title': room['boarding_title'] ?? 'Logement Seul',
             'adult': room['adults'] ?? 1,
             'child': room['children'] ?? 0,
             'infant': room['infant'] ?? 0,
@@ -317,8 +399,6 @@ class _HotelReservationFormScreenState extends State<HotelReservationFormScreen>
           "selected_rooms": selectedRooms,
         };
 
-
-
         print("👉 BHR Reservation Data: $bhrReservationData");
         await _apiService.postHotelReservationBHR(bhrReservationData);
       }
@@ -331,8 +411,6 @@ class _HotelReservationFormScreenState extends State<HotelReservationFormScreen>
     }
   }
 
-
-
   // A helper method to map country names to two-letter codes.
   // This is a simplified example and should be expanded for a production app.
   String _mapCountryToCode(String country) {
@@ -343,7 +421,6 @@ class _HotelReservationFormScreenState extends State<HotelReservationFormScreen>
         return '';
     }
   }
-
 
   List<String> _getAccommodationIds() => List<String>.from(widget.selectedRoomsData['boardingIds'] ?? []);
   List<String> _getRoomIds() => List<String>.from(widget.selectedRoomsData['roomIds'] ?? []);
@@ -381,7 +458,7 @@ class _HotelReservationFormScreenState extends State<HotelReservationFormScreen>
         children: [
           const Icon(Icons.error, color: Colors.red, size: 60),
           const SizedBox(height: 16),
-          Text("error", textAlign: TextAlign.center),
+          Text(error, textAlign: TextAlign.center),
         ],
       ),
       actions: [
@@ -495,7 +572,6 @@ class _HotelReservationFormScreenState extends State<HotelReservationFormScreen>
       ),
     );
   }
-
 
   @override
   Widget build(BuildContext context) {

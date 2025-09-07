@@ -95,6 +95,7 @@ class _SearchSectionState extends State<SearchSection> {
                           final globalProvider =
                           Provider.of<GlobalProvider>(context, listen: false);
                           globalProvider.setPage(AppPage.hotels);
+                          globalProvider.setAvailableHotels([]);
                           globalProvider.setSelectedCityForHotels(_selectedCityName!);
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
