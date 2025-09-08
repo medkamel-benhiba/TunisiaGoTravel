@@ -16,10 +16,28 @@ class HotelsScreenContent extends StatefulWidget {
 }
 
 class _HotelsScreenState extends State<HotelsScreenContent> {
+  final ScrollController _scrollController = ScrollController();
   String? selectedDestinationId;
   String? selectedDestinationTitle;
   HotelsViewType _viewType = HotelsViewType.list;
   bool _isFromSearch = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 300) {
+      // Auto-load more when near bottom (optional)
+      final hotelProvider = Provider.of<HotelProvider>(context, listen: false);
+      if (hotelProvider.hasMoreSearchResults && !hotelProvider.isLoadingMoreResults) {
+        hotelProvider.loadMoreSearchResults();
+      }
+    }
+  }
 
   @override
   void didChangeDependencies() {
@@ -27,7 +45,7 @@ class _HotelsScreenState extends State<HotelsScreenContent> {
     final globalProvider = Provider.of<GlobalProvider>(context, listen: false);
     final hotelProvider = Provider.of<HotelProvider>(context, listen: false);
 
-    // 🔹 Vérifier si on vient d'une recherche avec des hôtels disponibles
+    // Check if coming from search
     if (globalProvider.selectedCityForHotels != null &&
         globalProvider.availableHotels.isNotEmpty &&
         selectedDestinationTitle == null) {
@@ -40,11 +58,11 @@ class _HotelsScreenState extends State<HotelsScreenContent> {
           _isFromSearch = true;
         });
 
-        // Nettoyer le GlobalProvider après récupération
+        // Clean up after getting data
         globalProvider.setSelectedCityForHotels(null);
       });
     }
-    // 🔹 Si on vient d'une sélection normale de destination
+    // Normal destination selection
     else if (globalProvider.selectedCityForHotels != null && selectedDestinationTitle == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         final city = globalProvider.selectedCityForHotels!;
@@ -54,7 +72,7 @@ class _HotelsScreenState extends State<HotelsScreenContent> {
           setState(() {
             selectedDestinationTitle = city;
             selectedDestinationId = destId;
-            _isFromSearch = false; // 🔹 Sélection normale
+            _isFromSearch = false;
           });
           hotelProvider.setHotelsByDestination(destId);
         }
@@ -69,17 +87,16 @@ class _HotelsScreenState extends State<HotelsScreenContent> {
     final hotelProvider = Provider.of<HotelProvider>(context);
     final globalProvider = Provider.of<GlobalProvider>(context);
 
-    // 🔹 Choisir la liste d'hôtels à afficher
+    // Choose which hotels to display
     final List<dynamic> filteredHotels;
 
     if (_isFromSearch) {
-      // 🔹 Si on vient de la recherche, utiliser les hôtels disponibles
+      // Use search results (which get updated silently in background)
       filteredHotels = globalProvider.availableHotels;
     } else if (selectedDestinationId != null) {
-      // 🔹 Sinon, utiliser les hôtels par destination
+      // Use destination-based hotels
       filteredHotels = hotelProvider.getHotelsByDestination(selectedDestinationId!);
     } else {
-      // 🔹 Aucune sélection
       filteredHotels = <dynamic>[];
     }
 
@@ -112,12 +129,24 @@ class _HotelsScreenState extends State<HotelsScreenContent> {
                         selectedDestinationTitle = null;
                         _isFromSearch = false;
                       });
-                      // 🔹 Nettoyer les hôtels disponibles du GlobalProvider
                       Provider.of<GlobalProvider>(context, listen: false).setAvailableHotels([]);
+                      // Reset search when going back
+                      hotelProvider.resetSearch();
                     },
                     icon: const Icon(Icons.arrow_back, size: 16),
                     label: const Text('Destinations'),
                   ),
+                  if (_isFromSearch)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: Text(
+                        '${filteredHotels.length} Hôtels (plus en cours...)',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ),
 
                 ],
               ),
@@ -134,7 +163,12 @@ class _HotelsScreenState extends State<HotelsScreenContent> {
                 hotelProvider.setHotelsByDestination(destination.id);
               },
             )
-                : _buildHotels(filteredHotels, hotelProvider.isLoading || hotelProvider.isLoadingAvailableHotels),
+                : _buildHotels(
+                filteredHotels,
+                hotelProvider.isLoading ||
+                    hotelProvider.isLoadingAvailableHotels ||
+                    (hotelProvider.isInitialSearchLoading && _isFromSearch)
+            ),
           ),
         ],
       ),
@@ -142,8 +176,12 @@ class _HotelsScreenState extends State<HotelsScreenContent> {
   }
 
   Widget _buildHotels(List<dynamic> hotels, bool isLoading) {
-    if (isLoading) return const Center(child: CircularProgressIndicator());
-    if (hotels.isEmpty) {
+    // Show initial loading only
+    if (isLoading && hotels.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (hotels.isEmpty && !isLoading) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -161,44 +199,25 @@ class _HotelsScreenState extends State<HotelsScreenContent> {
               ),
               textAlign: TextAlign.center,
             ),
-            if (_isFromSearch) ...[
-              const SizedBox(height: 8),
-              Text(
-                'Essayez de modifier vos dates ou critères de recherche',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[500],
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
           ],
         ),
       );
     }
 
-    return _viewType == HotelsViewType.list
-        ? ListView.builder(
+    return ListView.builder(
+      controller: _scrollController,
       padding: const EdgeInsets.all(12),
       itemCount: hotels.length,
       itemBuilder: (_, index) => HotelCard(
         hotel: hotels[index],
-        showReservationButton: _isFromSearch, // 🔹 Bouton réserver seulement pour les recherches
-      ),
-    )
-        : GridView.builder(
-      padding: const EdgeInsets.all(12),
-      itemCount: hotels.length,
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        mainAxisSpacing: 12,
-        crossAxisSpacing: 12,
-        childAspectRatio: _isFromSearch ? 0.75 : 0.46,
-      ),
-      itemBuilder: (_, index) => HotelCard(
-        hotel: hotels[index],
-        showReservationButton: _isFromSearch, // 🔹 Bouton réserver seulement pour les recherches
+        showReservationButton: _isFromSearch,
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 }

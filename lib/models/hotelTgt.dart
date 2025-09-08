@@ -31,6 +31,49 @@ class HotelTgt {
     );
   }
 
+  // NEW: Factory method for availability API response
+  factory HotelTgt.fromAvailabilityJson(Map<String, dynamic> json, dynamic hotelDetail) {
+    // Extract hotel info from hotelDetail parameter
+    String hotelId = '';
+    String hotelName = '';
+    String hotelSlug = '';
+
+    if (hotelDetail != null) {
+      if (hotelDetail is Map<String, dynamic>) {
+        hotelId = hotelDetail['id']?.toString() ?? '';
+        hotelName = hotelDetail['name']?.toString() ?? '';
+        hotelSlug = hotelDetail['slug']?.toString() ?? '';
+      } else if (hotelDetail.runtimeType.toString().contains('HotelDetail')) {
+        // If it's a HotelDetail object, access properties directly
+        try {
+          hotelId = hotelDetail.id?.toString() ?? '';
+          hotelName = hotelDetail.name?.toString() ?? '';
+          hotelSlug = hotelDetail.slug?.toString() ?? '';
+        } catch (e) {
+          // Fallback if properties don't exist
+          hotelId = '';
+          hotelName = '';
+          hotelSlug = '';
+        }
+      }
+    }
+
+    // Create DisponibilityTgt from the API response
+    final disponibility = DisponibilityTgt(
+      disponibilitytype: json['disponibilitytype']?.toString() ?? 'tgt',
+      pensions: (json['pensions'] as List<dynamic>? ?? [])
+          .map((p) => PensionTgt.fromJson(Map<String, dynamic>.from(p)))
+          .toList(),
+    );
+
+    return HotelTgt(
+      id: hotelId,
+      name: hotelName,
+      slug: hotelSlug,
+      disponibility: disponibility,
+    );
+  }
+
   factory HotelTgt.empty() => HotelTgt(
     id: '',
     name: '',
@@ -478,4 +521,5 @@ class AccommodationInfo {
     "description_en": descriptionEn,
     "id": id,
   };
+
 }

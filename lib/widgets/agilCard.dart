@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:latlong2/latlong.dart';
 import '../../models/agil.dart';
 import 'package:tunisiagotravel/theme/color.dart';
+
+import '../screens/ItineraryScreen.dart';
 
 class AgilCard extends StatefulWidget {
   final Agil agil;
@@ -76,7 +79,23 @@ class _AgilCardState extends State<AgilCard> {
                 const SizedBox(width: 12),
                 InkWell(
                   onTap: () {
-                    // nav to maps
+                    if (widget.agil.latitude != null && widget.agil.longitude != null) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ItineraryScreen(
+                            destination: LatLng(widget.agil.latitude!, widget.agil.longitude!),
+                          ),
+                        ),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Coordonnées de la destination non disponibles'),
+                          backgroundColor: Colors.orange,
+                        ),
+                      );
+                    }
                   },
                   borderRadius: BorderRadius.circular(20),
                   child: Container(

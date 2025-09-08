@@ -1,14 +1,14 @@
 import 'dart:convert';
-
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
 import '../models/hotel.dart';
 import '../models/hotelAvailabilityResponse.dart';
 import '../models/hotelTgt.dart';
 import '../models/hotel_details.dart';
 import '../models/mouradi.dart';
 import '../services/api_service.dart';
+import 'global_provider.dart';
 
 class HotelProvider with ChangeNotifier {
   final ApiService _apiService = ApiService();
@@ -18,8 +18,6 @@ class HotelProvider with ChangeNotifier {
 
   /// All fetched hotels
   List<Hotel> _allHotels = [];
-
-  //All hotels Cached
   List<Hotel> get allHotels => _allHotels;
 
   /// Current displayed hotels
@@ -40,6 +38,24 @@ class HotelProvider with ChangeNotifier {
 
   MouradiHotel? _selectedMouradiHotel;
   MouradiHotel? get selectedMouradiHotel => _selectedMouradiHotel;
+
+  //optimised for pagination
+  List<dynamic> _searchResults = [];
+  List<dynamic> get searchResults => _searchResults;
+
+  bool _hasMoreSearchResults = true;
+  bool get hasMoreSearchResults => _hasMoreSearchResults;
+
+  bool _isInitialSearchLoading = false;
+  bool get isInitialSearchLoading => _isInitialSearchLoading;
+
+  bool _isLoadingMoreResults = false;
+  bool get isLoadingMoreResults => _isLoadingMoreResults;
+
+  Map<String, dynamic>? _currentSearchParams;
+  int _searchDisponibilityPage = 1;
+  int _searchSimplePage = 1;
+
 
   // ===== Fetch all hotels once =====
   Future<void> fetchAllHotels() async {
@@ -107,6 +123,7 @@ class HotelProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  // ===== Get destination ID by city name =====
   String? getDestinationIdByCity(String cityName) {
     try {
       return _allHotels.firstWhere(
@@ -128,6 +145,14 @@ class HotelProvider with ChangeNotifier {
 
   String? _errorAvailableHotels;
   String? get errorAvailableHotels => _errorAvailableHotels;
+
+  // 🔹 Clear available hotels
+  void clearAvailableHotels() {
+    _availableHotels = [];
+    _hotelDisponibilityPontion = null;
+    _errorAvailableHotels = null;
+    _errorDisponibilityPontion = null;
+  }
 
   // 🔹 Fetch single page
   Future<void> fetchAvailableHotels({
@@ -155,10 +180,12 @@ class HotelProvider with ChangeNotifier {
         babies: babies,
         page: page,
       );
-      _availableHotels = hotels;
+      // Deduplicate hotels by ID
+      final existingIds = _availableHotels.map((hotel) => hotel.id).toSet();
+      final newHotels = hotels.where((hotel) => !existingIds.contains(hotel.id)).toList();
+      _availableHotels = [..._availableHotels, ...newHotels];
     } catch (e) {
       _errorAvailableHotels = e.toString();
-      _availableHotels = [];
       debugPrint("Error fetching available hotels: $e");
     }
 
@@ -182,7 +209,8 @@ class HotelProvider with ChangeNotifier {
     _errorAvailableHotels = null;
     notifyListeners();
 
-    List<Hotel> allHotels = [];
+    List<Hotel> allHotels = List.from(_availableHotels); // Start with existing hotels
+    Set<String> existingIds = allHotels.map((hotel) => hotel.id).toSet();
     Set<String> remainingIds = Set.from(filteredHotelIds); // Track unmatched IDs
     int page = 1;
     bool hasMorePages = true;
@@ -203,16 +231,16 @@ class HotelProvider with ChangeNotifier {
           page: page,
         );
 
-        // Filter hotels to only include those with IDs matching filteredHotelIds
-        final filteredHotels = response.where((hotel) {
-          return filteredHotelIds.contains(hotel.id);
-        }).toList();
+        // Filter and deduplicate hotels
+        final filteredHotels = response
+            .where((hotel) => filteredHotelIds.contains(hotel.id) && !existingIds.contains(hotel.id))
+            .toList();
 
         allHotels.addAll(filteredHotels);
+        existingIds.addAll(filteredHotels.map((hotel) => hotel.id));
         remainingIds.removeAll(filteredHotels.map((hotel) => hotel.id));
 
-        // Check if response contains pagination info (e.g., 'last_page')
-        // Assuming getAvailableHotels returns a Map with 'data' and 'last_page'
+        // Check pagination info
         final rawResponse = await http.post(
           Uri.parse('https://test.tunisiagotravel.com/utilisateur/hoteldisponible?page=$page'),
           headers: {'Content-Type': 'application/json'},
@@ -234,10 +262,8 @@ class HotelProvider with ChangeNotifier {
             if (page >= lastPage) {
               hasMorePages = false;
             }
-          } else {
-            if (response.length < 13) {
-              hasMorePages = false;
-            }
+          } else if (response.length < 13) {
+            hasMorePages = false;
           }
         } else {
           hasMorePages = false;
@@ -253,7 +279,6 @@ class HotelProvider with ChangeNotifier {
       }
     } catch (e) {
       _errorAvailableHotels = e.toString();
-      _availableHotels = [];
       debugPrint("Error fetching all available hotels: $e");
     }
 
@@ -265,14 +290,19 @@ class HotelProvider with ChangeNotifier {
   // 🔹 Disponibility avec pontion (pagination)
   // ======================================================
   HotelAvailabilityResponse? _hotelDisponibilityPontion;
-  HotelAvailabilityResponse? get hotelDisponibilityPontion =>
-      _hotelDisponibilityPontion;
+  HotelAvailabilityResponse? get hotelDisponibilityPontion => _hotelDisponibilityPontion;
 
   bool _isLoadingDisponibilityPontion = false;
   bool get isLoadingDisponibilityPontion => _isLoadingDisponibilityPontion;
 
   String? _errorDisponibilityPontion;
   String? get errorDisponibilityPontion => _errorDisponibilityPontion;
+
+  // 🔹 Update hotel disponibility pention
+  void updateHotelDisponibilityPontion(HotelAvailabilityResponse response) {
+    _hotelDisponibilityPontion = response;
+    notifyListeners();
+  }
 
   // 🔹 Fetch single page
   Future<void> fetchHotelDisponibilityPontion({
@@ -295,16 +325,16 @@ class HotelProvider with ChangeNotifier {
         page: page,
       );
 
-      if (page == 1) {
-        _hotelDisponibilityPontion = res;
-      } else {
-        _hotelDisponibilityPontion = HotelAvailabilityResponse(
-          currentPage: res.currentPage,
-          data: [...?_hotelDisponibilityPontion?.data, ...res.data],
-          lastPage: res.lastPage,
-          nextPageUrl: res.nextPageUrl,
-        );
-      }
+      // Deduplicate hotels by ID
+      final existingIds = _hotelDisponibilityPontion?.data.map((hotel) => hotel.id).toSet() ?? {};
+      final newHotels = res.data.where((hotel) => !existingIds.contains(hotel.id)).toList();
+
+      _hotelDisponibilityPontion = HotelAvailabilityResponse(
+        currentPage: res.currentPage,
+        data: [...?_hotelDisponibilityPontion?.data ?? [], ...newHotels],
+        lastPage: res.lastPage,
+        nextPageUrl: res.nextPageUrl,
+      );
     } catch (e) {
       _errorDisponibilityPontion = e.toString();
       if (page == 1) _hotelDisponibilityPontion = null;
@@ -315,132 +345,6 @@ class HotelProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // 🔹 Fetch ALL pages for pontion availability
-  Future<void> fetchAllHotelDisponibilityPontion({
-    required String destinationId,
-    required String dateStart,
-    required String dateEnd,
-    required List<Map<String, dynamic>> rooms,
-    int maxPages = 12,
-  }) async {
-    _isLoadingDisponibilityPontion = true;
-    _errorDisponibilityPontion = null;
-    notifyListeners();
-
-    List<HotelData> allHotelData = [];
-    int page = 1;
-    bool hasMorePages = true;
-    int? totalPages;
-
-    try {
-      while (hasMorePages && page <= maxPages) {
-        debugPrint("Fetching hotel disponibility pontion page $page");
-
-        final res = await _apiService.getHotelDisponibilityPontion(
-          destinationId: destinationId,
-          dateStart: dateStart,
-          dateEnd: dateEnd,
-          rooms: rooms,
-          page: page,
-        );
-
-        final filteredHotels = res.data.where((hotel) {
-          final dispo = hotel.disponibility;
-          final hotelName = hotel.name?.toLowerCase() ?? '';
-          bool hasValidPensions = false;
-
-          // Check if pensions is non-empty
-          if (dispo != null && dispo.pensions != null) {
-            if (dispo.pensions is List) {
-              hasValidPensions = dispo.pensions.isNotEmpty;
-            } else if (dispo.pensions is Map) {
-              // Check if pensions has rooms with boarding options
-              final pensionsMap = dispo.pensions as Map<String, dynamic>;
-              hasValidPensions = pensionsMap.containsKey('rooms') &&
-                  pensionsMap['rooms'] != null &&
-                  (pensionsMap['rooms']['room'] is List
-                      ? pensionsMap['rooms']['room'].isNotEmpty
-                      : pensionsMap['rooms']['room'] != null);
-            }
-          }
-
-          // Keep hotel if:
-          // 1. disponibilitytype is 'bhr' or 'tgt', OR
-          // 2. Hotel name contains 'mouradi', AND
-          // 3. Pensions is non-empty
-          return (dispo != null &&
-              (dispo.disponibilityType == 'bhr' ||
-                  dispo.disponibilityType == 'tgt' ||
-                  hotelName.contains('mouradi')));
-        }).toList();
-
-        allHotelData.addAll(filteredHotels);
-        totalPages = res.lastPage;
-
-        if (page >= res.lastPage || res.data.isEmpty) {
-          hasMorePages = false;
-        } else {
-          page++;
-        }
-      }
-
-      _hotelDisponibilityPontion = HotelAvailabilityResponse(
-        currentPage: totalPages ?? 1,
-        data: allHotelData,
-        lastPage: totalPages ?? 1,
-        nextPageUrl: null,
-      );
-
-      debugPrint("Fetched ${allHotelData.length} hotels with availability across ${page - 1} pages");
-    } catch (e) {
-      _errorDisponibilityPontion = e.toString();
-      _hotelDisponibilityPontion = null;
-      debugPrint("Error fetching all hotel disponibility pontion: $e");
-    }
-
-    _isLoadingDisponibilityPontion = false;
-    notifyListeners();
-  }
-
-  // 🔹 Fetch next page only (for manual pagination)
-  Future<void> fetchMoreHotelDisponibilityPontion({
-    required String destinationId,
-    required String dateStart,
-    required String dateEnd,
-    required List<Map<String, dynamic>> rooms,
-  }) async {
-    if (_hotelDisponibilityPontion == null ||
-        (_hotelDisponibilityPontion!.currentPage >=
-            _hotelDisponibilityPontion!.lastPage)) {
-      return;
-    }
-
-    _isLoadingDisponibilityPontion = true;
-    notifyListeners();
-
-    try {
-      final res = await _apiService.getHotelDisponibilityPontion(
-        destinationId: destinationId,
-        dateStart: dateStart,
-        dateEnd: dateEnd,
-        rooms: rooms,
-        page: _hotelDisponibilityPontion!.currentPage + 1,
-      );
-
-      _hotelDisponibilityPontion = HotelAvailabilityResponse(
-        currentPage: res.currentPage,
-        data: [..._hotelDisponibilityPontion!.data, ...res.data],
-        lastPage: res.lastPage,
-        nextPageUrl: res.nextPageUrl,
-      );
-    } catch (e) {
-      _errorDisponibilityPontion = e.toString();
-      debugPrint("Error fetching more hotel disponibility pontion: $e");
-    }
-
-    _isLoadingDisponibilityPontion = false;
-    notifyListeners();
-  }
 
   // ======================================================
   // 🔹 TGT HOTEL CONVERSION METHODS
@@ -542,340 +446,252 @@ class HotelProvider with ChangeNotifier {
       notifyListeners();
     }
   }
-  // ======================================================
-  // 🔹 PROGRESSIVE LOADING - Available Hotels
-  // ======================================================
-
-
-  bool _hasMoreAvailablePages = true;
-  bool get hasMoreAvailablePages => _hasMoreAvailablePages;
-
-
-  int _currentAvailablePage = 1;
-  Set<String> _targetHotelIds = {};
-
-  // 🔹 Start progressive loading - shows first results immediately
-  Future<void> startProgressiveAvailableHotels({
+  ////////////////////
+// 🚀 MAIN SMOOTH SEARCH METHOD
+  Future<void> startSmoothSearch({
     required String destinationId,
     required String dateStart,
     required String dateEnd,
+    required List<Map<String, dynamic>> rooms,
     required String adults,
-    required String rooms,
     required String children,
-    int babies = 0,
-    required List<String> filteredHotelIds,
-    int batchSize = 3, // Load 3 pages at a time
+    required String totalRooms,
   }) async {
-    // Reset state
-    _availableHotels.clear();
-    _currentAvailablePage = 1;
-    _hasMoreAvailablePages = true;
-    _targetHotelIds = Set.from(filteredHotelIds);
-    _isLoadingAvailableHotels = true;
-    _errorAvailableHotels = null;
+    // Reset search state
+    _searchResults.clear();
+    _hasMoreSearchResults = true;
+    _isInitialSearchLoading = true;
+    _searchDisponibilityPage = 1;
+    _searchSimplePage = 1;
+    _currentSearchParams = {
+      'destinationId': destinationId,
+      'dateStart': dateStart,
+      'dateEnd': dateEnd,
+      'rooms': rooms,
+      'adults': adults,
+      'children': children,
+      'totalRooms': totalRooms,
+    };
+
     notifyListeners();
 
-    // Load first batch
-    await _loadAvailableHotelsBatch(
-      destinationId: destinationId,
-      dateStart: dateStart,
-      dateEnd: dateEnd,
-      adults: adults,
-      rooms: rooms,
-      children: children,
-      babies: babies,
-      batchSize: batchSize,
-    );
-  }
-
-  // 🔹 Load more hotels (for infinite scroll or "Load More" button)
-  Future<void> loadMoreAvailableHotels({
-    required String destinationId,
-    required String dateStart,
-    required String dateEnd,
-    required String adults,
-    required String rooms,
-    required String children,
-    int babies = 0,
-    int batchSize = 3,
-  }) async {
-    if (!_hasMoreAvailablePages || _isLoadingAvailableHotels) return;
-
-    _isLoadingAvailableHotels = true;
-    notifyListeners();
-
-    await _loadAvailableHotelsBatch(
-      destinationId: destinationId,
-      dateStart: dateStart,
-      dateEnd: dateEnd,
-      adults: adults,
-      rooms: rooms,
-      children: children,
-      babies: babies,
-      batchSize: batchSize,
-    );
-  }
-
-  // 🔹 Internal method to load a batch of pages
-  Future<void> _loadAvailableHotelsBatch({
-    required String destinationId,
-    required String dateStart,
-    required String dateEnd,
-    required String adults,
-    required String rooms,
-    required String children,
-    int babies = 0,
-    int batchSize = 3,
-  }) async {
     try {
-      List<Hotel> batchHotels = [];
-      int pagesLoaded = 0;
+      // Load first page of results quickly
+      await _loadFirstSearchResults();
 
-      while (pagesLoaded < batchSize && _hasMoreAvailablePages && _targetHotelIds.isNotEmpty) {
-        debugPrint("Loading available hotels page $_currentAvailablePage");
-
-        final response = await _apiService.getAvailableHotels(
-          destinationId: destinationId,
-          dateStart: dateStart,
-          dateEnd: dateEnd,
-          adults: adults,
-          rooms: rooms,
-          children: children,
-          babies: babies,
-          page: _currentAvailablePage,
-        );
-
-        // Filter hotels to only include those matching target IDs
-        final filteredHotels = response.where((hotel) {
-          return _targetHotelIds.contains(hotel.id);
-        }).toList();
-
-        batchHotels.addAll(filteredHotels);
-        _targetHotelIds.removeAll(filteredHotels.map((hotel) => hotel.id));
-
-        // Check if we have more pages
-        final hasMore = await _checkHasMorePages(
-            destinationId, dateStart, dateEnd, adults, rooms, children, babies, _currentAvailablePage
-        );
-
-        if (!hasMore || response.length < 10) { // Adjust threshold as needed
-          _hasMoreAvailablePages = false;
-        }
-
-        _currentAvailablePage++;
-        pagesLoaded++;
-
-        // Break early if we found all target hotels
-        if (_targetHotelIds.isEmpty) {
-          _hasMoreAvailablePages = false;
-          break;
-        }
-      }
-
-      // Add new hotels to the list
-      _availableHotels.addAll(batchHotels);
-
-      debugPrint("Loaded ${batchHotels.length} new hotels. Total: ${_availableHotels.length}");
+      // Continue loading in background WITHOUT triggering UI updates
+      _loadMoreSearchResultsInBackground();
 
     } catch (e) {
-      _errorAvailableHotels = e.toString();
-      debugPrint("Error loading available hotels batch: $e");
+      debugPrint("Error in smooth search: $e");
+      _isInitialSearchLoading = false;
+      notifyListeners();
     }
-
-    _isLoadingAvailableHotels = false;
-    notifyListeners();
   }
 
-  // 🔹 Check if more pages exist
-  Future<bool> _checkHasMorePages(String destinationId, String dateStart, String dateEnd,
-      String adults, String rooms, String children, int babies, int currentPage) async {
+// 🚀 LOAD FIRST SEARCH RESULTS (Fast initial response)
+  Future<void> _loadFirstSearchResults() async {
+    if (_currentSearchParams == null) return;
+
     try {
-      final rawResponse = await http.post(
-        Uri.parse('https://test.tunisiagotravel.com/utilisateur/hoteldisponible?page=$currentPage'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'destination_id': destinationId,
-          'date_start': dateStart,
-          'date_end': dateEnd,
-          'adults': adults,
-          'rooms': rooms,
-          'children': children,
-          'babies': babies,
-        }),
+      // Load first pages in parallel
+      final futures = [
+        _loadSearchDisponibilityPage(_searchDisponibilityPage),
+        _loadSearchSimplePage(_searchSimplePage),
+      ];
+
+      final results = await Future.wait(futures, eagerError: false);
+
+      List<Hotel> initialResults = [];
+
+      // Process disponibility results
+      if (results[0] != null && results[0].isNotEmpty) {
+        initialResults.addAll(results[0].map((e) => Hotel.fromJson(e)).toList());
+        _searchDisponibilityPage++;
+      }
+
+      // Process simple results
+      if (results[1] != null && results[1].isNotEmpty) {
+        // Filter simple results based on disponibility IDs
+        final disponibilityIds =
+            results[0]?.map((hotel) => hotel['id']).toSet() ?? <String>{};
+
+        final filteredSimpleResults = results[1]
+            .where((hotel) => disponibilityIds.contains(hotel['id']))
+            .map((e) => Hotel.fromJson(e))
+            .toList();
+
+        initialResults.addAll(filteredSimpleResults);
+        _searchSimplePage++;
+      }
+
+      _searchResults = initialResults;
+      _isInitialSearchLoading = false;
+
+      notifyListeners(); // Widget should update GlobalProvider separately
+
+      debugPrint("Initial search results loaded: ${initialResults.length} hotels");
+    } catch (e) {
+      debugPrint("Error loading initial search results: $e");
+      _isInitialSearchLoading = false;
+      notifyListeners();
+    }
+  }
+
+
+// 🚀 LOAD MORE RESULTS IN BACKGROUND (Silent loading)
+  void _loadMoreSearchResultsInBackground() async {
+    int maxPages = 8; // Reasonable limit
+    int currentIteration = 0;
+
+    while (_hasMoreSearchResults && _currentSearchParams != null && currentIteration < maxPages) {
+      await Future.delayed(const Duration(milliseconds: 800)); // Delay between requests
+
+      try {
+        await _loadNextBatchSilently();
+        currentIteration++;
+      } catch (e) {
+        debugPrint("Error in background loading: $e");
+        _hasMoreSearchResults = false;
+        break;
+      }
+    }
+  }
+
+// 🚀 LOAD NEXT BATCH SILENTLY
+  Future<void> _loadNextBatchSilently() async {
+    if (_isLoadingMoreResults || !_hasMoreSearchResults || _currentSearchParams == null) return;
+
+    _isLoadingMoreResults = true;
+
+    try {
+      final futures = <Future>[];
+
+      if (_searchDisponibilityPage <= 8) {
+        futures.add(_loadSearchDisponibilityPage(_searchDisponibilityPage));
+      }
+      if (_searchSimplePage <= 8) {
+        futures.add(_loadSearchSimplePage(_searchSimplePage));
+      }
+
+      if (futures.isEmpty) {
+        _hasMoreSearchResults = false;
+        _isLoadingMoreResults = false;
+        return;
+      }
+
+      final results = await Future.wait(futures, eagerError: false);
+
+      List<Hotel> newResults = [];
+      bool hasMoreDisponibility = false;
+      bool hasMoreSimple = false;
+
+      if (results.isNotEmpty && results[0] != null && results[0].isNotEmpty) {
+        newResults.addAll(results[0].map((e) => Hotel.fromJson(e)).toList());
+        _searchDisponibilityPage++;
+        hasMoreDisponibility = true;
+      }
+
+      if (results.length > 1 && results[1] != null && results[1].isNotEmpty) {
+        final newDisponibilityIds =
+            results[0]?.map((hotel) => hotel['id']).toSet() ?? <String>{};
+
+        final filteredSimple =
+        results[1].where((hotel) => newDisponibilityIds.contains(hotel['id'])).map((e) => Hotel.fromJson(e)).toList();
+
+        newResults.addAll(filteredSimple);
+        _searchSimplePage++;
+        hasMoreSimple = true;
+      }
+
+      if (newResults.isNotEmpty) {
+        _searchResults.addAll(newResults);
+      }
+
+      if (!hasMoreDisponibility && !hasMoreSimple) {
+        _hasMoreSearchResults = false;
+      }
+    } catch (e) {
+      debugPrint("Error loading next batch silently: $e");
+      _hasMoreSearchResults = false;
+    }
+
+    _isLoadingMoreResults = false;
+  }
+
+// 🚀 LOAD SEARCH DISPONIBILITY PAGE
+  Future<List<dynamic>> _loadSearchDisponibilityPage(int page) async {
+    if (_currentSearchParams == null) return [];
+
+    try {
+      final res = await _apiService.getHotelDisponibilityPontion(
+        destinationId: _currentSearchParams!['destinationId'],
+        dateStart: _currentSearchParams!['dateStart'],
+        dateEnd: _currentSearchParams!['dateEnd'],
+        rooms: _currentSearchParams!['rooms'],
+        page: page,
       );
 
-      if (rawResponse.statusCode == 200) {
-        final jsonData = json.decode(rawResponse.body);
-        if (jsonData is Map<String, dynamic> && jsonData.containsKey('last_page')) {
-          return currentPage < (jsonData['last_page'] as int);
-        }
-      }
-      return false;
+      // Apply your existing filtering logic
+      final filteredHotels = res.data.where((hotel) {
+        final dispo = hotel.disponibility;
+        final hotelName = hotel.name?.toLowerCase() ?? '';
+
+        return (dispo != null &&
+            (dispo.disponibilityType == 'bhr' ||
+                dispo.disponibilityType == 'tgt' ||
+                hotelName.contains('mouradi')));
+      }).toList();
+
+      return filteredHotels;
+
     } catch (e) {
-      return false;
+      debugPrint("Error loading search disponibility page $page: $e");
+      return [];
     }
   }
 
-  // ======================================================
-  // 🔹 PROGRESSIVE LOADING - Hotel Disponibility Pontion
-  // ======================================================
-  List<HotelData> _hotelDisponibilityData = [];
-  List<HotelData> get hotelDisponibilityData => _hotelDisponibilityData;
+// 🚀 LOAD SEARCH SIMPLE PAGE
+  Future<List<dynamic>> _loadSearchSimplePage(int page) async {
+    if (_currentSearchParams == null) return [];
 
-  bool _hasMoreDisponibilityPages = true;
-  bool get hasMoreDisponibilityPages => _hasMoreDisponibilityPages;
-
-  int _currentDisponibilityPage = 1;
-  int? _totalDisponibilityPages;
-
-  // 🔹 Start progressive loading for disponibility
-  Future<void> startProgressiveHotelDisponibility({
-    required String destinationId,
-    required String dateStart,
-    required String dateEnd,
-    required List<Map<String, dynamic>> rooms,
-    int batchSize = 3,
-  }) async {
-    // Reset state
-    _hotelDisponibilityData.clear();
-    _currentDisponibilityPage = 1;
-    _hasMoreDisponibilityPages = true;
-    _totalDisponibilityPages = null;
-    _isLoadingDisponibilityPontion = true;
-    _errorDisponibilityPontion = null;
-    notifyListeners();
-
-    // Load first batch
-    await _loadDisponibilityBatch(
-      destinationId: destinationId,
-      dateStart: dateStart,
-      dateEnd: dateEnd,
-      rooms: rooms,
-      batchSize: batchSize,
-    );
-  }
-
-  // 🔹 Load more disponibility data
-  Future<void> loadMoreDisponibility({
-    required String destinationId,
-    required String dateStart,
-    required String dateEnd,
-    required List<Map<String, dynamic>> rooms,
-    int batchSize = 3,
-  }) async {
-    if (!_hasMoreDisponibilityPages || _isLoadingDisponibilityPontion) return;
-
-    _isLoadingDisponibilityPontion = true;
-    notifyListeners();
-
-    await _loadDisponibilityBatch(
-      destinationId: destinationId,
-      dateStart: dateStart,
-      dateEnd: dateEnd,
-      rooms: rooms,
-      batchSize: batchSize,
-    );
-  }
-
-  // 🔹 Internal method to load disponibility batch
-  Future<void> _loadDisponibilityBatch({
-    required String destinationId,
-    required String dateStart,
-    required String dateEnd,
-    required List<Map<String, dynamic>> rooms,
-    int batchSize = 3,
-  }) async {
     try {
-      List<HotelData> batchData = [];
-      int pagesLoaded = 0;
+      final hotels = await _apiService.getAvailableHotels(
+        destinationId: _currentSearchParams!['destinationId'],
+        dateStart: _currentSearchParams!['dateStart'],
+        dateEnd: _currentSearchParams!['dateEnd'],
+        adults: _currentSearchParams!['adults'],
+        rooms: _currentSearchParams!['totalRooms'],
+        children: _currentSearchParams!['children'],
+        page: page,
+      );
 
-      while (pagesLoaded < batchSize && _hasMoreDisponibilityPages) {
-        debugPrint("Loading disponibility page $_currentDisponibilityPage");
-
-        final res = await _apiService.getHotelDisponibilityPontion(
-          destinationId: destinationId,
-          dateStart: dateStart,
-          dateEnd: dateEnd,
-          rooms: rooms,
-          page: _currentDisponibilityPage,
-        );
-
-        // Apply filtering logic
-        final filteredHotels = res.data.where((hotel) {
-          final dispo = hotel.disponibility;
-          final hotelName = hotel.name?.toLowerCase() ?? '';
-          bool hasValidPensions = false;
-
-          if (dispo != null && dispo.pensions != null) {
-            if (dispo.pensions is List) {
-              hasValidPensions = dispo.pensions.isNotEmpty;
-            } else if (dispo.pensions is Map) {
-              final pensionsMap = dispo.pensions as Map<String, dynamic>;
-              hasValidPensions = pensionsMap.containsKey('rooms') &&
-                  pensionsMap['rooms'] != null &&
-                  (pensionsMap['rooms']['room'] is List
-                      ? pensionsMap['rooms']['room'].isNotEmpty
-                      : pensionsMap['rooms']['room'] != null);
-            }
-          }
-
-          return (dispo != null &&
-              (dispo.disponibilityType == 'bhr' ||
-                  dispo.disponibilityType == 'tgt' ||
-                  hotelName.contains('mouradi')));
-        }).toList();
-
-        batchData.addAll(filteredHotels);
-        _totalDisponibilityPages = res.lastPage;
-
-        if (_currentDisponibilityPage >= res.lastPage || res.data.isEmpty) {
-          _hasMoreDisponibilityPages = false;
-        }
-
-        _currentDisponibilityPage++;
-        pagesLoaded++;
-      }
-
-      // Add new data to the main list
-      _hotelDisponibilityData.addAll(batchData);
-
-      debugPrint("Loaded ${batchData.length} new disponibility entries. Total: ${_hotelDisponibilityData.length}");
+      return hotels;
 
     } catch (e) {
-      _errorDisponibilityPontion = e.toString();
-      debugPrint("Error loading disponibility batch: $e");
+      debugPrint("Error loading search simple page $page: $e");
+      return [];
     }
+  }
 
-    _isLoadingDisponibilityPontion = false;
+// 🚀 MANUAL LOAD MORE (Optional - for user-triggered loading)
+  Future<void> loadMoreSearchResults() async {
+    if (!_isLoadingMoreResults && _hasMoreSearchResults) {
+      await _loadNextBatchSilently();
+      notifyListeners(); // Only notify when user explicitly requests more
+    }
+  }
+
+// 🚀 RESET SEARCH
+  void resetSearch() {
+    _searchResults.clear();
+    _currentSearchParams = null;
+    _hasMoreSearchResults = true;
+    _isInitialSearchLoading = false;
+    _isLoadingMoreResults = false;
+    _searchDisponibilityPage = 1;
+    _searchSimplePage = 1;
     notifyListeners();
   }
 
-  // ======================================================
-  // 🔹 HELPER METHODS
-  // ======================================================
-
-  // Get current disponibility as HotelAvailabilityResponse for backward compatibility
-  HotelAvailabilityResponse? get hotelAvailabilityResponse {
-    if (_hotelDisponibilityData.isEmpty) return null;
-
-    return HotelAvailabilityResponse(
-      currentPage: _currentDisponibilityPage - 1,
-      data: _hotelDisponibilityData,
-      lastPage: _totalDisponibilityPages ?? 1,
-      nextPageUrl: _hasMoreDisponibilityPages ? "has_more" : null,
-    );
-  }
-
-  // Reset progressive loading state
-  void resetProgressiveLoading() {
-    _availableHotels.clear();
-    _hotelDisponibilityData.clear();
-    _currentAvailablePage = 1;
-    _currentDisponibilityPage = 1;
-    _hasMoreAvailablePages = true;
-    _hasMoreDisponibilityPages = true;
-    _targetHotelIds.clear();
-    _totalDisponibilityPages = null;
-    notifyListeners();
-  }
 }

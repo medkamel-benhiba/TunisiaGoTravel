@@ -24,7 +24,7 @@ class _SearchSectionState extends State<SearchSection> {
     final screenWidth = MediaQuery.of(context).size.width;
 
     return SizedBox(
-      height: screenHeight * 0.55,
+      height: screenHeight * 0.57,
       width: double.infinity,
       child: Stack(
         children: [

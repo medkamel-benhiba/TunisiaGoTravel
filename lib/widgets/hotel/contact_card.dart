@@ -20,7 +20,7 @@ class HotelContactCard extends StatelessWidget {
         children: [
           SectionHeader(
             icon: Icons.contact_phone,
-            title: 'Informations de contact',
+            title: 'Contact',
             iconColor: Colors.teal[600]!,
           ),
           const SizedBox(height: 16),

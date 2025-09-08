@@ -3,6 +3,7 @@ import 'package:tunisiagotravel/theme/color.dart';
 import 'package:tunisiagotravel/theme/styletext.dart';
 import '../../models/hotel_details.dart';
 import '../../screens/ItineraryScreen.dart';
+import 'package:tunisiagotravel/screens/search_disponibility.dart';
 import '../base_card.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -83,32 +84,62 @@ class HotelInfoCard extends StatelessWidget {
           const SizedBox(height: 16),
 
           // Expanded Itinerary Button
-          SizedBox(
-            width: double.infinity,
-            child: TextButton.icon(
-              onPressed: () {
-                print('Hotel lat: ${hotel.lat}, lng: ${hotel.lng}'); // Add this line
-                if (hotel.lat != null && hotel.lng != null) {
-                  final destination = LatLng(hotel.lat!, hotel.lng!);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => ItineraryScreen(destination: destination),
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    print('Hotel lat: ${hotel.lat}, lng: ${hotel.lng}');
+                    if (hotel.lat != null && hotel.lng != null) {
+                      final destination = LatLng(hotel.lat!, hotel.lng!);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ItineraryScreen(destination: destination),
+                        ),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Coordinates not available")),
+                      );
+                    }
+                  },
+                  icon: const Icon(Icons.directions, size: 18),
+                  label: const Text('Itinéraire'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColorstatic.primary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                  );
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Coordinates not available")),
-                  );
-                }
-              },
-              icon: const Icon(Icons.directions, size: 18),
-              label: const Text('Itinéraire'),
-              style: TextButton.styleFrom(
-                foregroundColor: AppColorstatic.primary,
-                padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                ),
               ),
-            ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => SearchDisponibilityScreen(hotel: hotel),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.book_online, size: 18),
+                  label: const Text('Réserver'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColorstatic.primary2,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),

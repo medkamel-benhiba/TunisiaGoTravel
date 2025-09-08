@@ -28,7 +28,87 @@ class HotelBhr {
     );
   }
 
+  // NEW: Factory method for availability API response
+  factory HotelBhr.fromAvailabilityJson(Map<String, dynamic> json, dynamic hotelDetail) {
+    // Extract hotel info from hotelDetail parameter
+    String hotelId = '';
+    String hotelName = '';
+    String hotelSlug = '';
+
+    if (hotelDetail != null) {
+      if (hotelDetail is Map<String, dynamic>) {
+        hotelId = hotelDetail['id']?.toString() ?? '';
+        hotelName = hotelDetail['name']?.toString() ?? '';
+        hotelSlug = hotelDetail['slug']?.toString() ?? '';
+      } else if (hotelDetail.runtimeType.toString().contains('HotelDetail')) {
+        // If it's a HotelDetail object, access properties directly
+        try {
+          hotelId = hotelDetail.id?.toString() ?? '';
+          hotelName = hotelDetail.name?.toString() ?? '';
+          hotelSlug = hotelDetail.slug?.toString() ?? '';
+        } catch (e) {
+          // Fallback if properties don't exist
+          hotelId = '';
+          hotelName = '';
+          hotelSlug = '';
+        }
+      }
+    }
+
+    // Handle the BHR response structure which might be different
+    DisponibilityBhr disponibility;
+
+    if (json.containsKey('rooms')) {
+      // Direct rooms in response
+      disponibility = DisponibilityBhr(
+        id: hotelId,
+        title: hotelName,
+        category: json['category']?.toString() ?? '',
+        summary: json['summary']?.toString() ?? '',
+        address: json['address']?.toString() ?? '',
+        promotionDateTime: json['promotionDateTime']?.toString() ?? '',
+        rooms: (json['rooms'] as List<dynamic>? ?? [])
+            .map((r) => RoomBhr.fromJson(Map<String, dynamic>.from(r)))
+            .toList(),
+      );
+    } else if (json.containsKey('pensions')) {
+      // Pensions structure (might need adaptation)
+      final pensionsData = json['pensions'];
+      if (pensionsData is Map) {
+        disponibility = DisponibilityBhr.fromJson(Map<String, dynamic>.from(pensionsData));
+      } else {
+        disponibility = DisponibilityBhr(
+          id: hotelId,
+          title: hotelName,
+          category: '',
+          summary: '',
+          address: '',
+          promotionDateTime: '',
+          rooms: [],
+        );
+      }
+    } else {
+      disponibility = DisponibilityBhr(
+        id: hotelId,
+        title: hotelName,
+        category: '',
+        summary: '',
+        address: '',
+        promotionDateTime: '',
+        rooms: [],
+      );
+    }
+
+    return HotelBhr(
+      id: hotelId,
+      name: hotelName,
+      slug: hotelSlug,
+      disponibilityType: json['disponibilitytype']?.toString() ?? 'bhr',
+      disponibility: disponibility,
+    );
+  }
 }
+
 
 class DisponibilityBhr {
   final String id;

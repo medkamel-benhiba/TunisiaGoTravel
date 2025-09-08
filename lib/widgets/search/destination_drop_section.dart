@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tunisiagotravel/theme/color.dart';
 import 'package:tunisiagotravel/widgets/circuits/city_dropdown.dart';
+import '../../models/hotel.dart';
+import '../../models/hotelAvailabilityResponse.dart';
 import '../../providers/global_provider.dart';
 import '../../providers/hotel_provider.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class DestinationDropSection extends StatefulWidget {
   const DestinationDropSection({super.key});
@@ -18,7 +22,7 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
   DateTime? _startDate;
   DateTime? _endDate;
 
-  bool _isVisible = true; // Flag pour masquer la section après recherche
+  bool _isVisible = true; // Flag to hide the section after search
 
   // Updated room data structure to include child ages
   List<Map<String, dynamic>> roomsData = [
@@ -169,35 +173,71 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
 
                         globalProvider.setSearchCriteria(searchCriteria);
 
-                        // Fetch detailed availability first to get filtered hotel IDs
-                        await hotelProvider.fetchAllHotelDisponibilityPontion(
-                          destinationId: _selectedCityId!,
-                          dateStart: dateStart,
-                          dateEnd: dateEnd,
-                          rooms: roomsForApi,
-                        );
+                        // Clear previous data before new search
+                        globalProvider.setAvailableHotels([]);
+                        hotelProvider.clearAvailableHotels();
 
-                        // Get filtered hotel IDs
-                        final filteredHotelIds = hotelProvider.hotelDisponibilityPontion?.data.map((hotel) => hotel.id).toList() ?? [];
+                        // Fetch page 1 of both APIs concurrently
+                        await Future.wait([
+                          hotelProvider.fetchHotelDisponibilityPontion(
+                            destinationId: _selectedCityId!,
+                            dateStart: dateStart,
+                            dateEnd: dateEnd,
+                            rooms: roomsForApi,
+                            page: 1,
+                          ),
+                          hotelProvider.fetchAvailableHotels(
+                            destinationId: _selectedCityId!,
+                            dateStart: dateStart,
+                            dateEnd: dateEnd,
+                            adults: totalAdults.toString(),
+                            rooms: totalRooms.toString(),
+                            children: totalChildren.toString(),
+                            page: 1,
+                          ),
+                        ]);
 
-                        // Fetch simple availability, passing filtered IDs
-                        await hotelProvider.fetchAllAvailableHotels(
-                          destinationId: _selectedCityId!,
-                          dateStart: dateStart,
-                          dateEnd: dateEnd,
-                          adults: totalAdults.toString(),
-                          rooms: totalRooms.toString(),
-                          children: totalChildren.toString(),
-                          filteredHotelIds: filteredHotelIds,
-                        );
+                        // Get filtered hotel IDs from disponibility pention
+                        final filteredHotelIds = hotelProvider.hotelDisponibilityPontion?.data
+                            .where((hotel) {
+                          final dispo = hotel.disponibility;
+                          final hotelName = hotel.name?.toLowerCase() ?? '';
+                          bool hasValidPensions = false;
 
-                        // Debug prints
-                        print("DEBUG - Simple hotels fetched: ${hotelProvider.availableHotels.length}");
-                        print("DEBUG - Pension hotels fetched: ${hotelProvider.hotelDisponibilityPontion?.data.length ?? 0}");
+                          if (dispo != null && dispo.pensions != null) {
+                            if (dispo.pensions is List) {
+                              hasValidPensions = dispo.pensions.isNotEmpty;
+                            } else if (dispo.pensions is Map) {
+                              final pensionsMap = dispo.pensions as Map<String, dynamic>;
+                              hasValidPensions = pensionsMap.containsKey('rooms') &&
+                                  pensionsMap['rooms'] != null &&
+                                  (pensionsMap['rooms']['room'] is List
+                                      ? pensionsMap['rooms']['room'].isNotEmpty
+                                      : pensionsMap['rooms']['room'] != null);
+                            }
+                          }
+
+                          return (dispo != null &&
+                              (dispo.disponibilityType == 'bhr' ||
+                                  dispo.disponibilityType == 'tgt' ||
+                                  hotelName.contains('mouradi')));
+                        })
+                            .map((hotel) => hotel.id)
+                            .toList() ??
+                            [];
+
+                        // Filter available hotels based on filteredHotelIds
+                        final filteredAvailableHotels = hotelProvider.availableHotels
+                            .where((hotel) => filteredHotelIds.contains(hotel.id))
+                            .toList();
 
                         // Update GlobalProvider with filtered simple hotels for listing
                         globalProvider.setSelectedCityForHotels(_selectedCityName);
-                        globalProvider.setAvailableHotels(hotelProvider.availableHotels);
+                        globalProvider.setAvailableHotels(filteredAvailableHotels);
+
+                        // Debug prints
+                        print("DEBUG - Simple hotels fetched (page 1): ${filteredAvailableHotels.length}");
+                        print("DEBUG - Pension hotels fetched (page 1): ${hotelProvider.hotelDisponibilityPontion?.data.length ?? 0}");
 
                         // Hide the section after search
                         setState(() {
@@ -206,6 +246,21 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
 
                         // Navigate to HotelsScreenContent
                         globalProvider.setPage(AppPage.hotels);
+
+                        // Continue fetching remaining pages in the background
+                        _fetchRemainingPages(
+                          hotelProvider: hotelProvider,
+                          globalProvider: globalProvider,
+                          destinationId: _selectedCityId!,
+                          dateStart: dateStart,
+                          dateEnd: dateEnd,
+                          rooms: roomsForApi,
+                          adults: totalAdults.toString(),
+                          roomsCount: totalRooms.toString(),
+                          children: totalChildren.toString(),
+                          selectedCityName: _selectedCityName,
+                          maxPages: 12,
+                        );
                       } catch (e) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text("Erreur lors de la recherche: $e")),
@@ -233,6 +288,173 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
         ),
       ),
     );
+  }
+
+  // Helper method to fetch remaining pages in the background
+  void _fetchRemainingPages({
+    required HotelProvider hotelProvider,
+    required GlobalProvider globalProvider,
+    required String destinationId,
+    required String dateStart,
+    required String dateEnd,
+    required List<Map<String, dynamic>> rooms,
+    required String adults,
+    required String roomsCount,
+    required String children,
+    required String? selectedCityName,
+    required int maxPages,
+  }) async {
+    try {
+      int currentPage = 2; // Start from page 2 since page 1 is already fetched
+      bool hasMorePages = true;
+
+      // Accumulate hotels across pages
+      List<Hotel> accumulatedAvailableHotels = List.from(globalProvider.availableHotels);
+      List<HotelData> accumulatedPensionHotels = List.from(hotelProvider.hotelDisponibilityPontion?.data ?? []);
+      Set<String> existingAvailableHotelIds = accumulatedAvailableHotels.map((hotel) => hotel.id).toSet();
+      Set<String> existingPensionHotelIds = accumulatedPensionHotels.map((hotel) => hotel.id).toSet();
+
+      while (hasMorePages && currentPage <= maxPages) {
+        // Fetch next pages concurrently
+        await Future.wait([
+          hotelProvider.fetchHotelDisponibilityPontion(
+            destinationId: destinationId,
+            dateStart: dateStart,
+            dateEnd: dateEnd,
+            rooms: rooms,
+            page: currentPage,
+          ),
+          hotelProvider.fetchAvailableHotels(
+            destinationId: destinationId,
+            dateStart: dateStart,
+            dateEnd: dateEnd,
+            adults: adults,
+            rooms: roomsCount,
+            children: children,
+            page: currentPage,
+          ),
+        ]);
+
+        // Get new pension hotels from the current page
+        final newPensionHotels = hotelProvider.hotelDisponibilityPontion?.data ?? [];
+        final uniquePensionHotels = newPensionHotels.where((hotel) => !existingPensionHotelIds.contains(hotel.id)).toList();
+        accumulatedPensionHotels.addAll(uniquePensionHotels);
+        existingPensionHotelIds.addAll(uniquePensionHotels.map((hotel) => hotel.id));
+
+        // Get filtered hotel IDs from accumulated pension hotels
+        final filteredHotelIds = accumulatedPensionHotels
+            .where((hotel) {
+          final dispo = hotel.disponibility;
+          final hotelName = hotel.name?.toLowerCase() ?? '';
+          bool hasValidPensions = false;
+
+          if (dispo != null && dispo.pensions != null) {
+            if (dispo.pensions is List) {
+              hasValidPensions = dispo.pensions.isNotEmpty;
+            } else if (dispo.pensions is Map) {
+              final pensionsMap = dispo.pensions as Map<String, dynamic>;
+              hasValidPensions = pensionsMap.containsKey('rooms') &&
+                  pensionsMap['rooms'] != null &&
+                  (pensionsMap['rooms']['room'] is List
+                      ? pensionsMap['rooms']['room'].isNotEmpty
+                      : pensionsMap['rooms']['room'] != null);
+            }
+          }
+
+          return (dispo != null &&
+              (dispo.disponibilityType == 'bhr' ||
+                  dispo.disponibilityType == 'tgt' ||
+                  hotelName.contains('mouradi')));
+        })
+            .map((hotel) => hotel.id)
+            .toList();
+
+        // Get new available hotels from the current page
+        final newAvailableHotels = hotelProvider.availableHotels;
+        final uniqueAvailableHotels = newAvailableHotels
+            .where((hotel) => filteredHotelIds.contains(hotel.id) && !existingAvailableHotelIds.contains(hotel.id))
+            .toList();
+        accumulatedAvailableHotels.addAll(uniqueAvailableHotels);
+        existingAvailableHotelIds.addAll(uniqueAvailableHotels.map((hotel) => hotel.id));
+
+        // Update GlobalProvider with accumulated filtered hotels
+        globalProvider.setAvailableHotels(List.from(accumulatedAvailableHotels));
+
+        // Debug prints
+        print("DEBUG - Simple hotels accumulated (page $currentPage): ${accumulatedAvailableHotels.length}");
+        print("DEBUG - Pension hotels accumulated (page $currentPage): ${accumulatedPensionHotels.length}");
+
+        // Update HotelProvider with accumulated pension hotels
+        hotelProvider.updateHotelDisponibilityPontion(
+          HotelAvailabilityResponse(
+            currentPage: currentPage,
+            data: accumulatedPensionHotels,
+            lastPage: hotelProvider.hotelDisponibilityPontion?.lastPage ?? 1,
+            nextPageUrl: hotelProvider.hotelDisponibilityPontion?.nextPageUrl,
+          ),
+        );
+
+        // Check if there are more pages to fetch
+        final pontionLastPage = hotelProvider.hotelDisponibilityPontion?.lastPage ?? 1;
+        final availableHotelsLastPage = await _getAvailableHotelsLastPage(
+          destinationId: destinationId,
+          dateStart: dateStart,
+          dateEnd: dateEnd,
+          adults: adults,
+          rooms: roomsCount,
+          children: children,
+          page: currentPage,
+        );
+
+        hasMorePages = currentPage < pontionLastPage || currentPage < availableHotelsLastPage;
+
+        currentPage++;
+      }
+    } catch (e) {
+      print("Error fetching remaining pages: $e");
+      // Notify user of background fetch error
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Erreur lors du chargement des pages supplémentaires: $e")),
+      );
+    }
+  }
+
+  // Helper method to get the last page of available hotels
+  Future<int> _getAvailableHotelsLastPage({
+    required String destinationId,
+    required String dateStart,
+    required String dateEnd,
+    required String adults,
+    required String rooms,
+    required String children,
+    required int page,
+  }) async {
+    try {
+      final rawResponse = await http.post(
+        Uri.parse('https://test.tunisiagotravel.com/utilisateur/hoteldisponible?page=$page'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'destination_id': destinationId,
+          'date_start': dateStart,
+          'date_end': dateEnd,
+          'adults': adults,
+          'rooms': rooms,
+          'children': children,
+          'babies': 0,
+        }),
+      );
+
+      if (rawResponse.statusCode == 200) {
+        final jsonData = json.decode(rawResponse.body);
+        if (jsonData is Map<String, dynamic> && jsonData.containsKey('last_page')) {
+          return jsonData['last_page'] as int;
+        }
+      }
+      return 1; // Default to 1 if no pagination info
+    } catch (e) {
+      print("Error fetching last page for available hotels: $e");
+      return 1;
+    }
   }
 
   Widget _buildSectionTitle(String title, IconData icon) {
@@ -264,15 +486,15 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
         if (picked != null) onDatePicked(picked);
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
         decoration: BoxDecoration(
           border: Border.all(color: Colors.grey.shade300),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
           children: [
-            Icon(Icons.calendar_month, color: Colors.grey.shade600, size: 18),
-            const SizedBox(width: 8),
+            Icon(Icons.calendar_month, color: Colors.grey.shade600, size: 13),
+            const SizedBox(width: 5),
             Text(
               date == null ? label : date.toString().split(" ")[0],
               style: TextStyle(
@@ -290,14 +512,14 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
     return InkWell(
       onTap: () => _openRoomSelectionBottomSheet(context),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 14),
         decoration: BoxDecoration(
           border: Border.all(color: Colors.grey.shade300),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
           children: [
-            Icon(Icons.person_pin, color: Colors.grey.shade600, size: 18),
+            Icon(Icons.person_pin, color: Colors.grey.shade600, size: 16),
             const SizedBox(width: 8),
             Text(
               "$rooms Chambre${rooms > 1 ? 's' : ''}",
@@ -330,7 +552,7 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
         return StatefulBuilder(
           builder: (context, setModalState) {
             return Container(
-              height: MediaQuery.of(context).size.height * 0.7, // Increased height for child age selectors
+              height: MediaQuery.of(context).size.height * 0.7,
               decoration: const BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -664,11 +886,11 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
             icon: const Icon(Icons.add_circle_outline, color: AppColorstatic.lightTextColor),
             label: const Text("Ajouter une chambre", style: TextStyle(color: AppColorstatic.lightTextColor)),
             style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                backgroundColor: AppColorstatic.primary2
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              backgroundColor: AppColorstatic.primary2,
             ),
           ),
         ),

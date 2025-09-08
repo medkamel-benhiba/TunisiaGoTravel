@@ -1080,6 +1080,97 @@ class ApiService {
     }
   }
 
+  Future<List<Disponibility>> checkdispo(
+      String slug, String start, String end, List rooms) async {
+    final headers = {'Content-Type': 'application/json'};
+    final body = json.encode({
+      'date_start': start,
+      'date_end': end,
+      'rooms': rooms,
+    });
+
+    print("🔹 Request URL: $_baseUrl/utilisateur/hotels/showDisponibility/$slug");
+    print("🔹 Request Body: $body");
+
+    try {
+      final response = await http
+          .post(
+        Uri.parse('$_baseUrl/utilisateur/hotels/showDisponibility/$slug'),
+        headers: headers,
+        body: body,
+      )
+          .timeout(const Duration(seconds: 30));
+
+      print("🔹 Response Status: ${response.statusCode}");
+      print("🔹 Response Body: ${response.body}");
+
+      if (response.statusCode == 200) {
+        final parsed = hotelAvailabilityResponseFromJson(response.body);
+        final disponibilities =
+        parsed.data.map((e) => e.disponibility).toList();
+        print("🔹 Parsed Disponibilities: ${disponibilities.length}");
+        return disponibilities;
+      } else if (response.statusCode == 302) {
+        final redirectUrl = response.headers['location'];
+        print("🔹 Redirect URL: $redirectUrl");
+        if (redirectUrl != null) {
+          final redirectResponse = await http.post(
+            Uri.parse(redirectUrl),
+            headers: headers,
+            body: body,
+          );
+
+          print("🔹 Redirect Response Status: ${redirectResponse.statusCode}");
+          print("🔹 Redirect Response Body: ${redirectResponse.body}");
+
+          if (redirectResponse.statusCode == 200) {
+            final parsed = hotelAvailabilityResponseFromJson(redirectResponse.body);
+            return parsed.data.map((e) => e.disponibility).toList();
+          }
+        }
+        throw Exception('Redirect failed');
+      } else {
+        throw Exception('Request failed with status: ${response.statusCode}');
+      }
+    } catch (e, stack) {
+      print("❌ Error checking availability: $e");
+      print(stack);
+      throw Exception('Error checking availability: $e');
+    }
+  }
+  Future<Map<String, dynamic>?> checkDisponibilityRaw(
+      String slug,
+      String startDate,
+      String endDate,
+      List<Map<String, dynamic>> rooms,
+      ) async {
+    try {
+      final url = Uri.parse('$_baseUrl/utilisateur/hotels/showDisponibility/$slug');
+
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode({
+          'date_start': startDate,
+          'date_end': endDate,
+          'rooms': rooms,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data as Map<String, dynamic>;
+      }
+      return null;
+    } catch (e) {
+      debugPrint('Error in checkDisponibilityRaw: $e');
+      return null;
+    }
+  }
+
 
 
 
@@ -1124,50 +1215,6 @@ class ApiService {
     }
   }
 
-
-
-
-
-  // Future<List<Disponibility>> checkdispo(String slug, String start, String end, List aduilt) async {
-  //   var headers = {'Content-Type': 'application/json'};
-  //   var body = json.encode({
-  //     'date_start': start,
-  //     'date_end': end,
-  //     'rooms': aduilt,
-  //   });
-  //
-  //   try {
-  //     final response = await http
-  //         .post(
-  //           Uri.parse('$_baseUrl/utilisateur/hotels/showDisponibility/$slug'),
-  //           body: body,
-  //           headers: headers,
-  //         )
-  //         .timeout(Duration(seconds: 30));
-  //
-  //     if (response.statusCode == 200) {
-  //       List<Disponibility> data = disponibilityFromJson(response.body);
-  //       return data;
-  //     } else if (response.statusCode == 302) {
-  //       String? redirectUrl = response.headers['location'];
-  //       if (redirectUrl != null) {
-  //         final redirectResponse = await http.post(
-  //           Uri.parse(redirectUrl),
-  //           body: body,
-  //           headers: headers,
-  //         );
-  //         if (redirectResponse.statusCode == 200) {
-  //           return disponibilityFromJson(redirectResponse.body);
-  //         }
-  //       }
-  //       throw Exception('Redirect failed');
-  //     } else {
-  //       throw Exception('Request failed with status: ${response.statusCode}');
-  //     }
-  //   } catch (e) {
-  //     throw Exception('Error checking availability: $e');
-  //   }
-  // }
 
   Future<Success> postreservationhotel(
       String id,
