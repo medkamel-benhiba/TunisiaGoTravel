@@ -19,7 +19,7 @@ class MaisonContactCard extends StatelessWidget {
         children: [
           SectionHeader(
             icon: Icons.contact_phone,
-            title: 'Contact Information',
+            title: 'Contact',
             iconColor: Colors.teal[600]!,
           ),
           const SizedBox(height: 16),
@@ -33,13 +33,13 @@ class MaisonContactCard extends StatelessWidget {
     final items = <Map<String, dynamic>>[];
 
     if (maison.phone.isNotEmpty) {
-      items.add({'icon': Icons.phone, 'label': 'Phone', 'value': maison.phone, 'color': Colors.green});
+      items.add({'icon': Icons.phone, 'label': 'Téléphone', 'value': maison.phone, 'color': Colors.green});
     }
     if (maison.email.isNotEmpty) {
-      items.add({'icon': Icons.email, 'label': 'Email', 'value': maison.email, 'color': Colors.orange});
+      items.add({'icon': Icons.email, 'label': 'E-mail', 'value': maison.email, 'color': Colors.orange});
     }
     if (maison.website.isNotEmpty) {
-      items.add({'icon': Icons.web, 'label': 'Website', 'value': maison.website, 'color': Colors.blue});
+      items.add({'icon': Icons.web, 'label': 'Site Web', 'value': maison.website, 'color': Colors.blue});
     }
 
     return items;

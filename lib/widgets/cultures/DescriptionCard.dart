@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_html/flutter_html.dart';
 import '../base_card.dart';
 import '../section_header.dart';
 
@@ -16,7 +17,12 @@ class _DescriptionCardState extends State<DescriptionCard> {
 
   @override
   Widget build(BuildContext context) {
-    final text = widget.description;
+    final htmlContent = widget.description;
+
+    // Limite le contenu pour l'affichage "Voir plus"
+    final displayContent = _isExpanded
+        ? htmlContent
+        : _truncateHtml(htmlContent, 200); // Limite à 200 caractères (approximatif)
 
     return BaseCard(
       child: Column(
@@ -28,13 +34,18 @@ class _DescriptionCardState extends State<DescriptionCard> {
             iconColor: Colors.green,
           ),
           const SizedBox(height: 16),
-          Text(
-            text,
-            maxLines: _isExpanded ? null : 4,
-            overflow: _isExpanded ? TextOverflow.visible : TextOverflow.ellipsis,
-            style: const TextStyle(fontSize: 16, height: 1.5),
+          Html(
+            data: displayContent,
+            style: {
+              "body": Style(
+                margin: Margins.zero,
+                fontSize: FontSize(16),
+                lineHeight: const LineHeight(1.5),
+                color: Colors.black87,
+              ),
+            },
           ),
-          if (text.length > 100)
+          if (htmlContent.length > 200)
             GestureDetector(
               onTap: () => setState(() => _isExpanded = !_isExpanded),
               child: Padding(
@@ -51,5 +62,11 @@ class _DescriptionCardState extends State<DescriptionCard> {
         ],
       ),
     );
+  }
+
+  // Fonction simple pour tronquer le HTML sans casser les balises
+  String _truncateHtml(String html, int limit) {
+    if (html.length <= limit) return html;
+    return html.substring(0, limit) + '...';
   }
 }

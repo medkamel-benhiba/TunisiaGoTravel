@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tunisiagotravel/theme/color.dart';
 import 'package:tunisiagotravel/theme/styletext.dart';
 import '../../models/hotel_details.dart';
 import '../../screens/ItineraryScreen.dart';
@@ -79,31 +80,34 @@ class HotelInfoCard extends StatelessWidget {
             ],
           ),
 
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
 
-          // Itinerary Button
-          TextButton.icon(
-            onPressed: () {
-              print('Hotel lat: ${hotel.lat}, lng: ${hotel.lng}'); // Add this line
-              if (hotel.lat != null && hotel.lng != null) {
-                final destination = LatLng(hotel.lat!, hotel.lng!);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => ItineraryScreen(destination: destination),
-                  ),
-                );
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Coordinates not available")),
-                );
-              }
-            },
-            icon: const Icon(Icons.directions, size: 18),
-            label: const Text('Itinéraire'),
-            style: TextButton.styleFrom(
-              foregroundColor: Theme.of(context).primaryColor,
-              padding: const EdgeInsets.symmetric(vertical: 8),
+          // Expanded Itinerary Button
+          SizedBox(
+            width: double.infinity,
+            child: TextButton.icon(
+              onPressed: () {
+                print('Hotel lat: ${hotel.lat}, lng: ${hotel.lng}'); // Add this line
+                if (hotel.lat != null && hotel.lng != null) {
+                  final destination = LatLng(hotel.lat!, hotel.lng!);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => ItineraryScreen(destination: destination),
+                    ),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Coordinates not available")),
+                  );
+                }
+              },
+              icon: const Icon(Icons.directions, size: 18),
+              label: const Text('Itinéraire'),
+              style: TextButton.styleFrom(
+                foregroundColor: AppColorstatic.primary,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
             ),
           ),
         ],

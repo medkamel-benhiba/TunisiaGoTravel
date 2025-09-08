@@ -1,11 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-/*
-import 'package:TunisiaGoTravel/models/Agile.dart';
-import 'package:TunisiaGoTravel/models/HotelAvailabilityResponse.dart';
-import 'package:TunisiaGoTravel/models/HotelPreReservation.dart';
-import 'package:TunisiaGoTravel/models/Hoteldispon.dart';
-*/
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
@@ -33,7 +27,7 @@ import '../models/voyage.dart';
 
 
 class ApiService {
-  static const String _baseUrl = 'https://test.tunisiagotravel.com';
+  static const String _baseUrl = 'https://backend.tunisiagotravel.com';
   final String _cachevoy = 'cached_voyages';
 
   Future<List<Destination>> getDestinations() async {

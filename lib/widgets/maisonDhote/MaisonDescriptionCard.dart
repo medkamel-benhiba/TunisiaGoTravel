@@ -20,7 +20,7 @@ class MaisonDescriptionCard extends StatelessWidget {
         children: [
           SectionHeader(
             icon: Icons.description,
-            title: 'About this Maison',
+            title: 'À propos',
             iconColor: Colors.green[600]!,
           ),
           const SizedBox(height: 16),

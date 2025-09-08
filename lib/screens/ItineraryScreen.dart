@@ -189,13 +189,17 @@ class _ItineraryScreenState extends State<ItineraryScreen> {
         mapController: _mapController,
         options: MapOptions(
           initialCenter: center,
-          initialZoom: 13,
+          initialZoom: 8,
+          minZoom: 3,
+          interactionOptions: InteractionOptions(
+            flags: InteractiveFlag.pinchZoom | InteractiveFlag.drag,  // Enable only pinch zoom and drag, disable rotation
+          )
         ),
         children: [
           TileLayer(
             urlTemplate:
-            "https://api.maptiler.com/maps/streets/{z}/{x}/{y}.png?key=9pHamDxVs1eLgO3UmgbE",
-            userAgentPackageName: 'com.example.ecommerce_app',
+            "https://api.maptiler.com/maps/streets/{z}/{x}/{y}.png?key=CubRhkNFVL94muXGM5yt",
+            userAgentPackageName: 'com.example.tunisiagotravel',
           ),
           MarkerLayer(
             markers: [
@@ -219,7 +223,7 @@ class _ItineraryScreenState extends State<ItineraryScreen> {
                 Polyline(
                   points: routePoints,
                   color: Colors.blue,
-                  strokeWidth: 4,
+                  strokeWidth: 3,
                 ),
               ],
             ),

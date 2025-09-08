@@ -19,7 +19,7 @@ class RestaurantDetailsScreen extends StatelessWidget {
           restaurant.name,
           style: const TextStyle(
             color: AppColorstatic.lightTextColor,
-            fontSize: 22,
+            fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
         ),

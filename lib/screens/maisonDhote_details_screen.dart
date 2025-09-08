@@ -17,8 +17,13 @@ class MaisonDetailsScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(
           maison.name,
-          style: TextStyle(color: AppColorstatic.lightTextColor),
+          style: const TextStyle(
+            color: AppColorstatic.lightTextColor,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
         ),
+        iconTheme: const IconThemeData(color: Colors.white),
         backgroundColor: AppColorstatic.primary,
       ),
       body: SingleChildScrollView(
@@ -33,7 +38,7 @@ class MaisonDetailsScreen extends StatelessWidget {
             MaisonInfoCard(maison: maison),
             MaisonDescriptionCard(maison: maison),
             MaisonContactCard(maison: maison),
-            const SizedBox(height: 32),
+            const SizedBox(height: 20),
           ],
         ),
       ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../models/artisanat.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ArtisanatInfoCard extends StatelessWidget {
   final Artisanat artisanat;
@@ -35,7 +36,7 @@ class ArtisanatInfoCard extends StatelessWidget {
           color: Colors.transparent,
           child: InkWell(
             onTap: () {
-              // Handle card tap if needed
+              // Optional: Handle card tap
             },
             borderRadius: BorderRadius.circular(16),
             child: Padding(
@@ -74,58 +75,7 @@ class ArtisanatInfoCard extends StatelessWidget {
 
                   const SizedBox(height: 20),
 
-                  // Video indicator if available
-                  if (artisanat.videoLink.isNotEmpty) ...[
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      decoration: BoxDecoration(
-                        color: Colors.red.shade50,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: Colors.red.shade100,
-                          width: 1,
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.video_library,
-                            color: Colors.red.shade600,
-                            size: 20,
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Contenu multimédia',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.red.shade700,
-                                    letterSpacing: 0.5,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  'Vidéo démonstrative disponible',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.red.shade800,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                  ],
-
-                  // Craft type indicator
+                  // Type of artisanat
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     decoration: BoxDecoration(
@@ -181,8 +131,21 @@ class ArtisanatInfoCard extends StatelessWidget {
                       if (artisanat.videoLink.isNotEmpty)
                         Expanded(
                           child: TextButton.icon(
-                            onPressed: () {
-                              // Handle video play
+                            onPressed: () async {
+                              final videoUrl = artisanat.videoLink;
+                              if (videoUrl.isNotEmpty) {
+                                final uri = Uri.parse(videoUrl);
+                                // Check if the URL can be launched
+                                if (await canLaunchUrl(uri)) {
+                                  // Launch the URL, a browser will handle the video playback.
+                                  await launchUrl(uri, mode: LaunchMode.externalApplication);
+                                } else {
+                                  // Display an error message if the URL cannot be launched.
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text("Impossible d'ouvrir la vidéo")),
+                                  );
+                                }
+                              }
                             },
                             icon: const Icon(Icons.play_circle_outline, size: 18),
                             label: const Text('Voir la vidéo'),

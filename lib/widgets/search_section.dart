@@ -1,11 +1,10 @@
 import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:tunisiagotravel/theme/color.dart';
 import '../providers/global_provider.dart';
-import '../providers/destination_provider.dart';
+import '../screens/map_screen.dart';
 import 'circuits/city_dropdown.dart';
 
 class SearchSection extends StatefulWidget {
@@ -29,6 +28,7 @@ class _SearchSectionState extends State<SearchSection> {
       width: double.infinity,
       child: Stack(
         children: [
+          // Background image
           SizedBox(
             width: double.infinity,
             child: Image.asset(
@@ -36,6 +36,7 @@ class _SearchSectionState extends State<SearchSection> {
               fit: BoxFit.cover,
             ),
           ),
+          // Blur overlay
           Positioned.fill(
             top: 10,
             bottom: 10,
@@ -51,6 +52,7 @@ class _SearchSectionState extends State<SearchSection> {
               ),
             ),
           ),
+          // Content
           Positioned.fill(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 18),
@@ -61,11 +63,11 @@ class _SearchSectionState extends State<SearchSection> {
                     'Où partez-vous ?',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 18,
+                      fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 10),
 
                   CityDropdown(
                     label: 'Choisissez destination',
@@ -109,19 +111,33 @@ class _SearchSectionState extends State<SearchSection> {
                     ),
                   ),
 
-                  const SizedBox(height: 30),
-                  SizedBox(
-                    height: screenHeight * 0.26,
-                    width: screenWidth * 0.9,
-                    child: SvgPicture.asset(
-                      'assets/images/map.svg',
-                      fit: BoxFit.contain,
+                  const SizedBox(height: 20),
+
+                  // Map SVG + Text clickable
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const MapScreen()),
+                      );
+                    },
+                    child: Column(
+                      children: [
+                        SizedBox(
+                          height: screenHeight * 0.26,
+                          width: screenWidth * 0.8,
+                          child: SvgPicture.asset(
+                            'assets/images/map.svg',
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        const Text(
+                          'Ouvrir la carte',
+                          style: TextStyle(color: Colors.white, fontSize: 14),
+                        ),
+                      ],
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    'Ouvrir la carte',
-                    style: TextStyle(color: Colors.white, fontSize: 14),
                   ),
                 ],
               ),

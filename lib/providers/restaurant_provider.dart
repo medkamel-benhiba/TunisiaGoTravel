@@ -9,7 +9,7 @@ class RestaurantProvider with ChangeNotifier {
   final Map<String, List<Restaurant>> _restaurantsByDestination = {};
 
   /// All fetched restaurants
-  List<Restaurant> _allRestaurants = [];
+  List<Restaurant> allRestaurants = [];
 
   /// Current displayed restaurants
   List<Restaurant> _restaurants = [];
@@ -28,15 +28,15 @@ class RestaurantProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      _allRestaurants = await _apiService.getAllRestaurants();
+      allRestaurants = await _apiService.getAllRestaurants();
       // Pre-cache per destination
-      for (var r in _allRestaurants) {
+      for (var r in allRestaurants) {
         final destId = r.destinationId?.toString() ?? 'unknown';
         _restaurantsByDestination.putIfAbsent(destId, () => []);
         _restaurantsByDestination[destId]!.add(r);
       }
     } catch (e) {
-      _allRestaurants = [];
+      allRestaurants = [];
       debugPrint("Error fetching restaurants: $e");
     }
 
@@ -56,10 +56,10 @@ class RestaurantProvider with ChangeNotifier {
   }
 
   Future<void> selectRestaurantBySlug(String slug) async {
-    final i = _allRestaurants.indexWhere(
+    final i = allRestaurants.indexWhere(
           (r) => r.slug?.toLowerCase() == slug.toLowerCase(),
     );
-    _selectedRestaurant = i != -1 ? _allRestaurants[i] : null;
+    _selectedRestaurant = i != -1 ? allRestaurants[i] : null;
     notifyListeners();
   }
 

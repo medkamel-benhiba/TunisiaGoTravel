@@ -1,4 +1,3 @@
-// lib/models/artisanat.dart
 class Artisanat {
   final String id;
   final String name;

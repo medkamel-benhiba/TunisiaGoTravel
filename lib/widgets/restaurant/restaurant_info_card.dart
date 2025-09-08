@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:tunisiagotravel/theme/color.dart';
 import 'package:tunisiagotravel/theme/styletext.dart';
 import '../../models/restaurant.dart';
+import '../../screens/ItineraryScreen.dart';
 import '../base_card.dart';
 import '../section_header.dart';
+import 'package:latlong2/latlong.dart';
 
 class RestaurantInfoCard extends StatelessWidget {
   final Restaurant restaurant;
@@ -17,7 +20,7 @@ class RestaurantInfoCard extends StatelessWidget {
         children: [
           SectionHeader(
             icon: Icons.restaurant,
-            title: 'Info',
+            title: 'Restaurant',
             iconColor: Colors.deepPurple[600]!,
           ),
           const SizedBox(height: 16),
@@ -67,7 +70,7 @@ class RestaurantInfoCard extends StatelessWidget {
               ),
               Text(
                 restaurant.startingPrice != null
-                    ? 'à partir de ${restaurant.startingPrice.toString()} TND'
+                    ? 'À partir de ${restaurant.startingPrice.toString()} TND'
                     : 'Prix non disponible',
                 style: TextStyle(
                   fontSize: 14,
@@ -81,11 +84,49 @@ class RestaurantInfoCard extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(top: 8.0),
               child: Chip(
-                label: const Text('Special'),
+                label: const Text('Spécial'),
                 backgroundColor: Colors.orange[100],
                 labelStyle: const TextStyle(color: Colors.orange),
               ),
             ),
+
+
+          // Expanded Itinerary Button
+          SizedBox(
+            width: double.infinity,
+            child: TextButton.icon(
+              onPressed: () {
+                print('Restaurant lat: ${restaurant.lat}, lng: ${restaurant.lng}');
+                if (restaurant.lat != null && restaurant.lng != null) {
+                  try {
+                    final lat = double.parse(restaurant.lat!);
+                    final lng = double.parse(restaurant.lng!);
+                    final destination = LatLng(lat, lng);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ItineraryScreen(destination: destination),
+                      ),
+                    );
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Invalid coordinates format")),
+                    );
+                  }
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Coordinates not available")),
+                  );
+                }
+              },
+              icon: const Icon(Icons.directions, size: 18),
+              label: const Text('Itinéraire'),
+              style: TextButton.styleFrom(
+                foregroundColor: AppColorstatic.primary,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+            ),
+          ),
         ],
       ),
     );

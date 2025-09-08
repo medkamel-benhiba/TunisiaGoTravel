@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
-import '../../models/restaurant.dart';
 import 'package:flutter_html/flutter_html.dart';
+import '../../models/activity.dart';
 import '../base_card.dart';
 import '../section_header.dart';
 
-class RestaurantDescriptionCard extends StatelessWidget {
-  final Restaurant restaurant;
+class ActivityDescriptionCard extends StatelessWidget {
+  final Activity activity;
 
-  const RestaurantDescriptionCard({super.key, required this.restaurant});
+  const ActivityDescriptionCard({super.key, required this.activity});
 
   @override
   Widget build(BuildContext context) {
-    if (restaurant.crtDescription == null || restaurant.crtDescription!.isEmpty) {
+    if (activity.description == null || activity.description!.isEmpty) {
       return const SizedBox.shrink();
     }
 
@@ -26,7 +26,7 @@ class RestaurantDescriptionCard extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Html(
-            data: restaurant.crtDescription!,
+            data: activity.description!,
             style: {
               "body": Style(
                 margin: Margins.zero,

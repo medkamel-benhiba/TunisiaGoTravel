@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/activity_provider.dart';
-import '../widgets/activity_card.dart';
+import '../widgets/activity/activity_card.dart';
 import '../widgets/destinations_list.dart';
 import '../widgets/screen_title.dart';
 

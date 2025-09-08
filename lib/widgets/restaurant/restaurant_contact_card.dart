@@ -19,7 +19,7 @@ class RestaurantContactCard extends StatelessWidget {
         children: [
           SectionHeader(
             icon: Icons.contact_phone,
-            title: 'Contact Information',
+            title: 'Contact',
             iconColor: Colors.teal[600]!,
           ),
           const SizedBox(height: 16),
@@ -33,13 +33,13 @@ class RestaurantContactCard extends StatelessWidget {
     final items = <Map<String, dynamic>>[];
 
     if (restaurant.phone != null && restaurant.phone!.isNotEmpty) {
-      items.add({'icon': Icons.phone, 'label': 'Phone', 'value': restaurant.phone, 'color': Colors.green});
+      items.add({'icon': Icons.phone, 'label': 'Téléphone', 'value': restaurant.phone, 'color': Colors.green});
     }
     if (restaurant.email != null && restaurant.email!.isNotEmpty) {
       items.add({'icon': Icons.email, 'label': 'Email', 'value': restaurant.email, 'color': Colors.orange});
     }
     if (restaurant.website != null && restaurant.website!.isNotEmpty) {
-      items.add({'icon': Icons.web, 'label': 'Website', 'value': restaurant.website, 'color': Colors.blue});
+      items.add({'icon': Icons.web, 'label': 'Site Web', 'value': restaurant.website, 'color': Colors.blue});
     }
 
     return items;
@@ -73,8 +73,8 @@ class RestaurantContactCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
-                    color: item['label'] == 'Website' ? Colors.blue[700] : Colors.grey[800],
-                    decoration: item['label'] == 'Website' ? TextDecoration.underline : null,
+                    color: item['label'] == 'Site Web' ? Colors.blue[700] : Colors.grey[800],
+                    decoration: item['label'] == 'Site Web' ? TextDecoration.underline : null,
                   ),
                 ),
               ],
