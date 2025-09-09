@@ -12,8 +12,8 @@ class Restaurant {
   final String? cover;
   final String? vignette;
   final List<String> images;
-  final String? lat;
-  final String? lng;
+  final String lat;
+  final String lng;
   final dynamic rate;
   final dynamic startingPrice;
   final Map<String, String?> openingHours;
@@ -55,8 +55,8 @@ class Restaurant {
     this.cover,
     this.vignette,
     required this.images,
-    this.lat,
-    this.lng,
+    required this.lat,
+    required this.lng,
     this.rate,
     this.startingPrice,
     required this.openingHours,
@@ -119,8 +119,8 @@ class Restaurant {
       cover: json['cover'] as String?,
       vignette: json['vignette'] as String?,
       images: imageList,
-      lat: json['lat'] as String?,
-      lng: json['lng'] as String?,
+      lat: json['lat'] ?? '',
+      lng: json['lng'] ?? '',
       rate: json['rate'], // Keep as dynamic or parse to double/int as needed
       startingPrice: json['starting_price'], // Keep as dynamic or parse
       openingHours: oh,

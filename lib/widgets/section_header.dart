@@ -32,6 +32,7 @@ class SectionHeader extends StatelessWidget {
         const SizedBox(width: 12),
         Text(
           title,
+          maxLines: 2,
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
             fontWeight: FontWeight.w600,
             color: Colors.grey[800],

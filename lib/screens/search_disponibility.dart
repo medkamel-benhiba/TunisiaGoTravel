@@ -4,10 +4,12 @@ import '../../models/hotel_details.dart';
 import '../models/hotelAvailabilityResponse.dart';
 import '../models/hotelTgt.dart';
 import '../models/hotelBhr.dart';
+import '../models/mouradi.dart';
 import '../services/api_service.dart';
 import '../theme/color.dart';
 import 'hotelTgt_reservation_screen.dart';
 import 'hotelBhr_reservation_screen.dart';
+import 'mouradi_reservation_screen.dart';
 
 class SearchDisponibilityScreen extends StatefulWidget {
   final HotelDetail hotel;
@@ -56,6 +58,10 @@ class _SearchDisponibilityScreenState extends State<SearchDisponibilityScreen> {
     }
   }
 
+  // --- Helper method to check if hotel is Mouradi ---
+  bool _isMouradiHotel() {
+    return widget.hotel.name?.toLowerCase().contains('mouradi') ?? false;
+  }
 
   // --- Updated Search API Call with Navigation Logic ---
   Future<void> _searchDisponibility() async {
@@ -78,6 +84,63 @@ class _SearchDisponibilityScreenState extends State<SearchDisponibilityScreen> {
 
       final api = ApiService();
 
+      // Check if this is a Mouradi hotel
+      if (_isMouradiHotel()) {
+        // Call Mouradi-specific API
+        final mouradiResponse = await api.showMouradiDisponibility(
+          hotelId: widget.hotel.idHotelMouradi ?? "",
+          city: widget.hotel.idCityMouradi ?? "",
+          dateStart: DateFormat('yyyy-MM-dd').format(_startDate!),
+          dateEnd: DateFormat('yyyy-MM-dd').format(_endDate!),
+          rooms: _rooms,
+        );
+
+        // Check for empty response
+        if (mouradiResponse == null || mouradiResponse.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Aucune disponibilité n'a été trouvée pour ces dates."),
+            ),
+          );
+          return;
+        }
+
+        // Convert the API response to MouradiHotel model
+        try {
+          final mouradiHotel = MouradiHotel.fromJson(mouradiResponse);
+
+          // Prepare search criteria for the reservation screen
+          final searchCriteria = {
+            'dateStart': DateFormat('yyyy-MM-dd').format(_startDate!),
+            'dateEnd': DateFormat('yyyy-MM-dd').format(_endDate!),
+            'rooms': _rooms,
+            'hotelId': widget.hotel.idHotelMouradi,
+            'cityId': widget.hotel.idCityMouradi,
+          };
+
+          // Navigate to Mouradi reservation screen
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => MouradiReservationScreen(
+                hotel: mouradiHotel,
+                searchCriteria: searchCriteria,
+              ),
+            ),
+          );
+
+        } catch (e) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text("Erreur lors du traitement des données: $e"),
+            ),
+          );
+        }
+
+        return; // Important: return here to prevent further execution
+      }
+
+      // Regular hotel availability check
       final rawResponse = await api.checkDisponibilityRaw(
         widget.hotel.slug ?? "",
         start,
@@ -93,13 +156,12 @@ class _SearchDisponibilityScreenState extends State<SearchDisponibilityScreen> {
             content: Text("Aucune disponibilité n'a été trouvée pour ces dates."),
           ),
         );
-        return; // Exit the function to prevent further processing
+        return;
       }
 
       if (rawResponse != null && rawResponse.containsKey('disponibilitytype')) {
         final disponibilityType = rawResponse['disponibilitytype'] as String;
 
-        // Use 'dateStart' and 'dateEnd' to match HotelTgtReservationScreen
         final searchCriteria = {
           'dateStart': DateFormat('yyyy-MM-dd').format(_startDate!),
           'dateEnd': DateFormat('yyyy-MM-dd').format(_endDate!),
@@ -159,6 +221,7 @@ class _SearchDisponibilityScreenState extends State<SearchDisponibilityScreen> {
     }
   }
 
+
   // --- Bottom Sheet ---
   void _openRoomSelectionBottomSheet() async {
     final result = await showModalBottomSheet(
@@ -216,7 +279,8 @@ class _SearchDisponibilityScreenState extends State<SearchDisponibilityScreen> {
               date == null ? label : dateFormat.format(date),
               style: TextStyle(
                 fontSize: 13,
-                color: date == null ? Colors.grey.shade600 : Colors.black87,
+                fontWeight: FontWeight.w500,
+                color: date == null ? Colors.black : Colors.black87,
               ),
             ),
           ],
@@ -314,88 +378,6 @@ class _SearchDisponibilityScreenState extends State<SearchDisponibilityScreen> {
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ),
-
-                // Show results if any (for fallback cases)
-                // Replace the results display section in your SearchDisponibilityScreen with this:
-
-// Show results if any (for fallback cases)
-                if (_results.isNotEmpty) ...[
-                  const SizedBox(height: 16),
-                  const Divider(),
-                  const SizedBox(height: 8),
-                  Text(
-                    "Résultats (${_results.length})",
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  ..._results.map((result) => Card(
-                    margin: const EdgeInsets.only(bottom: 8),
-                    child: ExpansionTile(
-                      title: Text("Disponibilité - ${result.disponibilityType}"),
-                      subtitle: Text("${result.pensions.length} option(s) disponible(s)"),
-                      children: [
-                        if (result.pensions.isEmpty)
-                          const Padding(
-                            padding: EdgeInsets.all(16.0),
-                            child: Text("Aucune pension disponible"),
-                          )
-                        else
-                          ...result.pensions.asMap().entries.map((entry) {
-                            final index = entry.key;
-                            final pension = entry.value;
-
-                            // Handle different pension data structures
-                            String pensionTitle = "Pension ${index + 1}";
-                            String pensionDetails = "";
-
-                            if (pension is Map<String, dynamic>) {
-                              pensionTitle = pension['name'] ?? pension['title'] ?? "Pension ${index + 1}";
-
-                              // Build details string from available properties
-                              List<String> details = [];
-                              if (pension['price'] != null) {
-                                details.add("Prix: ${pension['price']} ${pension['currency'] ?? ''}");
-                              }
-                              if (pension['board'] != null) {
-                                details.add("Pension: ${pension['board']}");
-                              }
-                              if (pension['available_rooms'] != null) {
-                                details.add("Chambres: ${pension['available_rooms']}");
-                              }
-                              pensionDetails = details.join(" • ");
-                            } else {
-                              pensionDetails = pension.toString();
-                            }
-
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                              child: Card(
-                                color: Colors.grey.shade50,
-                                child: ListTile(
-                                  title: Text(pensionTitle),
-                                  subtitle: pensionDetails.isNotEmpty
-                                      ? Text(pensionDetails)
-                                      : null,
-                                  trailing: pension is Map<String, dynamic> && pension['price'] != null
-                                      ? Text(
-                                    "${pension['price']} ${pension['currency'] ?? ''}",
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.green,
-                                    ),
-                                  )
-                                      : null,
-                                ),
-                              ),
-                            );
-                          }),
-                      ],
-                    ),
-                  )),
-                ],
               ],
             ),
           ),
@@ -847,7 +829,7 @@ class _RoomSelectionBottomSheetState extends State<RoomSelectionBottomSheet> {
               });
             },
             icon: const Icon(Icons.add_circle_outline, color: Colors.white),
-            label: const Text("Ajouter une chambre", style: TextStyle(color: Colors.black54)),
+            label: const Text("Chambre", style: TextStyle(color: Colors.white)),
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

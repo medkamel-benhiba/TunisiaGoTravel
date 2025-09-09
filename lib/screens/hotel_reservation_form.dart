@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tunisiagotravel/screens/payment_screen.dart';
 import '../theme/color.dart';
 import '../services/api_service.dart';
 
@@ -221,6 +222,7 @@ class _HotelReservationFormScreenState extends State<HotelReservationFormScreen>
   }
 
   Future<void> _submitReservation() async {
+    dynamic response;
     if (!_formKey.currentState!.validate()) return;
 
     for (var key in _selectedGenders.keys) {
@@ -258,15 +260,15 @@ class _HotelReservationFormScreenState extends State<HotelReservationFormScreen>
           "country": _mainCountryController.text,
         };
         print("__Search criteria: ${widget.searchCriteria}");
-
         print("👉 Mouradi Reservation Data: $mouradiReservationData");
-        await _apiService.postHotelReservationMouradi(mouradiReservationData);
+
+        response = await _apiService.postHotelReservationMouradi(mouradiReservationData);
+        print("✅ Mouradi API Response: $response");
 
       } else if (widget.hotelType.toLowerCase() == "tgt") {
         // 🔹 reservation TGT
         final List<Map<String, dynamic>> paxList = [];
 
-        // Calculate total adults and children
         int totalAdults = 0;
         int totalChildren = 0;
         final rooms = widget.searchCriteria['rooms'] as List<Map<String, dynamic>>? ?? [];
@@ -294,7 +296,7 @@ class _HotelReservationFormScreenState extends State<HotelReservationFormScreen>
               'Civility': gender == 'M.' ? 'Mr' : 'Mme',
               'Name': controllers['name']?.text ?? '',
               'Surname': controllers['firstname']?.text ?? '',
-              'Holder': traveler['type'] == 'adult' && traveler['index'] == 1, // First adult is holder
+              'Holder': traveler['type'] == 'adult' && traveler['index'] == 1,
             };
 
             if (traveler['type'] == 'adult') {
@@ -304,7 +306,6 @@ class _HotelReservationFormScreenState extends State<HotelReservationFormScreen>
             }
           }
 
-          // Create the pax structure for this room
           paxList.add({
             'Id': room['room_id'] ?? '',
             'Boarding': widget.selectedRoomsData['pensionIds'] ?? '',
@@ -337,7 +338,10 @@ class _HotelReservationFormScreenState extends State<HotelReservationFormScreen>
         };
 
         print("👉 TGT Reservation Data: $tgtReservationData");
-        await _apiService.reserveHotelTgt(tgtReservationData);
+
+        response = await _apiService.reserveHotelTgt(tgtReservationData);
+        print("✅ TGT API Response: $response");
+
       } else {
         // 🔹 reservation BHR
         final List<Map<String, dynamic>> selectedRooms = [];
@@ -400,19 +404,37 @@ class _HotelReservationFormScreenState extends State<HotelReservationFormScreen>
         };
 
         print("👉 BHR Reservation Data: $bhrReservationData");
-        await _apiService.postHotelReservationBHR(bhrReservationData);
+
+        response = await _apiService.postHotelReservationBHR(bhrReservationData);
+        print("✅ BHR API Response: $response");
       }
 
-      if (mounted) _showSuccessDialog();
+      // ✅ Check response
+      print("📌 Final API Response: $response");
+
+      if (response != null && response['formUrl'] != null && mounted) {
+        final result = await Navigator.push<bool>(
+          context,
+          MaterialPageRoute(
+            builder: (_) => PaymentScreen(formUrl: response["formUrl"]),
+          ),
+        );
+
+        if (result == true && mounted) {
+          _showSuccessDialog();
+        }
+      } else {
+        if (mounted) _showErrorDialog("Erreur lors de la réservation.\n$response");
+      }
     } catch (e) {
+      print("❌ Exception during reservation: $e");
       if (mounted) _showErrorDialog(e.toString());
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
   }
 
-  // A helper method to map country names to two-letter codes.
-  // This is a simplified example and should be expanded for a production app.
+
   String _mapCountryToCode(String country) {
     switch (country.toLowerCase()) {
       case 'tunisia':

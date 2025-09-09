@@ -76,7 +76,14 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
                       context,
                       "Date début",
                       _startDate,
-                          (picked) => setState(() => _startDate = picked),
+                          (picked) {
+                        setState(() {
+                          _startDate = picked;
+                          if (_endDate != null && _endDate!.isBefore(_startDate!)) {
+                            _endDate = null;
+                          }
+                        });
+                      },
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -86,10 +93,12 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
                       "Date fin",
                       _endDate,
                           (picked) => setState(() => _endDate = picked),
+                      firstDate: _startDate ?? DateTime.now(),
                     ),
                   ),
                 ],
               ),
+
               const SizedBox(height: 16),
 
               // Room/Adults/Children summary
@@ -474,14 +483,37 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
     );
   }
 
-  Widget _buildDateInput(BuildContext context, String label, DateTime? date, Function(DateTime) onDatePicked) {
+  Widget _buildDateInput(
+      BuildContext context,
+      String label,
+      DateTime? date,
+      Function(DateTime) onDatePicked, {
+        DateTime? firstDate,
+      }) {
     return InkWell(
       onTap: () async {
         final picked = await showDatePicker(
           context: context,
-          initialDate: DateTime.now(),
-          firstDate: DateTime.now(),
+          initialDate: date ?? firstDate ?? DateTime.now(),
+          firstDate: firstDate ?? DateTime.now(),
           lastDate: DateTime(2100),
+          builder: (context, child) {
+            return Theme(
+              data: Theme.of(context).copyWith(
+                colorScheme: ColorScheme.light(
+                  primary: AppColorstatic.primary,
+                  onPrimary: Colors.white,
+                  onSurface: Colors.black87,
+                ),
+                textButtonTheme: TextButtonThemeData(
+                  style: TextButton.styleFrom(
+                    foregroundColor: AppColorstatic.primary,
+                  ),
+                ),
+              ),
+              child: child!,
+            );
+          },
         );
         if (picked != null) onDatePicked(picked);
       },
@@ -493,12 +525,12 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
         ),
         child: Row(
           children: [
-            Icon(Icons.calendar_month, color: Colors.grey.shade600, size: 13),
-            const SizedBox(width: 5),
+            Icon(Icons.calendar_month, color: Colors.grey.shade700, size: 13),
+            const SizedBox(width: 4),
             Text(
               date == null ? label : date.toString().split(" ")[0],
               style: TextStyle(
-                color: date == null ? Colors.grey[600] : Colors.black87,
+                color: Colors.grey.shade700,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -507,6 +539,8 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
       ),
     );
   }
+
+
 
   Widget _buildGuestSummary(int rooms, int adults, int children) {
     return InkWell(
@@ -884,7 +918,7 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
               });
             },
             icon: const Icon(Icons.add_circle_outline, color: AppColorstatic.lightTextColor),
-            label: const Text("Ajouter une chambre", style: TextStyle(color: AppColorstatic.lightTextColor)),
+            label: const Text("Chambre", style: TextStyle(color: AppColorstatic.lightTextColor)),
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(

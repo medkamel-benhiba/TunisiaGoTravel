@@ -27,7 +27,7 @@ import '../models/voyage.dart';
 
 
 class ApiService {
-  static const String _baseUrl = 'https://backend.tunisiagotravel.com';
+  static const String _baseUrl = 'https://test.tunisiagotravel.com';
   final String _cachevoy = 'cached_voyages';
 
   Future<List<Destination>> getDestinations() async {
@@ -1053,9 +1053,10 @@ class ApiService {
     }
   }
 
-  Future<void> postHotelReservationMouradi(Map<String, dynamic> data) async {
+  Future<Map<String, dynamic>> postHotelReservationMouradi(
+      Map<String, dynamic> data) async {
     final response = await http.post(
-      Uri.parse("https://test.tunisiagotravel.com/utilisateur/Mouradi/book"),
+      Uri.parse("$_baseUrl/utilisateur/Mouradi/book"),
       headers: {"Content-Type": "application/json"},
       body: jsonEncode(data),
     );
@@ -1063,9 +1064,13 @@ class ApiService {
     if (response.statusCode != 200) {
       throw Exception("Erreur réservation Mouradi: ${response.body}");
     }
+
+    // ✅ Return the decoded response as Map
+    return jsonDecode(response.body) as Map<String, dynamic>;
   }
 
-  Future<void> reserveHotelTgt(Map<String, dynamic> reservationData) async {
+
+  Future<dynamic> reserveHotelTgt(Map<String, dynamic> reservationData) async {
     final url = Uri.parse('$_baseUrl/utilisateur/hotels/reservationhotel');
     final headers = {'Content-Type': 'application/json'};
 
@@ -1075,10 +1080,13 @@ class ApiService {
       body: jsonEncode(reservationData),
     );
 
-    if (response.statusCode != 200) {
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
       throw Exception('Failed to reserve hotel: ${response.body}');
     }
   }
+
 
   Future<List<Disponibility>> checkdispo(
       String slug, String start, String end, List rooms) async {
@@ -1168,6 +1176,51 @@ class ApiService {
     } catch (e) {
       debugPrint('Error in checkDisponibilityRaw: $e');
       return null;
+    }
+  }
+
+  Future<Success> postreservationrestau(
+      String id,
+      String? date,
+      String? time,
+      String number,
+      String name,
+      String email,
+      String phone,
+      String country,
+      String city) async {
+    final url = Uri.parse('$_baseUrl/utilisateur/restaurants/reservation');
+
+    var body = json.encode({
+      "resetaurant_id": id,
+      "date": date,
+      "time": time,
+      "name": name,
+      "number": number,
+      "email": email,
+      "phone": phone,
+      "country": country,
+      "city": city,
+    });
+
+    var headers = {'Content-Type': 'application/json'};
+
+    final response = await http.post(
+      url,
+      headers: headers,
+      body: body,
+    );
+
+    if (response.statusCode == 200) {
+      final responseBody = json.decode(response.body);
+      print(" repence  ..........................   $responseBody");
+      Success success = Success(success: true);
+      print('success');
+      return success;
+    } else {
+      print(
+          'Failed to post restaurtsa: ${response.statusCode} $body $_baseUrl/utilisateur/restaurants/reservation');
+      return Success(success: false);
     }
   }
 

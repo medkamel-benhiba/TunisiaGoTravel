@@ -3,6 +3,8 @@ import 'package:tunisiagotravel/theme/color.dart';
 import 'package:tunisiagotravel/theme/styletext.dart';
 import '../../models/restaurant.dart';
 import '../../screens/ItineraryScreen.dart';
+import '../../screens/restaurant_reservation.dart';
+import '../../screens/search_disponibility.dart';
 import '../base_card.dart';
 import '../section_header.dart';
 import 'package:latlong2/latlong.dart';
@@ -80,7 +82,7 @@ class RestaurantInfoCard extends StatelessWidget {
               ),
             ],
           ),
-          if (restaurant.isSpecial)
+          /*if (restaurant.isSpecial)
             Padding(
               padding: const EdgeInsets.only(top: 8.0),
               child: Chip(
@@ -88,44 +90,70 @@ class RestaurantInfoCard extends StatelessWidget {
                 backgroundColor: Colors.orange[100],
                 labelStyle: const TextStyle(color: Colors.orange),
               ),
-            ),
+            ),*/
+          const SizedBox(height: 10),
 
 
           // Expanded Itinerary Button
-          SizedBox(
-            width: double.infinity,
-            child: TextButton.icon(
-              onPressed: () {
-                print('Restaurant lat: ${restaurant.lat}, lng: ${restaurant.lng}');
-                if (restaurant.lat != null && restaurant.lng != null) {
-                  try {
-                    final lat = double.parse(restaurant.lat!);
-                    final lng = double.parse(restaurant.lng!);
-                    final destination = LatLng(lat, lng);
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    print('restaurant lat: ${restaurant.lat}, lng: ${restaurant.lng}');
+                    if (restaurant.lat != null && restaurant.lng != null) {
+                      final destination = LatLng(
+                        double.tryParse(restaurant.lat.toString()) ?? 0.0,
+                        double.tryParse(restaurant.lng.toString()) ?? 0.0,
+                      );
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ItineraryScreen(destination: destination),
+                        ),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Coordinates not available")),
+                      );
+                    }
+                  },
+                  icon: const Icon(Icons.directions, size: 18),
+                  label: const Text('Itinéraire'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColorstatic.primary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => ItineraryScreen(destination: destination),
+                        builder: (_) => RestaurantReservationScreen(restaurant:restaurant),
                       ),
                     );
-                  } catch (e) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Invalid coordinates format")),
-                    );
-                  }
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Coordinates not available")),
-                  );
-                }
-              },
-              icon: const Icon(Icons.directions, size: 18),
-              label: const Text('Itinéraire'),
-              style: TextButton.styleFrom(
-                foregroundColor: AppColorstatic.primary,
-                padding: const EdgeInsets.symmetric(vertical: 12),
+                  },
+                  icon: const Icon(Icons.book_online, size: 18),
+                  label: const Text('Réserver'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColorstatic.primary2,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
         ],
       ),

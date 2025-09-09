@@ -30,8 +30,6 @@ class HotelDetail {
   final List<MinimumStay> minimumstay;
   final List<Spo> spo;
   final List<Discount> discounts;
-
-  // Optional fields from the list view (e.g., from hotels.json)
   final String? slug;
   final String? vignette;
   final String? destinationId;
@@ -52,6 +50,9 @@ class HotelDetail {
   final Destination? destination;
   final List<String>? gallery;
   final List<String>? images;
+  final String? idCityMouradi;
+  final String? idHotelMouradi;
+  final String? idHotelBhr;
 
   HotelDetail({
     required this.type,
@@ -103,6 +104,9 @@ class HotelDetail {
     this.destination,
     this.gallery,
     this.images,
+    this.idCityMouradi,
+    this.idHotelMouradi,
+    this.idHotelBhr
 
   });
 
@@ -183,6 +187,9 @@ class HotelDetail {
       images: json['images'] != null
           ? List<String>.from(json['images'])
           : [],
+      idCityMouradi: json['id_city_mouradi'] ?? '',
+      idHotelMouradi: json['id_hotel_mouradi'] ?? '',
+
     );
   }
 
@@ -238,6 +245,8 @@ class HotelDetail {
       'destination': destination?.toJson(),
       'gallery': gallery,
       'images': images,
+      'images': images,
+
 
     };
   }
