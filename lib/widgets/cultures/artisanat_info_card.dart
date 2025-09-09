@@ -125,7 +125,7 @@ class ArtisanatInfoCard extends StatelessWidget {
 
                   const SizedBox(height: 16),
 
-                  // Action buttons row
+                 /* // Action buttons row
                   Row(
                     children: [
                       if (artisanat.videoLink.isNotEmpty)
@@ -156,7 +156,7 @@ class ArtisanatInfoCard extends StatelessWidget {
                           ),
                         ),
                     ],
-                  ),
+                  ),*/
                 ],
               ),
             ),

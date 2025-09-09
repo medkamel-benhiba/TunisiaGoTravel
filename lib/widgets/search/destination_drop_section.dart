@@ -22,14 +22,14 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
   DateTime? _startDate;
   DateTime? _endDate;
 
-  bool _isVisible = true; // Flag to hide the section after search
+  bool _isVisible = true;
 
   // Updated room data structure to include child ages
   List<Map<String, dynamic>> roomsData = [
     {
       "adults": 2,
       "children": 0,
-      "childAges": <int>[] // List of child ages for this room
+      "childAges": <int>[]
     }, // Default room
   ];
 

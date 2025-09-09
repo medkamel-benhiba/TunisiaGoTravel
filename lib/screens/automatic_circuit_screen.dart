@@ -1,12 +1,15 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import '../../widgets/circuits/budget_input.dart';
 import '../../widgets/circuits/compose_button.dart';
-import '../../widgets/circuits/counter_row.dart';
 import '../../widgets/circuits/date_picker_section.dart';
 import '../../widgets/screen_title.dart';
 import '../../widgets/circuits/city_dropdown.dart';
 import '../../providers/auto_circuit_provider.dart';
+import '../widgets/reservation/guest_summary.dart';
 import 'autoCircuits_details.dart';
 
 class AutoCircuitScreen extends StatefulWidget {
@@ -20,9 +23,9 @@ class _AutoCircuitScreenState extends State<AutoCircuitScreen> {
   final _budgetController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
-  int adults = 1;
-  int children = 0;
-  int rooms = 1;
+  List<Map<String, dynamic>> _roomsData = [
+    {"adults": 2, "children": 0, "childAges": []},
+  ];
 
   DateTime? _startDate;
   DateTime? _endDate;
@@ -32,10 +35,13 @@ class _AutoCircuitScreenState extends State<AutoCircuitScreen> {
   String? _startCityId;
   String? _endCityId;
 
-  int get duration =>
-      (_startDate != null && _endDate != null)
-          ? _endDate!.difference(_startDate!).inDays + 1
-          : 0;
+  int get adults => _roomsData.fold(0, (sum, room) => sum + (room["adults"] as int));
+  int get children => _roomsData.fold(0, (sum, room) => sum + (room["children"] as int));
+  int get rooms => _roomsData.length;
+
+  int get duration => (_startDate != null && _endDate != null)
+      ? _endDate!.difference(_startDate!).inDays + 1
+      : 0;
 
   bool get _isFormValid {
     return _startDate != null &&
@@ -49,6 +55,39 @@ class _AutoCircuitScreenState extends State<AutoCircuitScreen> {
         double.parse(_budgetController.text) > 0;
   }
 
+  // ---- SAVE & LOAD DATES + ROOMS ----
+  Future<void> _saveDatesAndRooms(DateTime start, DateTime end, List<Map<String, dynamic>> rooms) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('auto_start_date', start.toIso8601String());
+    await prefs.setString('auto_end_date', end.toIso8601String());
+    await prefs.setString('auto_rooms_data', jsonEncode(rooms));
+  }
+
+  Future<void> _loadDatesAndRooms() async {
+    final prefs = await SharedPreferences.getInstance();
+    final start = prefs.getString('auto_start_date');
+    final end = prefs.getString('auto_end_date');
+    final roomsJson = prefs.getString('auto_rooms_data');
+
+    setState(() {
+      _startDate = start != null ? DateTime.tryParse(start) : null;
+      _endDate = end != null ? DateTime.tryParse(end) : null;
+      _roomsData = roomsJson != null
+          ? (jsonDecode(roomsJson) as List<dynamic>)
+          .map((e) => Map<String, dynamic>.from(e))
+          .toList()
+          : [
+        {"adults": 2, "children": 0, "childAges": []},
+      ];
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDatesAndRooms();
+  }
+
   void _handleComposeButtonPress(AutoCircuitProvider provider) async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -60,16 +99,23 @@ class _AutoCircuitScreenState extends State<AutoCircuitScreen> {
     if (_startCityId == _endCityId) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('La ville de départ et d\'arrivée doivent être différentes'),
+          content:
+          Text('La ville de départ et d\'arrivée doivent être différentes'),
           backgroundColor: Colors.orange,
         ),
       );
       return;
     }
 
+    // Save dates + rooms
+    if (_startDate != null && _endDate != null) {
+      await _saveDatesAndRooms(_startDate!, _endDate!, _roomsData);
+    }
+
     final adultsCount = adults < 1 ? 1 : adults;
     final roomsCount = rooms < 1 ? 1 : rooms;
-    final budgetValue = (_budgetController.text.isEmpty || double.tryParse(_budgetController.text) == null)
+    final budgetValue =
+    (_budgetController.text.isEmpty || double.tryParse(_budgetController.text) == null)
         ? 1000
         : double.parse(_budgetController.text) < 1000
         ? 1000
@@ -87,7 +133,6 @@ class _AutoCircuitScreenState extends State<AutoCircuitScreen> {
       duration: duration,
     );
 
-    // Navigate automatically if no error and circuit exists
     if (provider.error == null && provider.circuit != null) {
       Navigator.push(
         context,
@@ -100,21 +145,28 @@ class _AutoCircuitScreenState extends State<AutoCircuitScreen> {
     }
   }
 
-
   void _showValidationError() {
     String message = 'Veuillez vérifier les champs suivants:\n';
     List<String> errors = [];
 
     if (_startDate == null || _endDate == null) errors.add('• Dates de voyage');
-    if (_startCityId == null || _endCityId == null) errors.add('• Villes de départ et d\'arrivée');
+    if (_startCityId == null || _endCityId == null) {
+      errors.add('• Villes de départ et d\'arrivée');
+    }
     if (adults == 0) errors.add('• Au moins 1 adulte requis');
-    if (_budgetController.text.isEmpty || double.tryParse(_budgetController.text) == null)
+    if (_budgetController.text.isEmpty ||
+        double.tryParse(_budgetController.text) == null) {
       errors.add('• Budget valide');
+    }
 
     message += errors.join('\n');
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: Colors.red, duration: const Duration(seconds: 4)),
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+        duration: const Duration(seconds: 4),
+      ),
     );
   }
 
@@ -126,9 +178,9 @@ class _AutoCircuitScreenState extends State<AutoCircuitScreen> {
       _endCity = null;
       _startCityId = null;
       _endCityId = null;
-      adults = 1;
-      children = 0;
-      rooms = 1;
+      _roomsData = [
+        {"adults": 2, "children": 0, "childAges": []},
+      ];
       _budgetController.clear();
     });
   }
@@ -217,7 +269,10 @@ class _AutoCircuitScreenState extends State<AutoCircuitScreen> {
                       ),
                     ),
                   ),
-                  title: Text(name, style: const TextStyle(fontWeight: FontWeight.w600)),
+                  title: Text(
+                    name,
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
                   subtitle: description != null ? Text(description) : null,
                   trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                 ),
@@ -254,9 +309,12 @@ class _AutoCircuitScreenState extends State<AutoCircuitScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
-                    child: const ScreenTitle(title: 'Circuit Automatique', icon: Icons.account_tree_outlined),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
+                    child: ScreenTitle(
+                      title: 'Circuit Automatique',
+                      icon: Icons.account_tree_outlined,
+                    ),
                   ),
                   Expanded(
                     child: SingleChildScrollView(
@@ -270,10 +328,12 @@ class _AutoCircuitScreenState extends State<AutoCircuitScreen> {
                                 _startDate = start;
                                 _endDate = end;
                               });
+                              if (start != null && end != null) {
+                                _saveDatesAndRooms(start, end, _roomsData);
+                              }
                             },
                           ),
                           const SizedBox(height: 16),
-                          // Affichage de la durée calculée
                           if (duration > 0)
                             Container(
                               padding: const EdgeInsets.all(12),
@@ -324,35 +384,28 @@ class _AutoCircuitScreenState extends State<AutoCircuitScreen> {
                           const SizedBox(height: 16),
                           BudgetInput(controller: _budgetController),
                           const SizedBox(height: 16),
-                          CounterRow(
-                            label: 'Adultes',
-                            count: adults,
-                            onIncrement: () => setState(() => adults++),
-                            onDecrement: () {
-                              if (adults > 1) setState(() => adults--);
-                            },
-                          ),
-                          const SizedBox(height: 12),
-                          CounterRow(
-                            label: 'Enfants',
-                            count: children,
-                            onIncrement: () => setState(() => children++),
-                            onDecrement: () {
-                              if (children > 0) setState(() => children--);
-                            },
-                          ),
-                          const SizedBox(height: 12),
-                          CounterRow(
-                            label: 'Chambres',
-                            count: rooms,
-                            onIncrement: () => setState(() => rooms++),
-                            onDecrement: () {
-                              if (rooms > 0) setState(() => rooms--);
-                            },
+                          Card(
+                            elevation: 2,
+                            child: Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: GuestSummary(
+                                initialRoomsData: _roomsData,
+                                onRoomsChanged: (updatedRooms) {
+                                  setState(() {
+                                    _roomsData = updatedRooms;
+                                    if (_startDate != null && _endDate != null) {
+                                      _saveDatesAndRooms(_startDate!, _endDate!, _roomsData);
+                                    }
+                                  });
+                                },
+                              ),
+                            ),
                           ),
                           const SizedBox(height: 24),
                           ComposeButton(
-                            onPressed: provider.isLoading ? null : () => _handleComposeButtonPress(provider),
+                            onPressed: provider.isLoading
+                                ? null
+                                : () => _handleComposeButtonPress(provider),
                           ),
                           const SizedBox(height: 20),
                           _buildResultsSection(provider),

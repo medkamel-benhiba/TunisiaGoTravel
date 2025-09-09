@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tunisiagotravel/theme/color.dart';
 
-import '../../theme/styletext.dart';
 
 class ItemTile extends StatelessWidget {
   final String title;

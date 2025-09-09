@@ -109,13 +109,25 @@ class ManualCircuitProvider extends ChangeNotifier {
   }
 
   /// Mettre à jour le nombre de jours pour une destination
-  void updateDestinationDays(String destinationId, int days) {
+  /// Mettre à jour le nombre de jours pour une destination
+  void updateDestinationDays(String destinationId, int days, int maxDuration) {
     final index = _destinations.indexWhere((d) => d.id == destinationId);
-    if (index != -1 && days >= 0) {
-      _destinations[index].days = days;
-      notifyListeners();
+    if (index == -1) return;
+
+    final dest = _destinations[index];
+
+    // Ville de départ doit avoir au moins 1 jour
+    if (dest.isStart && days < 1) {
+      dest.days = 1;
+    } else {
+      // Calculer le nombre de jours restants pour les autres destinations
+      final remainingDays = maxDuration - totalSelectedDays + dest.days;
+      dest.days = days > remainingDays ? remainingDays : days;
     }
+
+    notifyListeners();
   }
+
 
   /// Définir la ville de départ (une seule autorisée)
   void setStartDestination(String destinationId) {

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:tunisiagotravel/screens/ItineraryScreen.dart';
 import '../../models/musee.dart';
 import '../../theme/styletext.dart';
 
@@ -130,12 +132,28 @@ class MuseeInfoCard extends StatelessWidget {
                       Expanded(
                         child: TextButton.icon(
                           onPressed: () {
-                            // Handle directions
+                            print('Museum lat: ${musee.lat}, lng: ${musee.lng}');
+                            final double? lat = double.tryParse(musee.lat ?? '');
+                            final double? lng = double.tryParse(musee.lng ?? '');
+
+                            if (lat != null && lng != null) {
+                              final destination = LatLng(lat, lng);
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => ItineraryScreen(destination: destination),
+                                ),
+                              );
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text("Invalid coordinates")),
+                              );
+                            }
                           },
                           icon: const Icon(Icons.directions, size: 18),
                           label: const Text('Itinéraire'),
                           style: TextButton.styleFrom(
-                            foregroundColor: Theme.of(context).primaryColor,
+                            foregroundColor: Colors.deepPurple,
                             padding: const EdgeInsets.symmetric(vertical: 8),
                           ),
                         ),

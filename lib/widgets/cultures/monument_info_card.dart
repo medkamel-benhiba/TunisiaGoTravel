@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:tunisiagotravel/screens/ItineraryScreen.dart';
 import 'package:tunisiagotravel/theme/color.dart';
 import '../../models/monument.dart';
 
@@ -133,12 +135,25 @@ class MonumentInfoCard extends StatelessWidget {
                         Expanded(
                           child: TextButton.icon(
                             onPressed: () {
-                              // Handle directions
+                              print('Monument lat: ${monument.lat}, lng: ${monument.lng}');
+                              if (monument.lat != null && monument.lng != null) {
+                                final destination = LatLng(monument.lat!, monument.lng!);
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => ItineraryScreen(destination: destination),
+                                  ),
+                                );
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text("Invalid coordinates")),
+                                );
+                              }
                             },
                             icon: const Icon(Icons.directions, size: 18),
                             label: const Text('Itinéraire'),
                             style: TextButton.styleFrom(
-                              foregroundColor: AppColorstatic.primary2,
+                              foregroundColor: Colors.deepPurple,
                               padding: const EdgeInsets.symmetric(vertical: 8),
                             ),
                           ),

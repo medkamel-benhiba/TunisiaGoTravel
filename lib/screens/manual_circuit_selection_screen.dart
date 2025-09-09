@@ -223,16 +223,17 @@ class _ManualDestinationSelectionScreenState
               final destination = provider.destinations[index];
               return DestinationSelectionCard(
                 destination: destination,
-                onDaysChanged: (days) => provider.updateDestinationDays(destination.id, days),
+                onDaysChanged: (days) => provider.updateDestinationDays(destination.id, days, widget.duration),
                 onStartChanged: (isStart) {
                   if (isStart) provider.setStartDestination(destination.id);
                 },
                 maxDays: widget.duration,
-                remainingDays: widget.duration - provider.totalSelectedDays - destination.days,
+                remainingDays: widget.duration - provider.totalSelectedDays + destination.days,
               );
             },
           ),
         ),
+
       ],
     );
   }

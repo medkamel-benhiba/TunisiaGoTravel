@@ -1,11 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:tunisiagotravel/widgets/circuits/ItemDetails.dart';
 import '../../theme/color.dart';
-import 'ItemDetails.dart';
 
 class ItemCard extends StatelessWidget {
   final Map<String, dynamic> item;
   final Color categoryColor;
-  const ItemCard({super.key, required this.item, required this.categoryColor});
+  final DateTime? startDate;
+  final int dayIndex;
+
+  const ItemCard({
+    super.key,
+    required this.item,
+    required this.categoryColor,
+    this.startDate,
+    this.dayIndex = 0,
+  });
 
   Widget _buildItemImage() {
     return Container(
@@ -34,11 +43,13 @@ class ItemCard extends StatelessWidget {
       child: ExpansionTile(
         leading: _buildItemImage(),
         title: Text(item['Name'] ?? item['name'] ?? item['title'] ?? 'Nom introuvable'),
-        subtitle: item['Description'] != null
-            ? Text(item['Description'],
-            maxLines: 2, overflow: TextOverflow.ellipsis)
-            : null,
-        children: [ItemDetail(item: item)],
+        children: [
+          ItemDetail(
+            item: item,
+            startDate: startDate,
+            dayIndex: dayIndex,
+          ),
+        ],
       ),
     );
   }

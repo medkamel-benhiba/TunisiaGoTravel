@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:tunisiagotravel/screens/ItineraryScreen.dart';
 import '../../models/festival.dart';
 
 class FestivalInfoCard extends StatelessWidget {
@@ -131,7 +133,24 @@ class FestivalInfoCard extends StatelessWidget {
                         Expanded(
                           child: TextButton.icon(
                             onPressed: () {
-                              // Handle directions
+                              print('Festival lat: ${festival.lat}, lng: ${festival.lng}');
+                              // Check if lat and lng are not empty and can be parsed to double
+                              final double? lat = double.tryParse(festival.lat);
+                              final double? lng = double.tryParse(festival.lng);
+
+                              if (lat != null && lng != null) {
+                                final destination = LatLng(lat, lng);
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => ItineraryScreen(destination: destination),
+                                  ),
+                                );
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text("Invalid coordinates")),
+                                );
+                              }
                             },
                             icon: const Icon(Icons.directions, size: 18),
                             label: const Text('Itinéraire'),

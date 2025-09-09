@@ -6,8 +6,8 @@ class Monument {
   final String name;
   final String description;
   final String categories;
-  final double lat;
-  final double lng;
+  final double? lat;
+  final double? lng;
   final List<String> images;
   final String cover;
   final String vignette;
@@ -34,8 +34,8 @@ class Monument {
       name: json['name'] ?? '',
       description: json['description'] ?? '',
       categories: json['categories'] ?? '',
-      lat: double.tryParse(json['lat']?.toString() ?? '0') ?? 0.0,
-      lng: double.tryParse(json['lng']?.toString() ?? '0') ?? 0.0,
+      lat: double.tryParse(json['lat']?.toString() ?? ''),
+      lng: double.tryParse(json['lng']?.toString() ?? ''),
       images: List<String>.from(json['images'] ?? []),
       cover: json['cover'] ?? '',
       vignette: json['vignette'] ?? '',

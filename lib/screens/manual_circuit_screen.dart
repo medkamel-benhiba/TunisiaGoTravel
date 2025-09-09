@@ -1,13 +1,16 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import '../../widgets/circuits/budget_input.dart';
 import '../../widgets/circuits/compose_button.dart';
-import '../../widgets/circuits/counter_row.dart';
 import '../../widgets/circuits/date_picker_section.dart';
 import '../../widgets/screen_title.dart';
 import '../../widgets/circuits/city_dropdown.dart';
 import '../../providers/manual_circuit_provider.dart';
 import 'manual_circuit_selection_screen.dart';
+import '../../widgets/reservation/guest_summary.dart';
 
 class ManualCircuitScreen extends StatefulWidget {
   const ManualCircuitScreen({super.key});
@@ -21,9 +24,6 @@ class _ManualCircuitScreenState extends State<ManualCircuitScreen> {
   final _formKey = GlobalKey<FormState>();
 
   // Données du formulaire
-  int _adults = 1;
-  int _children = 0;
-  int _rooms = 1;
   DateTime? _startDate;
   DateTime? _endDate;
   String? _startCity;
@@ -31,10 +31,48 @@ class _ManualCircuitScreenState extends State<ManualCircuitScreen> {
   String? _startCityId;
   String? _endCityId;
 
-  // Calculs
+  // Données des chambres pour GuestSummary
+  List<Map<String, dynamic>> _roomsData = [
+    {"adults": 2, "children": 0, "childAges": <int>[]}
+  ];
+
+  // Calcul de la durée
   int get duration => (_startDate != null && _endDate != null)
       ? _endDate!.difference(_startDate!).inDays + 1
       : 0;
+
+  // ---- SAVE & LOAD DATES + ROOMS ----
+  Future<void> _saveDatesAndRooms(DateTime start, DateTime end, List<Map<String, dynamic>> rooms) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('manual_start_date', start.toIso8601String());
+    await prefs.setString('manual_end_date', end.toIso8601String());
+    await prefs.setString('manual_rooms_data', jsonEncode(rooms));
+  }
+
+  Future<void> _loadDatesAndRooms() async {
+    final prefs = await SharedPreferences.getInstance();
+    final start = prefs.getString('manual_start_date');
+    final end = prefs.getString('manual_end_date');
+    final roomsJson = prefs.getString('manual_rooms_data');
+
+    setState(() {
+      _startDate = start != null ? DateTime.tryParse(start) : null;
+      _endDate = end != null ? DateTime.tryParse(end) : null;
+      _roomsData = roomsJson != null
+          ? (jsonDecode(roomsJson) as List<dynamic>)
+          .map((e) => Map<String, dynamic>.from(e))
+          .toList()
+          : [
+        {"adults": 2, "children": 0, "childAges": <int>[]}
+      ];
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDatesAndRooms();
+  }
 
   @override
   void dispose() {
@@ -42,7 +80,7 @@ class _ManualCircuitScreenState extends State<ManualCircuitScreen> {
     super.dispose();
   }
 
-  /// Valider et soumettre le formulaire
+  // Valider et soumettre le formulaire
   Future<void> _handleFormSubmit() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -52,10 +90,12 @@ class _ManualCircuitScreenState extends State<ManualCircuitScreen> {
       return;
     }
 
-    // Préparer les données
+    if (_startDate != null && _endDate != null) {
+      _saveDatesAndRooms(_startDate!, _endDate!, _roomsData);
+    }
+
     final formData = _prepareFormData();
 
-    // Naviguer vers la sélection des destinations avec Provider
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -72,50 +112,38 @@ class _ManualCircuitScreenState extends State<ManualCircuitScreen> {
 
   /// Valider les données du formulaire
   String? _validateForm() {
-    if (_startDate == null || _endDate == null) {
-      return 'Veuillez sélectionner les dates de voyage';
-    }
-    if (_startCityId == null) {
-      return 'Veuillez sélectionner une ville de départ';
-    }
-    if (_endCityId == null) {
-      return 'Veuillez sélectionner une ville d\'arrivée';
-    }
-    if (_adults < 1) {
-      return 'Au moins 1 adulte est requis';
-    }
-    if (duration < 1) {
-      return 'La durée du voyage doit être d\'au moins 1 jour';
-    }
-    if (_budgetController.text.isEmpty) {
-      return 'Veuillez saisir un budget';
-    }
+    if (_startDate == null || _endDate == null) return 'Veuillez sélectionner les dates de voyage';
+    if (_startCityId == null) return 'Veuillez sélectionner une ville de départ';
+    if (_endCityId == null) return 'Veuillez sélectionner une ville d\'arrivée';
+    if (_roomsData.fold(0, (sum, room) => sum + (room["adults"] as int)) < 1) return 'Au moins 1 adulte est requis';
+    if (duration < 1) return 'La durée du voyage doit être d\'au moins 1 jour';
+    if (_budgetController.text.isEmpty) return 'Veuillez saisir un budget';
     final budget = double.tryParse(_budgetController.text);
-    if (budget == null || budget <= 0) {
-      return 'Veuillez saisir un budget valide';
-    }
-    if (budget < 100) {
-      return 'Le budget minimum est de 100 TND';
-    }
+    if (budget == null || budget <= 0) return 'Veuillez saisir un budget valide';
+    if (budget < 100) return 'Le budget minimum est de 100 TND';
     return null;
   }
 
   /// Préparer les données du formulaire pour l'étape suivante
   Map<String, dynamic> _prepareFormData() {
     final budget = double.tryParse(_budgetController.text) ?? 1000;
+    int totalAdults = _roomsData.fold(0, (sum, room) => sum + (room["adults"] as int));
+    int totalChildren = _roomsData.fold(0, (sum, room) => sum + (room["children"] as int));
+    int totalRooms = _roomsData.length;
+
     return {
       'budget': budget < 100 ? 1000 : budget.toInt().toString(),
       'start': _startDate!.toIso8601String().split('T')[0],
       'end': _endDate!.toIso8601String().split('T')[0],
       'departCityId': _startCityId!,
       'arriveCityId': _endCityId!,
-      'adults': _adults.toString(),
-      'children': _children.toString(),
-      'room': _rooms.toString(),
+      'adults': totalAdults.toString(),
+      'children': totalChildren.toString(),
+      'room': totalRooms.toString(),
+      'roomsData': _roomsData,
     };
   }
 
-  /// Afficher une erreur dans une SnackBar
   void _showErrorSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -135,7 +163,6 @@ class _ManualCircuitScreenState extends State<ManualCircuitScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // En-tête
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
               child: ScreenTitle(
@@ -143,27 +170,24 @@ class _ManualCircuitScreenState extends State<ManualCircuitScreen> {
                 icon: Icons.edit_location_alt_outlined,
               ),
             ),
-
-            // Corps du formulaire
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Sélection des dates
                     DateRangeCalendar(
                       onRangeSelected: (start, end) {
                         setState(() {
                           _startDate = start;
                           _endDate = end;
                         });
+                        if (start != null && end != null) {
+                          _saveDatesAndRooms(_startDate!, _endDate!, _roomsData);
+                        }
                       },
                     ),
-
                     const SizedBox(height: 16),
-
-                    // Affichage de la durée uniquement si _endDate est sélectionnée
                     if (_startDate != null && _endDate != null)
                       Container(
                         padding: const EdgeInsets.all(12),
@@ -187,8 +211,6 @@ class _ManualCircuitScreenState extends State<ManualCircuitScreen> {
                           ],
                         ),
                       ),
-
-                    // Ville de départ
                     CityDropdown(
                       label: 'Ville de Départ',
                       selectedValue: _startCity,
@@ -200,10 +222,7 @@ class _ManualCircuitScreenState extends State<ManualCircuitScreen> {
                         });
                       },
                     ),
-
                     const SizedBox(height: 16),
-
-                    // Ville d'arrivée
                     CityDropdown(
                       label: 'Ville d\'Arrivée',
                       selectedValue: _endCity,
@@ -215,67 +234,28 @@ class _ManualCircuitScreenState extends State<ManualCircuitScreen> {
                         });
                       },
                     ),
-
                     const SizedBox(height: 16),
-
-                    // Budget
-                    BudgetInput(
-                      controller: _budgetController,
-                    ),
-
+                    BudgetInput(controller: _budgetController),
                     const SizedBox(height: 16),
-
-                    // Section voyageurs
                     Card(
                       elevation: 2,
                       child: Padding(
                         padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Détails',
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            CounterRow(
-                              label: 'Adultes',
-                              count: _adults,
-                              onIncrement: () => setState(() => _adults++),
-                              onDecrement: () {
-                                if (_adults > 1) setState(() => _adults--);
-                              },
-                            ),
-                            const SizedBox(height: 12),
-                            CounterRow(
-                              label: 'Enfants',
-                              count: _children,
-                              onIncrement: () => setState(() => _children++),
-                              onDecrement: () {
-                                if (_children > 0) setState(() => _children--);
-                              },
-                            ),
-                            const SizedBox(height: 12),
-                            CounterRow(
-                              label: 'Chambres',
-                              count: _rooms,
-                              onIncrement: () => setState(() => _rooms++),
-                              onDecrement: () {
-                                if (_rooms > 0) setState(() => _rooms--);
-                              },
-                            ),
-                          ],
+                        child: GuestSummary(
+                          initialRoomsData: _roomsData,
+                          onRoomsChanged: (updatedRooms) {
+                            setState(() {
+                              _roomsData = updatedRooms;
+                              if (_startDate != null && _endDate != null) {
+                                _saveDatesAndRooms(_startDate!, _endDate!, _roomsData);
+                              }
+                            });
+                          },
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 20),
-                    ComposeButton(
-                      onPressed: _handleFormSubmit,
-                    ),
-
+                    ComposeButton(onPressed: _handleFormSubmit),
                     const SizedBox(height: 20),
                   ],
                 ),
