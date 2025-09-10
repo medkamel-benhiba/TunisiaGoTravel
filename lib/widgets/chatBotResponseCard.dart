@@ -212,7 +212,7 @@ class ChatbotResponseCard extends StatelessWidget {
         return Icons.event;
       case 'circuit':
         return Icons.route;
-      case 'culture':
+      case 'musee':
         return Icons.museum;
       default:
         return Icons.info;
@@ -231,7 +231,7 @@ class ChatbotResponseCard extends StatelessWidget {
         return AppColorstatic.primary2;
       case 'circuit':
         return AppColorstatic.primary;
-      case 'culture':
+      case 'musee':
         return AppColorstatic.primary;
       default:
         return Colors.grey;

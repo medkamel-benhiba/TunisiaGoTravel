@@ -14,147 +14,159 @@ class TopMenuBar1 extends StatefulWidget {
 }
 
 class _TopMenuBar1State extends State<TopMenuBar1> {
-  OverlayEntry? _overlayEntry;
+  bool isDestinationOpen = false;
 
-  void _toggleDestination(BuildContext context, GlobalKey key) {
-    if (_overlayEntry == null) {
-      final renderBox = key.currentContext!.findRenderObject() as RenderBox;
-      final offset = renderBox.localToGlobal(Offset.zero);
-      final screenWidth = MediaQuery.of(context).size.width;
-
-      _overlayEntry = OverlayEntry(
-        builder: (context) => Positioned(
-          left: 0,
-          top: offset.dy + renderBox.size.height + 5,
-          width: screenWidth,
-          child: Material(
-            elevation: 8,
-            child: const DestinationDropSection(),
-          ),
-        ),
-      );
-
-      Overlay.of(context).insert(_overlayEntry!);
-    } else {
-      _overlayEntry?.remove();
-      _overlayEntry = null;
-    }
-  }
-
-  @override
-  void dispose() {
-    _overlayEntry?.remove();
-    super.dispose();
+  void toggleDestination() {
+    setState(() {
+      isDestinationOpen = !isDestinationOpen;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<GlobalProvider>(context);
-    final GlobalKey destKey = GlobalKey();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // First Row
-        Container(
-          color: AppColorstatic.primary,
-          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 6),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        double iconButtonHeight = constraints.maxWidth < 600 ? 40 : 48;
+        double horizontalPadding = constraints.maxWidth < 600 ? 6 : 8;
+        double spacing = constraints.maxWidth < 600 ? 6 : 8;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // First Row
+            Container(
+              color: AppColorstatic.primary,
+              padding: EdgeInsets.symmetric(
+                  vertical: horizontalPadding, horizontal: horizontalPadding),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  GestureDetector(
-                    key: destKey,
-                    onTap: () => _toggleDestination(context, destKey),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 6),
-                      decoration: BoxDecoration(
-                        color: AppColorstatic.secondary,
-                        border: const Border(
-                          left: BorderSide(color: AppColorstatic.primary2, width: 3),
-                        ),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Row(
-                        children: const [
-                          Text(
-                            "Destination",
-                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  Row(
+                    children: [
+                      GestureDetector(
+                        onTap: toggleDestination,
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: horizontalPadding,
+                              vertical: horizontalPadding),
+                          height: iconButtonHeight,
+                          decoration: BoxDecoration(
+                            color: AppColorstatic.secondary,
+                            border: const Border(
+                              left:
+                              BorderSide(color: AppColorstatic.primary2, width: 3),
+                            ),
+                            borderRadius: BorderRadius.circular(6),
                           ),
-                          Icon(Icons.arrow_drop_down, color: Colors.orange),
-                        ],
+                          child: Row(
+                            children: [
+                              Text(
+                                "Destination",
+                                style: Appstylestatic.textStyletitle2,
+                              ),
+                              Icon(
+                                isDestinationOpen
+                                    ? Icons.arrow_drop_up
+                                    : Icons.arrow_drop_down,
+                                color: Colors.orange,
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
-                    ),
+                      SizedBox(width: spacing),
+                      GestureDetector(
+                        onTap: () {
+                          provider.setPage(AppPage.circuits);
+                        },
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: horizontalPadding,
+                              vertical: horizontalPadding),
+                          height: iconButtonHeight,
+                          decoration: BoxDecoration(
+                            color: AppColorstatic.secondary,
+                            border: const Border(
+                              left:
+                              BorderSide(color: AppColorstatic.primary2, width: 3),
+                            ),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Row(
+                            children: [
+                              Text(
+                                "Circuits",
+                                style: Appstylestatic.textStyletitle2,
+                              ),
+                              const Icon(
+                                Icons.arrow_drop_down,
+                                color: Colors.orange,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 8),
-                  GestureDetector(
-                    onTap: () {
-                      provider.setPage(AppPage.circuits);
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 6),
-                      decoration: BoxDecoration(
-                        color: AppColorstatic.secondary,
-                        border: const Border(
-                          left: BorderSide(color: AppColorstatic.primary2, width: 3),
+
+                  // Right buttons
+                  Row(
+                    children: [
+                      Container(
+                        height: iconButtonHeight,
+                        width: iconButtonHeight,
+                        decoration: BoxDecoration(
+                          color: AppColorstatic.secondary,
+                          borderRadius: BorderRadius.circular(6),
                         ),
-                        borderRadius: BorderRadius.circular(6),
+                        child: IconButton(
+                          icon: const Icon(Icons.chat_outlined, color: Colors.white),
+                          onPressed: () {
+                            provider.setPage(AppPage.chatbot);
+
+                          },
+                        ),
                       ),
-                      child: Row(
-                        children: const [
-                          Text(
-                            "Circuits",
-                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                          ),
-                          Icon(Icons.arrow_drop_down, color: Colors.orange),
-                        ],
+                      SizedBox(width: spacing),
+                      Container(
+                        height: iconButtonHeight,
+                        width: iconButtonHeight,
+                        decoration: BoxDecoration(
+                          color: AppColorstatic.secondary,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: IconButton(
+                          icon: const Icon(Icons.account_circle, color: Colors.white),
+                          onPressed: () {
+                            provider.setPage(AppPage.login);
+                          },
+                        ),
                       ),
-                    ),
+
+                    ],
                   ),
                 ],
               ),
-              Row(
-                children: [
-                  Container(
-                    height: 40,
-                    width: 40,
-                    decoration: BoxDecoration(
-                      color: AppColorstatic.secondary,
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: IconButton(
-                      icon: const Icon(Icons.chat_outlined, color: Colors.white),
-                      onPressed: () => provider.setPage(AppPage.chatbot),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Container(
-                    height: 40,
-                    width: 40,
-                    decoration: BoxDecoration(
-                      color: AppColorstatic.secondary,
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: IconButton(
-                      icon: const Icon(Icons.account_circle, color: Colors.white),
-                      onPressed: () => provider.setPage(AppPage.login),
-                    ),
-                  ),
-                ],
+            ),
+
+            // Destination dropdown
+            if (isDestinationOpen) ...[
+              Container(
+                color: AppColorstatic.white80,
+                child: const DestinationDropSection(),
               ),
             ],
-          ),
-        ),
 
-        // Second Row
-        const TopMenuBar2(),
-      ],
+            // Second row
+            const TopMenuBar2(),
+          ],
+        );
+      },
     );
   }
 }
-
-
 
 class TopMenuBar2 extends StatelessWidget {
   const TopMenuBar2({super.key});

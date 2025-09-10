@@ -31,7 +31,6 @@ class ActivityDetailsScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ✅ Galerie d’images
             if (activity.images != null && activity.images!.isNotEmpty)
               ImageGridPreview(images: activity.images!),
 

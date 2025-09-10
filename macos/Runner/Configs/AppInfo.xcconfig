@@ -8,7 +8,7 @@
 PRODUCT_NAME = tunisiagotravel
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.example.tunisiagotravel
+PRODUCT_BUNDLE_IDENTIFIER = com.nadas.group.tunisiagotravel
 
 // The copyright displayed in application information
 PRODUCT_COPYRIGHT = Copyright © 2025 com.example. All rights reserved.

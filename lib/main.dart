@@ -14,7 +14,6 @@ import 'package:tunisiagotravel/providers/musee_provider.dart';
 import 'package:tunisiagotravel/providers/restaurant_provider.dart';
 import 'package:tunisiagotravel/providers/voyage_provider.dart';
 import 'package:tunisiagotravel/screens/circuit_predifini_screen.dart';
-import 'package:tunisiagotravel/screens/main_wrapper_screen.dart';
 import 'package:tunisiagotravel/screens/splash_screen.dart';
 import 'package:tunisiagotravel/services/api_service.dart';
 import 'providers/global_provider.dart';

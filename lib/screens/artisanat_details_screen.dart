@@ -91,56 +91,6 @@ class _ArtisanatDetailsScreenState extends State<ArtisanatDetailsScreen> {
                   DescriptionCard(description: artisanat.description),
 
                 const SizedBox(height: 12),
-
-                // Video section if available
-                if (artisanat.videoLink.isNotEmpty)
-                  Card(
-                    elevation: 2,
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.play_circle_filled,
-                                color: Colors.red[600],
-                                size: 24,
-                              ),
-                              const SizedBox(width: 12),
-                              const Text(
-                                'Vidéo démonstrative',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton.icon(
-                              onPressed: () {
-                                // Handle video play - you can integrate with url_launcher
-                                // or a video player
-                              },
-                              icon: const Icon(Icons.play_arrow),
-                              label: const Text('Regarder la vidéo'),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.red[600],
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(vertical: 12),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                const SizedBox(height: 12),
               ],
             ),
           ),

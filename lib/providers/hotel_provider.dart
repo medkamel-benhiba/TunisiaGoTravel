@@ -242,7 +242,7 @@ class HotelProvider with ChangeNotifier {
 
         // Check pagination info
         final rawResponse = await http.post(
-          Uri.parse('https://test.tunisiagotravel.com/utilisateur/hoteldisponible?page=$page'),
+          Uri.parse('https://backend.tunisiagotravel.com/utilisateur/hoteldisponible?page=$page'),
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode({
             'destination_id': destinationId,

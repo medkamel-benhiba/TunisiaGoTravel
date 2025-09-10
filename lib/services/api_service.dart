@@ -27,7 +27,7 @@ import '../models/voyage.dart';
 
 
 class ApiService {
-  static const String _baseUrl = 'https://test.tunisiagotravel.com';
+  static const String _baseUrl = 'https://backend.tunisiagotravel.com';
   final String _cachevoy = 'cached_voyages';
 
   Future<List<Destination>> getDestinations() async {
@@ -1038,7 +1038,7 @@ class ApiService {
     print('Body: $body');
 
     final response = await http.post(
-      Uri.parse('https://test.tunisiagotravel.com/utilisateur/bhr/hotelsreservation'),
+      Uri.parse('https://backend.tunisiagotravel.com/utilisateur/bhr/hotelsreservation'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode(reservationData),
     );

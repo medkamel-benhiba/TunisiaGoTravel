@@ -34,4 +34,20 @@ class ActivityProvider with ChangeNotifier {
   List<Activity> getByCity(String cityId) {
     return _activities.where((a) => a.cityId == cityId).toList();
   }
+
+  Future<Activity?> fetchActivityBySlug(String slug) async {
+    try {
+      final activities = await _apiService.getallactivitys();
+      final activity = activities.firstWhere(
+            (a) => a.slug == slug,
+        orElse: () => Activity(id: '', title: 'Non trouvé'),
+      );
+
+      return activity;
+    } catch (e) {
+      debugPrint("Erreur fetchActivityBySlug: $e");
+      return null;
+    }
+  }
+
 }

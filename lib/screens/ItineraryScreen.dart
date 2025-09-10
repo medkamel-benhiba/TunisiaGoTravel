@@ -199,7 +199,7 @@ class _ItineraryScreenState extends State<ItineraryScreen> {
           TileLayer(
             urlTemplate:
             "https://api.maptiler.com/maps/streets/{z}/{x}/{y}.png?key=CubRhkNFVL94muXGM5yt",
-            userAgentPackageName: 'com.example.tunisiagotravel',
+            userAgentPackageName: 'com.nadas.group.tunisiagotravel',
           ),
           MarkerLayer(
             markers: [

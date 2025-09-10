@@ -1,6 +1,8 @@
 // services/ChatbotNavigationHelper.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:tunisiagotravel/providers/activity_provider.dart';
+import 'package:tunisiagotravel/screens/activity_details_screen.dart';
 
 // Providers
 import '../providers/hotel_provider.dart';
@@ -31,7 +33,7 @@ class ChatbotNavigationHelper {
         await _navigateToRestaurantDetails(context, response);
         break;
 
-      case 'culture': // musée
+      case 'musee':
         await _navigateToMuseeDetails(context, response);
         break;
 
@@ -41,6 +43,10 @@ class ChatbotNavigationHelper {
 
       case 'event':
         await _navigateToEventDetails(context, response);
+        break;
+
+      case 'activity':
+        await _navigateToActivityDetails(context, response);
         break;
 
       default:
@@ -161,6 +167,30 @@ class ChatbotNavigationHelper {
       _showError(context, 'Erreur: $e');
     }
   }
+  // 🔹 Activity
+  static Future<void> _navigateToActivityDetails(
+      BuildContext context, ChatbotResponse response) async {
+    final provider = Provider.of<ActivityProvider>(context, listen: false);
+
+    _showLoading(context);
+    try {
+      final activity = await provider.fetchActivityBySlug(response.slug.toString());
+      Navigator.pop(context);
+
+      if (activity != null) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ActivityDetailsScreen(activity: activity),
+          ),
+        );
+      }
+    } catch (e) {
+      Navigator.pop(context);
+      _showError(context, 'Erreur: $e');
+    }
+  }
+
 
   // Utils
   static void _showLoading(BuildContext context) {

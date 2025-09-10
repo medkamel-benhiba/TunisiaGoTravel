@@ -50,6 +50,47 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
     }
   }
 
+  // Helper method to get responsive values based on screen size
+  double _getResponsiveValue(BuildContext context, {
+    required double mobile,
+    required double tablet,
+    required double desktop,
+  }) {
+    final width = MediaQuery.of(context).size.width;
+    if (width < 600) return mobile;
+    if (width < 1200) return tablet;
+    return desktop;
+  }
+
+  // Helper method to check if device is in landscape
+  bool _isLandscape(BuildContext context) {
+    return MediaQuery.of(context).orientation == Orientation.landscape;
+  }
+
+  // Helper method to get appropriate padding
+  EdgeInsets _getResponsivePadding(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+    if (width < 600) {
+      return const EdgeInsets.symmetric(horizontal: 8, vertical: 4);
+    } else if (width < 1200) {
+      return const EdgeInsets.symmetric(horizontal: 16, vertical: 8);
+    } else {
+      return const EdgeInsets.symmetric(horizontal: 32, vertical: 12);
+    }
+  }
+
+  // Helper method to get message max width
+  double _getMessageMaxWidth(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+    if (width < 600) {
+      return width * 0.85; // 85% on mobile
+    } else if (width < 1200) {
+      return width * 0.70; // 70% on tablet
+    } else {
+      return 600; // Fixed max width on desktop
+    }
+  }
+
   void _addUserMessage(String text) {
     setState(() {
       _messages.add({
@@ -79,7 +120,6 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
     _sendQuestionToBot(textToSend);
   }
 
-
   Future<void> _sendQuestionToBot(String question) async {
     try {
       // Call the chatbot API
@@ -102,7 +142,6 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
             "content": "Désolé, je n'ai pas pu traiter votre demande. Veuillez réessayer."
           });
         }
-
       });
 
       _scrollToBottom();
@@ -149,7 +188,7 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
     addResponses('activity', 'activity');
     addResponses('event', 'event');
     addResponses('circuit', 'circuit');
-    addResponses('mussee', 'mussee');
+    addResponses('mussee', 'musee');
     addResponses('partenaire', 'partenaire');
     addResponses('location', 'location');
 
@@ -177,9 +216,6 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
       }
     });
   }
-
-
-
 
   void _sendMessage() {
     final text = _controller.text.trim();
@@ -237,7 +273,6 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
   }
 
   Widget _buildMessage(Map<String, dynamic> message) {
-    final isUser = message["role"] == "user";
     final messageType = message["type"] ?? "text";
 
     if (messageType == "cards") {
@@ -254,12 +289,40 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
     final content = message["content"] ?? "";
     final messageType = message["type"] ?? "text";
 
+    // Responsive font size and padding
+    final fontSize = _getResponsiveValue(
+      context,
+      mobile: 14.0,
+      tablet: 16.0,
+      desktop: 16.0,
+    );
+
+    final horizontalPadding = _getResponsiveValue(
+      context,
+      mobile: 12.0,
+      tablet: 16.0,
+      desktop: 20.0,
+    );
+
+    final verticalPadding = _getResponsiveValue(
+      context,
+      mobile: 8.0,
+      tablet: 12.0,
+      desktop: 16.0,
+    );
+
     return Align(
       alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
+        margin: _getResponsivePadding(context),
+        padding: EdgeInsets.symmetric(
+          vertical: verticalPadding,
+          horizontal: horizontalPadding,
+        ),
+        constraints: BoxConstraints(
+          maxWidth: _getMessageMaxWidth(context),
+          minWidth: 50,
+        ),
         decoration: BoxDecoration(
           color: color,
           borderRadius: BorderRadius.only(
@@ -281,8 +344,18 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             SizedBox(
-              width: 20,
-              height: 20,
+              width: _getResponsiveValue(
+                context,
+                mobile: 16.0,
+                tablet: 20.0,
+                desktop: 20.0,
+              ),
+              height: _getResponsiveValue(
+                context,
+                mobile: 16.0,
+                tablet: 20.0,
+                desktop: 20.0,
+              ),
               child: CircularProgressIndicator(
                 strokeWidth: 2,
                 valueColor: AlwaysStoppedAnimation<Color>(
@@ -290,16 +363,31 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
                 ),
               ),
             ),
-            const SizedBox(width: 8),
-            Text(
-              "Réflexion en cours...",
-              style: TextStyle(color: textColor, fontSize: 16, height: 1.4),
+            SizedBox(width: _getResponsiveValue(
+              context,
+              mobile: 6.0,
+              tablet: 8.0,
+              desktop: 8.0,
+            )),
+            Flexible(
+              child: Text(
+                "Réflexion en cours...",
+                style: TextStyle(
+                  color: textColor,
+                  fontSize: fontSize,
+                  height: 1.4,
+                ),
+              ),
             ),
           ],
         )
             : Text(
           content,
-          style: TextStyle(color: textColor, fontSize: 16, height: 1.4),
+          style: TextStyle(
+            color: textColor,
+            fontSize: fontSize,
+            height: 1.4,
+          ),
         ),
       ),
     );
@@ -309,6 +397,13 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
     final content = message["content"] ?? "";
     final responses = message["responses"] as List<ChatbotResponse>? ?? [];
 
+    final fontSize = _getResponsiveValue(
+      context,
+      mobile: 14.0,
+      tablet: 16.0,
+      desktop: 16.0,
+    );
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -317,9 +412,24 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
           Align(
             alignment: Alignment.centerLeft,
             child: Container(
-              margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-              constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
+              margin: _getResponsivePadding(context),
+              padding: EdgeInsets.symmetric(
+                vertical: _getResponsiveValue(
+                  context,
+                  mobile: 8.0,
+                  tablet: 12.0,
+                  desktop: 16.0,
+                ),
+                horizontal: _getResponsiveValue(
+                  context,
+                  mobile: 12.0,
+                  tablet: 16.0,
+                  desktop: 20.0,
+                ),
+              ),
+              constraints: BoxConstraints(
+                maxWidth: _getMessageMaxWidth(context),
+              ),
               decoration: BoxDecoration(
                 color: Colors.grey[200],
                 borderRadius: const BorderRadius.only(
@@ -337,21 +447,188 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
               ),
               child: Text(
                 content,
-                style: const TextStyle(color: Colors.black87, fontSize: 16, height: 1.4),
+                style: TextStyle(
+                  color: Colors.black87,
+                  fontSize: fontSize,
+                  height: 1.4,
+                ),
               ),
             ),
           ),
-        // Cards
+        // Cards - Responsive layout
         if (responses.isNotEmpty)
           Container(
-            margin: const EdgeInsets.only(left: 8, right: 8, top: 8),
-            child: Column(
-              children: responses.map((response) =>
-                  ChatbotResponseCard(response: response)
-              ).toList(),
+            margin: EdgeInsets.only(
+              left: _getResponsiveValue(context, mobile: 8.0, tablet: 16.0, desktop: 32.0),
+              right: _getResponsiveValue(context, mobile: 8.0, tablet: 16.0, desktop: 32.0),
+              top: 8,
+            ),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                // Determine grid layout based on screen size
+                if (constraints.maxWidth < 600) {
+                  // Mobile: Single column
+                  return Column(
+                    children: responses.map((response) =>
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 8.0),
+                          child: ChatbotResponseCard(response: response),
+                        )
+                    ).toList(),
+                  );
+                } else if (constraints.maxWidth < 1200) {
+                  // Tablet: Two columns
+                  return Wrap(
+                    spacing: 8.0,
+                    runSpacing: 8.0,
+                    children: responses.map((response) =>
+                        SizedBox(
+                          width: (constraints.maxWidth - 8) / 2,
+                          child: ChatbotResponseCard(response: response),
+                        )
+                    ).toList(),
+                  );
+                } else {
+                  // Desktop: Three columns
+                  return Wrap(
+                    spacing: 12.0,
+                    runSpacing: 12.0,
+                    children: responses.map((response) =>
+                        SizedBox(
+                          width: (constraints.maxWidth - 24) / 3,
+                          child: ChatbotResponseCard(response: response),
+                        )
+                    ).toList(),
+                  );
+                }
+              },
             ),
           ),
       ],
+    );
+  }
+
+  Widget _buildInputArea() {
+    final horizontalMargin = _getResponsiveValue(
+      context,
+      mobile: 8.0,
+      tablet: 16.0,
+      desktop: 32.0,
+    );
+
+    final inputHeight = _getResponsiveValue(
+      context,
+      mobile: 50.0,
+      tablet: 56.0,
+      desktop: 60.0,
+    );
+
+    final iconSize = _getResponsiveValue(
+      context,
+      mobile: 20.0,
+      tablet: 24.0,
+      desktop: 24.0,
+    );
+
+    return Container(
+      margin: EdgeInsets.symmetric(
+        horizontal: horizontalMargin,
+        vertical: _isLandscape(context) ? 8.0 : 12.0,
+      ),
+      height: inputHeight,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(inputHeight / 2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: _getResponsiveValue(
+                  context,
+                  mobile: 16.0,
+                  tablet: 20.0,
+                  desktop: 24.0,
+                ),
+                vertical: 8,
+              ),
+              child: TextField(
+                controller: _controller,
+                enabled: !_isLoading,
+                style: TextStyle(
+                  fontSize: _getResponsiveValue(
+                    context,
+                    mobile: 14.0,
+                    tablet: 16.0,
+                    desktop: 16.0,
+                  ),
+                ),
+                decoration: InputDecoration(
+                  hintText: _isLoading ? "Patientez..." : "Écrivez un message...",
+                  hintStyle: TextStyle(
+                    fontSize: _getResponsiveValue(
+                      context,
+                      mobile: 14.0,
+                      tablet: 16.0,
+                      desktop: 16.0,
+                    ),
+                  ),
+                  border: InputBorder.none,
+                ),
+                onSubmitted: (_) => _sendMessage(),
+              ),
+            ),
+          ),
+          // Voice button
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 4),
+            child: IconButton(
+              icon: Icon(
+                _isVoiceRecording ? Icons.mic_off : Icons.mic,
+                color: Colors.grey[700],
+                size: iconSize,
+              ),
+              onPressed: _isLoading ? null : _toggleVoiceRecording,
+            ),
+          ),
+          // Send button
+          if (!_isVoiceRecording)
+            Container(
+              margin: const EdgeInsets.all(4),
+              width: inputHeight - 8,
+              height: inputHeight - 8,
+              decoration: BoxDecoration(
+                color: _isLoading ? Colors.grey : AppColorstatic.primary,
+                shape: BoxShape.circle,
+              ),
+              child: IconButton(
+                icon: _isLoading
+                    ? SizedBox(
+                  width: iconSize - 4,
+                  height: iconSize - 4,
+                  child: const CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                )
+                    : Icon(
+                  Icons.send,
+                  color: Colors.white,
+                  size: iconSize,
+                ),
+                onPressed: _isLoading ? null : _sendMessage,
+              ),
+            ),
+        ],
+      ),
     );
   }
 
@@ -365,6 +642,9 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Get safe area insets for proper spacing
+    final safeAreaPadding = MediaQuery.of(context).padding;
+
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -376,80 +656,48 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
         ),
         child: Column(
           children: [
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
-              child: ScreenTitle(title: 'Assistant Chatbot', icon: Icons.chat_bubble_outline),
+            // Title with responsive padding
+            Padding(
+              padding: EdgeInsets.only(
+                left: _getResponsiveValue(context, mobile: 10.0, tablet: 16.0, desktop: 32.0),
+                right: _getResponsiveValue(context, mobile: 10.0, tablet: 16.0, desktop: 32.0),
+                top: safeAreaPadding.top + (_isLandscape(context) ? 8.0 : 10.0),
+                bottom: _isLandscape(context) ? 8.0 : 10.0,
+              ),
+              child: const ScreenTitle(
+                title: 'Assistant Chatbot',
+                icon: Icons.chat_bubble_outline,
+              ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: _isLandscape(context) ? 8.0 : 16.0),
+
+            // Messages list
             Expanded(
-              child: ListView.builder(
-                controller: _scrollController,
-                padding: const EdgeInsets.all(12),
-                itemCount: _messages.length,
-                itemBuilder: (context, index) => _buildMessage(_messages[index]),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return ListView.builder(
+                    controller: _scrollController,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: _getResponsiveValue(
+                        context,
+                        mobile: 4.0,
+                        tablet: 8.0,
+                        desktop: 16.0,
+                      ),
+                      vertical: 8.0,
+                    ),
+                    itemCount: _messages.length,
+                    itemBuilder: (context, index) => _buildMessage(_messages[index]),
+                  );
+                },
               ),
             ),
-            Container(
-              margin: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(30),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 10,
-                    offset: const Offset(0, 5),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16,vertical: 8),
-                      child: TextField(
-                        controller: _controller,
-                        enabled: !_isLoading,
-                        decoration: InputDecoration(
-                          hintText: _isLoading ? "Patientez..." : "Écrivez un message...",
-                          border: InputBorder.none,
-                        ),
-                        onSubmitted: (_) => _sendMessage(),
-                      ),
-                    ),
-                  ),
-                  IconButton(
-                    icon: Icon(
-                      _isVoiceRecording ? Icons.mic_off : Icons.mic,
-                      color: Colors.grey[700],
-                    ),
-                    onPressed: _isLoading ? null : _toggleVoiceRecording,
-                  ),
-                  if (!_isVoiceRecording)
-                    Container(
-                      margin: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        color: _isLoading ? Colors.grey : AppColorstatic.primary,
-                        shape: BoxShape.circle,
-                      ),
-                      child: IconButton(
-                        icon: _isLoading
-                            ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                          ),
-                        )
-                            : const Icon(Icons.send, color: Colors.white),
-                        onPressed: _isLoading ? null : _sendMessage,
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            SizedBox(height: 10)
+
+            // Input area
+            _buildInputArea(),
+
+            // Bottom safe area
+            SizedBox(height: safeAreaPadding.bottom + (_isLandscape(context) ? 4.0 : 8.0)),
           ],
         ),
       ),
