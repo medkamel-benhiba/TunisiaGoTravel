@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../models/hotel_details.dart';
 import '../../providers/hotel_provider.dart';
 import '../../theme/color.dart';
@@ -21,9 +22,13 @@ class _HotelDetailsScreenState extends State<HotelDetailsScreen> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() {
+    Future.microtask(() async {
       final provider = Provider.of<HotelProvider>(context, listen: false);
-      provider.fetchHotelDetail(widget.hotelSlug);
+      await provider.fetchHotelDetail(widget.hotelSlug); // Wait for fetch to complete
+      if (provider.selectedHotel?.cover != null) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('hotel_cover', provider.selectedHotel!.cover!); // Use a more descriptive key
+      }
     });
   }
 
@@ -36,7 +41,7 @@ class _HotelDetailsScreenState extends State<HotelDetailsScreen> {
         return Scaffold(
           appBar: AppBar(
             title: Text(
-              hotel?.name ?? 'Hotel Details',
+              hotel?.name ?? "Détails de l'Hôtel",
               style: const TextStyle(
                 color: AppColorstatic.lightTextColor,
                 fontSize: 22,
@@ -67,8 +72,7 @@ class _HotelDetailsScreenState extends State<HotelDetailsScreen> {
                   HotelInfoCard(hotel: hotel),
 
                 // Description
-                if (hotel != null &&
-                    (hotel.description ?? '').isNotEmpty)
+                if (hotel != null && (hotel.description ?? '').isNotEmpty)
                   HotelDescriptionCard(hotel: hotel),
 
                 // Contact info

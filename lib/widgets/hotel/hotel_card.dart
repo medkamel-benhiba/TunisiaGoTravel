@@ -762,7 +762,7 @@ class HotelCard extends StatelessWidget {
         id: hotelData.id,
         title: originalHotel.name,
         category: originalHotel.categoryCode?.toString() ?? '',
-        summary: originalHotel.shortDescription ?? '',
+        summary: originalHotel.description ?? '',
         address: originalHotel.address,
         promotionDateTime: '',
         rooms: roomsBhr,

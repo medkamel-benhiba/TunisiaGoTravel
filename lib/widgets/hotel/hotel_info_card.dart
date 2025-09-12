@@ -18,7 +18,7 @@ class HotelInfoCard extends StatelessWidget {
       margin: const EdgeInsets.all(10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min, // shrink-wrap the column
+        mainAxisSize: MainAxisSize.min,
         children: [
           // Hotel Name Row
           Row(

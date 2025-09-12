@@ -26,6 +26,7 @@ class HotelTgtReservationScreen extends StatefulWidget {
 }
 
 class _HotelTgtReservationScreenState extends State<HotelTgtReservationScreen> {
+  // Key: Pension ID, Value: Map<Room ID, Quantity>
   Map<String, Map<String, int>> selectedRoomsByPension = {};
 
   @override
@@ -35,6 +36,7 @@ class _HotelTgtReservationScreenState extends State<HotelTgtReservationScreen> {
       selectedRoomsByPension[pension.id] = {};
     }
   }
+
   Hotel? getOriginalHotel() {
     try {
       final hotelProvider = Provider.of<HotelProvider>(context, listen: false);
@@ -54,32 +56,26 @@ class _HotelTgtReservationScreenState extends State<HotelTgtReservationScreen> {
 
   int totalSelectedRooms() {
     int total = 0;
-    selectedRoomsByPension.forEach((_, rooms) {
-      total += rooms.values.fold(0, (a, b) => a + b);
+    selectedRoomsByPension.forEach((pensionId, rooms) {
+      rooms.forEach((roomId, qty) {
+        total += qty;
+      });
     });
     return total;
   }
 
-  // Helper method to calculate number of nights
   int calculateNights() {
     try {
       final checkIn = DateTime.parse(widget.searchCriteria['checkIn']);
       final checkOut = DateTime.parse(widget.searchCriteria['checkOut']);
       return checkOut.difference(checkIn).inDays;
     } catch (e) {
-      return 1; // Default fallback
+      return 1;
     }
   }
 
-  // Helper method to calculate base price per night per person
-  double calculateBasePrice(double purchasePrice, double commission, int nbOfPersons) {
-    return (purchasePrice + (purchasePrice * 12 / 100)) * nbOfPersons;
-  }
-
-  // Method to calculate price for a specific room
-  double calculateRoomPrice(String pensionId, String roomId) {
+  double calculateRoomPrice(String pensionId, String roomId, {required int numberOfAdults}) {
     final nights = calculateNights();
-    final rooms = widget.searchCriteria['rooms'] as List<Map<String, dynamic>>? ?? [];
 
     final pension = widget.hotelTgt.disponibility.pensions
         .firstWhere((p) => p.id == pensionId);
@@ -87,65 +83,68 @@ class _HotelTgtReservationScreenState extends State<HotelTgtReservationScreen> {
 
     if (room.purchasePrice.isEmpty) return 0;
 
-    final totalAdults = rooms.fold<int>(
-        0, (s, r) => s + int.tryParse(r['adults']?.toString() ?? '0')!);
-    final totalRooms = maxRoomsAllowed();
-    final adultsPerRoom = (totalAdults / totalRooms).ceil();
-
     double roomTotalPrice = 0;
     for (var price in room.purchasePrice) {
-      final basePricePerNight = calculateBasePrice(
-        price.purchasePrice,
-        price.commission,
-        adultsPerRoom,
-      );
+      final basePricePerNight = (price.purchasePrice + (price.purchasePrice * 12 / 100)) * numberOfAdults;
       roomTotalPrice += basePricePerNight;
     }
 
     return roomTotalPrice * nights;
   }
 
-  // Updated calculateTotal method with proper pricing logic
   double calculateTotal() {
     double total = 0;
-    final nights = calculateNights();
-    final rooms = widget.searchCriteria['rooms'] as List<Map<String, dynamic>>? ?? [];
 
-    selectedRoomsByPension.forEach((pensionId, selectedRooms) {
-      if (selectedRooms.isNotEmpty) {
-        final pension = widget.hotelTgt.disponibility.pensions
-            .firstWhere((p) => p.id == pensionId);
-
-        selectedRooms.forEach((roomId, quantity) {
-          final room = pension.rooms.firstWhere((r) => r.id == roomId);
-
-          if (room.purchasePrice.isNotEmpty) {
-            // Get the number of adults for this room selection
-            // For simplicity, we'll use the total adults divided by total rooms
-            // In a more complex implementation, you'd track which room gets which guests
-            final totalAdults = rooms.fold<int>(
-                0, (s, r) => s + int.tryParse(r['adults']?.toString() ?? '0')!);
-            final totalRooms = maxRoomsAllowed();
-            final adultsPerRoom = (totalAdults / totalRooms).ceil();
-
-            // Calculate total purchase price from all price entries and their commissions
-            double roomTotalPrice = 0;
-            for (var price in room.purchasePrice) {
-              final basePricePerNight = calculateBasePrice(
-                price.purchasePrice,
-                price.commission,
-                adultsPerRoom,
-              );
-              roomTotalPrice += basePricePerNight;
-            }
-
-            // Calculate total for this room selection
-            final roomTotal = roomTotalPrice * quantity * nights;
-            total += roomTotal;
-          }
-        });
-      }
+    // Step 1: Collect all selected room instances (repeat by qty)
+    List<Map<String, dynamic>> selectedRoomList = [];
+    selectedRoomsByPension.forEach((pensionId, roomsMap) {
+      final pension = widget.hotelTgt.disponibility.pensions
+          .firstWhere((p) => p.id == pensionId);
+      roomsMap.forEach((roomId, qty) {
+        final room = pension.rooms.firstWhere((r) => r.id == roomId);
+        final capacityAdults = room.capacity.isNotEmpty ? room.capacity.first.adults : 0;
+        for (int i = 0; i < qty; i++) {
+          selectedRoomList.add({
+            'pensionId': pensionId,
+            'roomId': roomId,
+            'capacity': capacityAdults,
+          });
+        }
+      });
     });
+
+    // Step 2: Sort selected rooms by capacity descending
+    selectedRoomList.sort((a, b) => b['capacity'].compareTo(a['capacity']));
+
+    // Step 3: Sort searchRooms by adults descending
+    var searchRooms = widget.searchCriteria['rooms'] as List<Map<String, dynamic>>? ?? [];
+    var sortedSearchRooms = List<Map<String, dynamic>>.from(searchRooms);
+    sortedSearchRooms.sort((a, b) =>
+    (int.tryParse(b['adults'].toString()) ?? 0) -
+        (int.tryParse(a['adults'].toString()) ?? 0));
+
+    // Step 4: Assign adults to rooms and calculate total
+    for (int i = 0; i < selectedRoomList.length && i < sortedSearchRooms.length; i++) {
+      final sel = selectedRoomList[i];
+      final adults = int.tryParse(sortedSearchRooms[i]['adults'].toString()) ?? 0;
+
+      // Optional: Validate that adults don't exceed room capacity
+      if (adults > sel['capacity']) {
+        // Log warning or handle mismatch (e.g., skip, cap, or show error)
+        // For now, cap at capacity to avoid overpricing
+        total += calculateRoomPrice(
+          sel['pensionId'],
+          sel['roomId'],
+          numberOfAdults: sel['capacity'], // Cap at room capacity
+        );
+      } else {
+        total += calculateRoomPrice(
+          sel['pensionId'],
+          sel['roomId'],
+          numberOfAdults: adults,
+        );
+      }
+    }
 
     return total;
   }
@@ -159,29 +158,9 @@ class _HotelTgtReservationScreenState extends State<HotelTgtReservationScreen> {
     return "$totalAdults adultes, $totalChildren enfants";
   }
 
-  void _updateRoomSelection(String pensionId, String roomId, int qty) {
-    final pensionRooms = selectedRoomsByPension[pensionId] ?? {};
-    int totalOtherPensions =
-        totalSelectedRooms() - pensionRooms.values.fold(0, (a, b) => a + b);
-
-    if (totalOtherPensions + qty <= maxRoomsAllowed()) {
-      if (qty > 0) {
-        pensionRooms[roomId] = qty;
-      } else {
-        pensionRooms.remove(roomId);
-      }
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Vous ne pouvez pas dépasser ${maxRoomsAllowed()} chambres au total.',
-          ),
-        ),
-      );
-    }
-
+  void _updateRoomSelection(String pensionId, String roomId, int newQty) {
     setState(() {
-      selectedRoomsByPension[pensionId] = pensionRooms;
+      selectedRoomsByPension[pensionId]![roomId] = newQty;
     });
   }
 
@@ -214,7 +193,6 @@ class _HotelTgtReservationScreenState extends State<HotelTgtReservationScreen> {
               cover: hotelCover,
               address: hotelAddress,
               category: categoryCode.isNotEmpty ? '$categoryCode étoiles' : null,
-
             ),
             const SizedBox(height: 16),
             SearchCriteriaCard(

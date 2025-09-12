@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 class Destination {
   final String id;
   final String name;
@@ -8,6 +10,7 @@ class Destination {
   final String iso2;
   final String state;
   final String status;
+
   final String? description;
   final String? descriptionEn;
   final String? descriptionMobile;
@@ -17,13 +20,17 @@ class Destination {
   final String? descriptionKo;
   final String? descriptionJa;
 
+  // Multilingual names
+  final String? nameAr;
+  final String? nameEn;
+  final String? nameRu;
+  final String? nameZh;
+  final String? nameKo;
+  final String? nameJa;
+
   final String? population;
   final String? updatedAt;
   final String? createdAt;
-
-  final String? metaTagDescription;
-  final String? metaTagKeywords;
-  final String? metaTagTitle;
 
   final String? homeDescription;
   final String? homeDescriptionEn;
@@ -61,17 +68,15 @@ class Destination {
   final String? isSpecial;
   final List<String> destinationServices;
 
-  // Multilingue - noms
-  final String? nameAr;
-  final String? nameEn;
-  final String? nameRu;
-  final String? nameZh;
-  final String? nameKo;
-  final String? nameJa;
-
   Destination({
     required this.id,
     required this.name,
+    this.nameAr,
+    this.nameEn,
+    this.nameRu,
+    this.nameZh,
+    this.nameKo,
+    this.nameJa,
     required this.idCityBbx,
     required this.lat,
     required this.lng,
@@ -90,9 +95,6 @@ class Destination {
     this.population,
     this.updatedAt,
     this.createdAt,
-    this.metaTagDescription,
-    this.metaTagKeywords,
-    this.metaTagTitle,
     this.homeDescription,
     this.homeDescriptionEn,
     this.homeDescriptionAr,
@@ -118,16 +120,10 @@ class Destination {
     this.videoLink,
     this.mobileVideo,
     this.cover,
-    this.vignette,
     required this.gallery,
+    this.vignette,
     this.isSpecial,
     required this.destinationServices,
-    this.nameAr,
-    this.nameEn,
-    this.nameRu,
-    this.nameZh,
-    this.nameKo,
-    this.nameJa,
   });
 
   factory Destination.fromJson(Map<String, dynamic> json) {
@@ -144,17 +140,14 @@ class Destination {
       description: json["description"],
       descriptionEn: json["description_en"],
       descriptionMobile: json["description_mobile"],
-      descriptionAr: json["description_ar"],
-      descriptionRu: json["description_ru"],
-      descriptionZh: json["description_zh"],
-      descriptionKo: json["description_ko"],
-      descriptionJa: json["description_ja"],
+      descriptionAr: json["description_mobile_ar"],
+      descriptionRu: json["description_mobile_ru"],
+      descriptionZh: json["description_mobile_zh"],
+      descriptionKo: json["description_mobile_ko"],
+      descriptionJa: json["description_mobile_ja"],
       population: json["population"],
       updatedAt: json["updated_at"],
       createdAt: json["created_at"],
-      metaTagDescription: json["meta_tag_description"],
-      metaTagKeywords: json["meta_tag_keywords"],
-      metaTagTitle: json["meta_tag_title"],
       homeDescription: json["home_description"],
       homeDescriptionEn: json["home_description_en"],
       homeDescriptionAr: json["home_description_ar"],
@@ -192,8 +185,72 @@ class Destination {
       nameJa: json["name_ja"],
     );
   }
+
+  // Multilingual helpers
+  String getName(Locale locale) {
+    switch (locale.languageCode) {
+      case 'en':
+        return nameEn ?? name;
+      case 'ar':
+        return nameAr ?? name;
+      case 'ru':
+        return nameRu ?? name;
+      case 'zh':
+        return nameZh ?? name;
+      case 'ko':
+        return nameKo ?? name;
+      case 'ja':
+        return nameJa ?? name;
+      default:
+        return name;
+    }
+  }
+
+  String? getDescription(Locale locale) {
+    switch (locale.languageCode) {
+      case 'en':
+        return descriptionEn ?? description;
+      case 'ar':
+        return descriptionAr ?? description;
+      case 'ru':
+        return descriptionRu ?? description;
+      case 'zh':
+        return descriptionZh ?? description;
+      case 'ko':
+        return descriptionKo ?? description;
+      case 'ja':
+        return descriptionJa ?? description;
+      default:
+        return description;
+    }
+  }
+
+  String? getTitle(Locale locale) {
+    switch (locale.languageCode) {
+      case 'en':
+        return titleEn ?? title;
+      case 'ar':
+        return titleAr ?? title;
+      default:
+        return title;
+    }
+  }
+
+  String? getSubtitle(Locale locale) {
+    switch (locale.languageCode) {
+      case 'en':
+        return subtitleEn ?? subtitle;
+      case 'ar':
+        return subtitleAr ?? subtitle;
+      case 'ja':
+        return subtitleJa ?? subtitle;
+      default:
+        return subtitle;
+    }
+  }
 }
 
+// DestinationSelection remains simple
 class DestinationSelection {
   final String id;
   final String name;

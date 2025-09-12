@@ -1038,7 +1038,7 @@ class ApiService {
     print('Body: $body');
 
     final response = await http.post(
-      Uri.parse('https://backend.tunisiagotravel.com/utilisateur/bhr/hotelsreservation'),
+      Uri.parse('$_baseUrl/utilisateur/bhr/hotelsreservation'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode(reservationData),
     );

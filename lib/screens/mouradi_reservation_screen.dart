@@ -25,8 +25,8 @@ class MouradiReservationScreen extends StatefulWidget {
 class _MouradiReservationScreenState extends State<MouradiReservationScreen> {
   BoardingOption? selectedBoarding;
 
-  // Track rooms selected per boarding option
-  Map<int, Map<int, int>> selectedRoomsByBoarding = {};
+  // Track rooms selected per boarding option: inner map key is '${paxAdults}_${roomId}'
+  Map<int, Map<String, int>> selectedRoomsByBoarding = {};
 
   @override
   void initState() {
@@ -56,15 +56,17 @@ class _MouradiReservationScreenState extends State<MouradiReservationScreen> {
 
   double calculateTotal() {
     double total = 0;
-    for (var boarding in widget.hotel.boardings) {
-      final rooms = selectedRoomsByBoarding[boarding.id] ?? {};
-      for (var pax in boarding.pax) {
-        for (var room in pax.rooms) {
-          final qty = rooms[room.id] ?? 0;
-          total += room.price * qty;
-        }
-      }
-    }
+    selectedRoomsByBoarding.forEach((boardingId, selectedMap) {
+      final boarding = widget.hotel.boardings.firstWhere((b) => b.id == boardingId);
+      selectedMap.forEach((key, qty) {
+        final parts = key.split('_');
+        final paxAdults = int.parse(parts[0]);
+        final roomId = int.parse(parts[1]);
+        final pax = boarding.pax.firstWhere((p) => p.adults == paxAdults);
+        final room = pax.rooms.firstWhere((r) => r.id == roomId);
+        total += room.price * 1.1 * qty;
+      });
+    });
     return total;
   }
 
@@ -78,18 +80,23 @@ class _MouradiReservationScreenState extends State<MouradiReservationScreen> {
     return "$totalAdults adultes, $totalChildren enfants";
   }
 
-  void _updateRoomSelection(int boardingId, int roomId, int qty) {
+  void _updateRoomSelection(int boardingId, int paxAdults, int roomId, int newQty) {
     final boardingRooms = selectedRoomsByBoarding[boardingId] ?? {};
+    final roomKey = '${paxAdults}_$roomId';
 
-    // Total rooms selected excluding current boarding
-    int totalOtherBoardings =
-        totalSelectedRooms() - boardingRooms.values.fold(0, (a, b) => a + b);
+    // Calculate current and proposed selections for this boarding
+    final currentQty = boardingRooms[roomKey] ?? 0;
+    final currentBoardingSelected = boardingRooms.values.fold(0, (a, b) => a + b);
+    final proposedBoardingSelected = currentBoardingSelected - currentQty + newQty;
 
-    if (totalOtherBoardings + qty <= maxRoomsAllowed()) {
-      if (qty > 0) {
-        boardingRooms[roomId] = qty;
+    // Total from other boardings
+    final totalOtherBoardings = totalSelectedRooms() - currentBoardingSelected;
+
+    if (totalOtherBoardings + proposedBoardingSelected <= maxRoomsAllowed()) {
+      if (newQty > 0) {
+        boardingRooms[roomKey] = newQty;
       } else {
-        boardingRooms.remove(roomId);
+        boardingRooms.remove(roomKey);
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -99,6 +106,7 @@ class _MouradiReservationScreenState extends State<MouradiReservationScreen> {
           ),
         ),
       );
+      return;
     }
 
     setState(() {
@@ -185,15 +193,16 @@ class _MouradiReservationScreenState extends State<MouradiReservationScreen> {
     // Create rooms summary for display
     String selectedRoomsSummary = '';
 
-    selectedRoomsByBoarding.forEach((boardingId, rooms) {
-      if (rooms.isNotEmpty) {
-        final boarding = widget.hotel.boardings.firstWhere((b) =>
-        b.id == boardingId);
+    selectedRoomsByBoarding.forEach((boardingId, selectedMap) {
+      if (selectedMap.isNotEmpty) {
+        final boarding = widget.hotel.boardings.firstWhere((b) => b.id == boardingId);
 
-        rooms.forEach((roomId, qty) {
-          final room = boarding.pax
-              .expand((p) => p.rooms)
-              .firstWhere((r) => r.id == roomId);
+        selectedMap.forEach((key, qty) {
+          final parts = key.split('_');
+          final paxAdults = int.parse(parts[0]);
+          final roomId = int.parse(parts[1]);
+          final pax = boarding.pax.firstWhere((p) => p.adults == paxAdults);
+          final room = pax.rooms.firstWhere((r) => r.id == roomId);
 
           boardingIds.add(boardingId.toString());
           roomIds.add(roomId.toString());

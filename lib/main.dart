@@ -19,6 +19,8 @@ import 'package:tunisiagotravel/services/api_service.dart';
 import 'providers/global_provider.dart';
 import 'providers/destination_provider.dart';
 import 'providers/hotel_provider.dart';
+import 'package:tunisiagotravel/services/network_listener.dart';
+
 
 void main() {
   runApp(
@@ -56,6 +58,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
     return MaterialApp(
       title: 'Tunisia Go Travel',
       home: const SplashScreen(),

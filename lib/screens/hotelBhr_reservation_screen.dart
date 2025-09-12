@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/hotel.dart';
 import '../models/hotelBhr.dart';
 import '../theme/color.dart';
@@ -27,6 +28,8 @@ class HotelBhrReservationScreen extends StatefulWidget {
 
 class _HotelBhrReservationScreenState extends State<HotelBhrReservationScreen> {
   Map<String, Map<String, int>> selectedRoomsByBoarding = {};
+  static const double COMMISSION = 1.1;
+  String? hotelCover;
 
   @override
   void initState() {
@@ -36,6 +39,14 @@ class _HotelBhrReservationScreenState extends State<HotelBhrReservationScreen> {
         selectedRoomsByBoarding[boarding.id] = {};
       }
     }
+    _loadHotelCover();
+  }
+
+  Future<void> _loadHotelCover() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      hotelCover = prefs.getString('hotel_cover');
+    });
   }
 
   int maxRoomsAllowed() {
@@ -55,12 +66,12 @@ class _HotelBhrReservationScreenState extends State<HotelBhrReservationScreen> {
     double total = 0;
     selectedRoomsByBoarding.forEach((boardingId, selectedRooms) {
       if (selectedRooms.isNotEmpty) {
-        final boarding = widget.hotelBhr.disponibility.rooms
-            .expand((room) => room.boardings)
-            .firstWhere((b) => b.id == boardingId);
-
         selectedRooms.forEach((roomId, qty) {
-          total += boarding.rate * qty;
+          final room = widget.hotelBhr.disponibility.rooms
+              .firstWhere((r) => r.id == roomId);
+          final boarding = room.boardings
+              .firstWhere((b) => b.id == boardingId);
+          total += (boarding.rate * COMMISSION) * qty;
         });
       }
     });
@@ -105,10 +116,10 @@ class _HotelBhrReservationScreenState extends State<HotelBhrReservationScreen> {
   Hotel? getHotelFromBhr() {
     try {
       return widget.allHotels.firstWhere(
-            (h) => (h.id ?? '').trim() == widget.hotelBhr.id.trim(),
+            (h) => (h.id ?? '').trim() == widget.hotelBhr.id_hotel_bbx,
       );
     } catch (_) {
-      debugPrint('No hotel found for HotelBhr ID: ${widget.hotelBhr.id}');
+      debugPrint('No hotel found for HotelBhr ID: ${widget.hotelBhr.id_hotel_bbx}');
       return null;
     }
   }
@@ -116,8 +127,9 @@ class _HotelBhrReservationScreenState extends State<HotelBhrReservationScreen> {
   @override
   Widget build(BuildContext context) {
     final mappedHotel = getHotelFromBhr();
-    final hotelCover = mappedHotel?.cover ?? '';
     final hotelName = mappedHotel?.name ?? widget.hotelBhr.name;
+    // Prioritize hotelCover from SharedPreferences, fallback to mappedHotel.cover, then empty string
+    final coverImage = hotelCover ?? mappedHotel?.cover ?? '';
 
     return Scaffold(
       appBar: AppBar(
@@ -138,7 +150,7 @@ class _HotelBhrReservationScreenState extends State<HotelBhrReservationScreen> {
             HotelHeaderBhr(
               hotelName: hotelName,
               address: widget.hotelBhr.disponibility.address,
-              cover: hotelCover,
+              cover: coverImage, // Use the prioritized cover image
               category: widget.hotelBhr.disponibility.category,
             ),
             const SizedBox(height: 16),
@@ -170,7 +182,6 @@ class _HotelBhrReservationScreenState extends State<HotelBhrReservationScreen> {
     final totalSelected = totalSelectedRooms();
     final maxAllowed = maxRoomsAllowed();
 
-    // Check if the exact number of rooms are selected
     if (totalSelected == 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -189,12 +200,10 @@ class _HotelBhrReservationScreenState extends State<HotelBhrReservationScreen> {
       return;
     }
 
-    // Prepare selected rooms data for API
     List<String> boardingIds = [];
     List<String> roomIds = [];
     List<int> quantities = [];
 
-    // Create rooms summary for display
     String selectedRoomsSummary = '';
     selectedRoomsByBoarding.forEach((boardingId, rooms) {
       if (rooms.isNotEmpty) {
@@ -216,7 +225,6 @@ class _HotelBhrReservationScreenState extends State<HotelBhrReservationScreen> {
       }
     });
 
-    // Navigate to form screen
     Navigator.push(
       context,
       MaterialPageRoute(

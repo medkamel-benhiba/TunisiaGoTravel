@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:permission_handler/permission_handler.dart';
-import 'package:flutter_tts/flutter_tts.dart'; // ✅ TTS
+import 'package:flutter_tts/flutter_tts.dart';
 
 import '../providers/global_provider.dart';
 import '../theme/color.dart';
@@ -27,9 +27,7 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
   String _voiceText = '';
 
   final List<String> greetings = [
-    "bonjour", "salut", "aslema", "hello", "hi", "yo", "salam", "salem", "ahla", "aloha",
-    "hey",
-
+    "bonjour", "salut", "aslema", "hello", "hi", "yo", "salam", "salem", "ahla", "aloha", "hey",
   ];
 
   final List<String> greetingResponses = [
@@ -45,7 +43,6 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
     super.initState();
     _speech = stt.SpeechToText();
     _flutterTts = FlutterTts();
-
     _flutterTts.setSpeechRate(0.7);
   }
 
@@ -93,36 +90,19 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
       setState(() => _isProcessingVoice = true);
 
       try {
-        print('Processing voice question: $_voiceText');
-
-        // ✅ Vérifie si c'est un greeting
         if (greetings.any((g) => _voiceText.toLowerCase().contains(g))) {
           final random = Random();
           final response =
           greetingResponses[random.nextInt(greetingResponses.length)];
-
           await _speak(response);
-
-          setState(() {
-            _voiceText = '';
-            _isProcessingVoice = false;
-          });
-          return;
+        } else {
+          await _speak("J'ai compris, voici le résultat.");
+          if (mounted) {
+            final provider = Provider.of<GlobalProvider>(context, listen: false);
+            provider.setChatbotInitialMessage(_voiceText);
+            provider.setPage(AppPage.chatbot);
+          }
         }
-
-        // ✅ Sinon → réponse par défaut + navigation chatbot
-        await _speak("J'ai compris, voici le résultat.");
-
-        if (mounted) {
-          final provider = Provider.of<GlobalProvider>(context, listen: false);
-          provider.setChatbotInitialMessage(_voiceText);
-          provider.setPage(AppPage.chatbot);
-        }
-
-        setState(() {
-          _showChatbotOverlay = false;
-          _voiceText = '';
-        });
       } catch (e) {
         print('Error processing voice question: $e');
         ScaffoldMessenger.of(context).showSnackBar(
@@ -132,10 +112,13 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
           ),
         );
       } finally {
-        setState(() => _isProcessingVoice = false);
+        setState(() {
+          _isProcessingVoice = false;
+          _voiceText = '';
+          _showChatbotOverlay = false;
+        });
       }
     } else {
-      // ✅ Aucun texte reconnu
       await _speak("Je n'ai pas compris, pouvez-vous répéter ?");
     }
   }
@@ -143,7 +126,6 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
   void _handleChatbotTap() {
     if (!_showChatbotOverlay) {
       setState(() => _showChatbotOverlay = true);
-
       _speak(
         "Bonjour ! Je suis votre guide pour découvrir la Tunisie. "
             "Tapez ici pour poser votre question !",
@@ -153,7 +135,6 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
 
   void _handleChatbotOverlayTap() {
     if (_isProcessingVoice) return;
-
     if (_isListening) {
       _stopListening();
     } else {
@@ -176,7 +157,6 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
   void dispose() {
     _speech.stop();
     _flutterTts.stop();
-    _flutterTts.setSpeechRate(0.7);
     super.dispose();
   }
 
@@ -236,11 +216,10 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
             ),
           ],
         ),
-
-        // Floating chatbot button (chatbot2.png)
+        // Chatbot floating button
         if (!_showChatbotOverlay)
           Positioned(
-            right: 1,
+            right: 2,
             top: size.height / 2 - 40,
             child: GestureDetector(
               onTap: _handleChatbotTap,
@@ -262,175 +241,153 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
               ),
             ),
           ),
-
-        // Chatbot overlay (chatbot1.png)
-        // Chatbot overlay (chatbot1.png)
+        // Chatbot overlay
         if (_showChatbotOverlay)
           Positioned.fill(
             child: GestureDetector(
-              onTap: _dismissChatbotOverlay, // ✅ Clicking outside dismisses overlay
+              onTap: _dismissChatbotOverlay,
               child: Container(
                 color: Colors.black.withOpacity(0.3),
-                child: Positioned(
-                  top: 100,
-                  left: 16,
-                  right: 16,
-                  child: GestureDetector(
-                    onTap: () {}, // ✅ Prevents tap from bubbling up to dismiss
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.3),
-                            blurRadius: 15,
-                            offset: const Offset(0, 5),
+                child: Stack(
+                  children: [
+                    Positioned(
+                      top: 80,
+                      left: 16,
+                      right: 16,
+                      child: GestureDetector(
+                        onTap: () {},
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
                           ),
-                        ],
-                      ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // ✅ Only the chatbot image triggers listening
-                          GestureDetector(
-                            onTap: _handleChatbotOverlayTap, // ✅ Only this triggers listening
-                            child: Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                Container(
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(40),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.1),
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 2),
-                                      ),
-                                    ],
-                                  ),
-                                  padding: const EdgeInsets.all(8),
-                                  child: Image.asset(
-                                    'assets/images/chatbot1.png',
-                                    width: 64,
-                                  ),
-                                ),
-                                if (_isListening)
-                                  Positioned(
-                                    bottom: -5,
-                                    child: Container(
-                                      padding: const EdgeInsets.all(4),
-                                      decoration: const BoxDecoration(
-                                        color: Colors.red,
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: const Icon(
-                                        Icons.mic,
-                                        color: Colors.white,
-                                        size: 20,
-                                      ),
-                                    ),
-                                  ),
-                                if (_isProcessingVoice)
-                                  Positioned(
-                                    bottom: -5,
-                                    child: Container(
-                                      padding: const EdgeInsets.all(4),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              GestureDetector(
+                                onTap: _handleChatbotOverlayTap,
+                                child: Stack(
+                                  alignment: Alignment.center,
+                                  children: [
+                                    Container(
                                       decoration: BoxDecoration(
-                                        color: AppColorstatic.primary,
-                                        shape: BoxShape.circle,
+                                        borderRadius: BorderRadius.circular(40),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withOpacity(0.1),
+                                            blurRadius: 8,
+                                            offset: const Offset(0, 2),
+                                          ),
+                                        ],
                                       ),
-                                      child: const SizedBox(
-                                        width: 16,
-                                        height: 16,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                        ),
+                                      padding: const EdgeInsets.all(8),
+                                      child: Image.asset(
+                                        'assets/images/chatbot1.png',
+                                        width: 64,
                                       ),
                                     ),
-                                  ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Container(
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(16),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.1),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  // ✅ Row for text + close button
-                                  Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Expanded(
-                                        child: Text(
-                                          _isProcessingVoice
-                                              ? "Traitement en cours...\nVeuillez patienter"
-                                              : _isListening
-                                              ? "👂 Écoute en cours...\nDites votre question"
-                                              : "👋 Bonjour ! Je suis votre guide pour \ndécouvrir la Tunisie.\nTapez ici pour poser votre question !",
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            color: Colors.black87,
-                                            height: 1.4,
-                                            fontWeight: _isListening || _isProcessingVoice
-                                                ? FontWeight.w600
-                                                : FontWeight.normal,
+                                    if (_isListening)
+                                      Positioned(
+                                        bottom: -5,
+                                        child: Container(
+                                          padding: const EdgeInsets.all(4),
+                                          decoration: const BoxDecoration(
+                                            color: Colors.red,
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: const Icon(
+                                            Icons.mic,
+                                            color: Colors.white,
+                                            size: 20,
                                           ),
                                         ),
                                       ),
-                                      GestureDetector(
-                                        onTap: _dismissChatbotOverlay,
-                                        child: const Icon(
-                                          Icons.close,
-                                          size: 20,
-                                          color: Colors.grey,
+                                    if (_isProcessingVoice)
+                                      Positioned(
+                                        bottom: -5,
+                                        child: Container(
+                                          padding: const EdgeInsets.all(4),
+                                          decoration: BoxDecoration(
+                                            color: AppColorstatic.primary,
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: const SizedBox(
+                                            width: 16,
+                                            height: 16,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Row(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            _isProcessingVoice
+                                                ? "Traitement en cours...\nVeuillez patienter"
+                                                : _isListening
+                                                ? "👂 Écoute en cours...\nDites votre question"
+                                                : "👋 Bonjour ! Je suis votre guide pour découvrir la Tunisie.\nTapez ici pour poser votre question !",
+                                            style: const TextStyle(
+                                              fontSize: 14,
+                                              color: Colors.black87,
+                                              height: 1.4,
+                                            ),
+                                          ),
+                                        ),
+                                        GestureDetector(
+                                          onTap: _dismissChatbotOverlay,
+                                          child: const Icon(
+                                            Icons.close,
+                                            size: 20,
+                                            color: Colors.grey,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    if (_voiceText.isNotEmpty) ...[
+                                      const SizedBox(height: 12),
+                                      Container(
+                                        width: double.infinity,
+                                        padding: const EdgeInsets.all(12),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFE3F2FD),
+                                          borderRadius: BorderRadius.circular(8),
+                                          border: Border.all(color: const Color(0xFF90CAF9)),
+                                        ),
+                                        child: Text(
+                                          "💬 Reconnu: $_voiceText",
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.blue[700],
+                                            fontStyle: FontStyle.italic,
+                                            fontWeight: FontWeight.w500,
+                                          ),
                                         ),
                                       ),
                                     ],
-                                  ),
-                                  if (_voiceText.isNotEmpty) ...[
-                                    const SizedBox(height: 12),
-                                    Container(
-                                      width: double.infinity,
-                                      padding: const EdgeInsets.all(12),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFFE3F2FD),
-                                        borderRadius: BorderRadius.circular(8),
-                                        border: Border.all(color: const Color(0xFF90CAF9)),
-                                      ),
-                                      child: Text(
-                                        "💬 Reconnu: $_voiceText",
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.blue[700],
-                                          fontStyle: FontStyle.italic,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                    ),
                                   ],
-                                ],
+                                ),
                               ),
-                            ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
                     ),
-                  ),
+                  ],
                 ),
               ),
             ),

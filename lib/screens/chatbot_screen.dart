@@ -255,7 +255,7 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
       if (_controller.text.isNotEmpty) {
         final voiceText = _controller.text;
         _controller.clear();
-        _addUserMessage(voiceText); // This will automatically send the message
+        _addUserMessage(voiceText);
       }
     }
   }

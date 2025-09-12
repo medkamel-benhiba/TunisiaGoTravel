@@ -61,7 +61,6 @@ class ArtisanatProvider with ChangeNotifier {
           cover: '',
           vignette: '',
           images: [],
-          seo: Seo.fromJson({}),
         ),
       );
 

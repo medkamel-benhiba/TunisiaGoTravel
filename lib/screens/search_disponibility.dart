@@ -148,6 +148,7 @@ class _SearchDisponibilityScreenState extends State<SearchDisponibilityScreen> {
         _rooms,
       );
 
+
       // Check for empty response
       if (rawResponse != null && rawResponse['pensions'].isEmpty) {
         // Display the snackbar for no availability
@@ -182,7 +183,18 @@ class _SearchDisponibilityScreenState extends State<SearchDisponibilityScreen> {
             ),
           );
         } else if (disponibilityType == 'bhr') {
-          final hotelBhr = HotelBhr.fromAvailabilityJson(rawResponse, widget.hotel);
+          final hotelBhr = HotelBhr.fromAvailabilityJson(
+            rawResponse,
+            widget.hotel,
+            idHotelBbx: widget.hotel.idHotelBbx, // <-- pass it here
+          );
+
+          print("hotelBhr: $hotelBhr");
+          print("✅ Parsed BHR hotel ID: ${hotelBhr.id}");
+          print("Name: ${hotelBhr.name}");
+          print("id: ${hotelBhr.id}");
+          print("idbbx: ${hotelBhr.id_hotel_bbx}");
+
 
           Navigator.push(
             context,
@@ -737,11 +749,14 @@ class _RoomSelectionBottomSheetState extends State<RoomSelectionBottomSheet> {
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
                           ),
-                          items: List.generate(13, (age) {
+                          items: List.generate(12, (index) {
+                            final age = index + 1; // start from 1
                             return DropdownMenuItem<int>(
                               value: age,
-                              child: Text(age == 0 ? "< 1 an" : "$age ans",
-                                  style: const TextStyle(fontSize: 13)),
+                              child: Text(
+                                "$age",
+                                style: const TextStyle(fontSize: 13),
+                              ),
                             );
                           }),
                           onChanged: (int? newAge) {
@@ -834,6 +849,7 @@ class _RoomSelectionBottomSheetState extends State<RoomSelectionBottomSheet> {
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               backgroundColor: AppColorstatic.primary2,
+              side: BorderSide.none,
             ),
           ),
         ),

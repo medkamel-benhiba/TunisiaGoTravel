@@ -27,6 +27,8 @@ class BoardingRoomSelectionBhr extends StatefulWidget {
 class _BoardingRoomSelectionBhrState extends State<BoardingRoomSelectionBhr>
     with TickerProviderStateMixin {
   late TabController _tabController;
+  static const double COMMISSION = 1.1;
+
 
   @override
   void initState() {
@@ -294,8 +296,14 @@ class _RoomCard extends StatelessWidget {
     required this.onUpdate,
   });
 
+  static const double COMMISSION = 1.1;
+
   @override
   Widget build(BuildContext context) {
+    final displayRate = (boarding.rate * COMMISSION).toStringAsFixed(2);
+    final cancellationFee =
+    (boarding.cancellationPolicy.fee * COMMISSION).toStringAsFixed(2);
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(20),
@@ -317,122 +325,126 @@ class _RoomCard extends StatelessWidget {
             children: [
               _buildIcon(),
               const SizedBox(width: 12),
-              _buildRoomInfo(),
+              _buildRoomInfo(displayRate),
               _buildCounter(),
             ],
           ),
-          if (boarding.cancellationPolicy.fee > 0) _buildCancellationInfo(),
+          /*if (boarding.cancellationPolicy.fee > 0)
+            _buildCancellationInfo(cancellationFee),*/
         ],
       ),
     );
   }
 
-  Widget _buildIcon() => Container(
-    padding: const EdgeInsets.all(8),
-    decoration: BoxDecoration(
-      color: AppColorstatic.primary.withOpacity(0.15),
-      borderRadius: BorderRadius.circular(8),
-    ),
-    child: Icon(Icons.bed, color: AppColorstatic.primary),
-  );
+  Widget _buildIcon() =>
+      Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: AppColorstatic.primary.withOpacity(0.15),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Icon(Icons.bed, color: AppColorstatic.primary),
+      );
 
-  Widget _buildRoomInfo() => Expanded(
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          room.title,
-          style:
-          const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          'Capacité: ${room.adults} adultes, ${room.children} enfants',
-          style: TextStyle(color: Colors.grey[600], fontSize: 12),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          "${boarding.rate.toStringAsFixed(2)} TND",
-          style: TextStyle(
-            color: AppColorstatic.primary,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        if (boarding.nonRefundable)
-          Container(
-            margin: const EdgeInsets.only(top: 4),
-            padding:
-            const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-            decoration: BoxDecoration(
-              color: Colors.red.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(4),
+  Widget _buildRoomInfo(String displayRate) =>
+      Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              room.title,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
-            child: const Text(
-              'Non remboursable',
+            const SizedBox(height: 4),
+            Text(
+              'Capacité: ${room.adults} adultes, ${room.children} enfants',
+              style: TextStyle(color: Colors.grey[600], fontSize: 12),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              "$displayRate TND",
               style: TextStyle(
-                color: Colors.red,
-                fontSize: 10,
-                fontWeight: FontWeight.w500,
+                color: AppColorstatic.primary,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            if (boarding.nonRefundable)
+              Container(
+                margin: const EdgeInsets.only(top: 4),
+                padding:
+                const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.red.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: const Text(
+                  'Non remboursable',
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      );
+
+  Widget _buildCounter() =>
+      Row(
+        children: [
+          CounterButton(
+            icon: Icons.remove,
+            onTap: qty > 0
+                ? () => onUpdate(boarding.id, room.id, qty - 1)
+                : null,
+            color: AppColorstatic.primary,
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Text(
+              qty.toString(),
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: qty > 0 ? AppColorstatic.primary : Colors.grey,
               ),
             ),
           ),
-      ],
-    ),
-  );
-
-  Widget _buildCounter() => Row(
-    children: [
-      CounterButton(
-        icon: Icons.remove,
-        onTap: qty > 0
-            ? () => onUpdate(boarding.id, room.id, qty - 1)
-            : null,
-        color: AppColorstatic.primary,
-      ),
-      Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        child: Text(
-          qty.toString(),
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: qty > 0 ? AppColorstatic.primary : Colors.grey,
+          CounterButton(
+            icon: Icons.add,
+            onTap: canAdd && qty < room.availableQuantity
+                ? () => onUpdate(boarding.id, room.id, qty + 1)
+                : null,
+            color: AppColorstatic.primary,
           ),
-        ),
-      ),
-      CounterButton(
-        icon: Icons.add,
-        onTap: canAdd && qty < room.availableQuantity
-            ? () => onUpdate(boarding.id, room.id, qty + 1)
-            : null,
-        color: AppColorstatic.primary,
-      ),
-    ],
-  );
+        ],
+      );
 
-  Widget _buildCancellationInfo() => Container(
-    margin: const EdgeInsets.only(top: 12),
-    padding: const EdgeInsets.all(8),
-    decoration: BoxDecoration(
-      color: Colors.orange.withOpacity(0.1),
-      borderRadius: BorderRadius.circular(6),
-      border: Border.all(color: Colors.orange.withOpacity(0.3)),
-    ),
-    child: Row(
-      children: [
-        const Icon(Icons.info_outline, color: Colors.orange, size: 16),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            'Frais d\'annulation: ${boarding.cancellationPolicy.fee.toStringAsFixed(2)} TND',
-            style: const TextStyle(
-              fontSize: 12,
-              color: Colors.orange,
-              fontWeight: FontWeight.w500,
+  /*Widget _buildCancellationInfo(String cancellationFee) =>
+      Container(
+        margin: const EdgeInsets.only(top: 12),
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: Colors.orange.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(color: Colors.orange.withOpacity(0.3)),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.info_outline, color: Colors.orange, size: 16),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Frais d\'annulation: $cancellationFee TND',
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Colors.orange,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
             ),
-          ),
+          ],
         ),
-      ],
-    ),
-  );
+      );*/
 }

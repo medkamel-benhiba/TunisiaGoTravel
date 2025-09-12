@@ -1,7 +1,15 @@
+import 'dart:ui';
+
 class Hotel {
   final String id;
   final String id_hotel_bbx;
   final String name;
+  final String name_en;
+  final String name_ar;
+  final String name_ru;
+  final String name_ko;
+  final String name_zh;
+
   final String address;
   final String cover;
   final bool reservable;
@@ -11,7 +19,13 @@ class Hotel {
   final String destinationId;
   final int? categoryCode;
   final String? destinationName;
-  final String? shortDescription;
+  final String? description;
+  final String? description_en;
+  final String? description_ar;
+  final String? description_ja;
+  final String? description_ru;
+  final String? description_ko;
+  final String? description_zh;
 
   final String? idCityMouradi;
   final String? idHotelMouradi;
@@ -22,6 +36,11 @@ class Hotel {
     required this.id,
     required this.id_hotel_bbx,
     required this.name,
+    required this.name_en,
+    required this.name_ar,
+    required this.name_ru,
+    required this.name_ko,
+    required this.name_zh,
     required this.address,
     required this.cover,
     required this.lat,
@@ -31,19 +50,30 @@ class Hotel {
     required this.destinationId,
     this.categoryCode,
     this.destinationName,
-    this.shortDescription,
+    this.description,
+    this.description_ar,
+    this.description_en,
+    this.description_ja,
+    this.description_ru,
+    this.description_ko,
+    this.description_zh,
+
     this.idCityMouradi,
     this.idHotelMouradi,
     this.idHotelBhr
   });
 
   factory Hotel.fromJson(Map<String, dynamic> json) {
-    String? desc = json['description'] ?? '';
 
     return Hotel(
       id: json['id'] ?? '',
       id_hotel_bbx: json['id_hotel_bbx'] ?? '',
       name: json['name'] ?? '',
+      name_en: json['name_en'] ?? '',
+      name_ar: json['name_ar'] ?? '',
+      name_ru: json['name_ru'] ?? '',
+      name_ko: json['name_ko'] ?? '',
+      name_zh: json['name_zh'] ?? '',
       address: json['address'] ?? '',
       cover: json['cover'] ?? '',
       lat: json['lat'] ?? '',
@@ -56,13 +86,18 @@ class Hotel {
           ? int.tryParse(json['category_code'].toString())
           : null,
       destinationName: json['destination']?['name'] ?? json['ville'] ?? '',
-      shortDescription: desc,
+      description: json['description'] ?? '',
+      description_en: json['description_en'] ?? '',
+      description_ar: json['description_ar'] ?? '',
+      description_ja: json['description_ja'] ?? '',
+      description_ru: json['description_ru'] ?? '',
+      description_ko: json['description_ko'] ?? '',
+      description_zh: json['description_zh'] ?? '',
       idCityMouradi: json['id_city_mouradi'] ?? '',
       idHotelMouradi: json['id_hotel_mouradi'] ?? '',
 
     );
   }
-
 
 
   Map<String, dynamic> toJson() {
@@ -77,7 +112,47 @@ class Hotel {
       'destination_id': destinationId,
       'category_code': categoryCode,
       'destination_name': destinationName,
-      'short_description': shortDescription,
+      'short_description': description,
+      'short_description_en': description_en,
+      'short_description_ar': description_ar,
+      'short_description_ja': description_ja,
+      'short_description_ru': description_ru,
+      'short_description_ko': description_ko,
+      'short_description_zh': description_zh,
+
     };
+  }
+  String getName(Locale locale) {
+    switch (locale.languageCode) {
+      case 'ar':
+        return name_ar.isNotEmpty ? name_ar : name;
+      case 'en':
+        return name_en.isNotEmpty ? name_en : name;
+      case 'ru':
+        return name_ru.isNotEmpty ? name_ru : name;
+      case 'ko':
+        return name_ko.isNotEmpty ? name_ko : name;
+      case 'zh':
+        return name_zh.isNotEmpty ? name_zh : name;
+      default:
+        return name;
+    }
+  }
+
+  String? getDescription(Locale locale) {
+    switch (locale.languageCode) {
+      case 'ar':
+        return description_ar!.isNotEmpty ? description_ar : description;
+      case 'en':
+        return description_en!.isNotEmpty ? description_en : description;
+      case 'ru':
+        return description_ru!.isNotEmpty ? description_ru : description;
+      case 'ko':
+        return description_ko!.isNotEmpty ? description_ko : description;
+      case 'zh':
+        return description_zh!.isNotEmpty ? description_zh : description;
+      default:
+        return description;
+    }
   }
 }

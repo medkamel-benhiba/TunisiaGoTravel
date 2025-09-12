@@ -245,8 +245,8 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
                         globalProvider.setAvailableHotels(filteredAvailableHotels);
 
                         // Debug prints
-                        print("DEBUG - Simple hotels fetched (page 1): ${filteredAvailableHotels.length}");
-                        print("DEBUG - Pension hotels fetched (page 1): ${hotelProvider.hotelDisponibilityPontion?.data.length ?? 0}");
+                        print("DEBUG - Pention hotels fetched (page 1): ${filteredAvailableHotels.length}");
+                        print("DEBUG - Simple hotels fetched (page 1): ${hotelProvider.hotelDisponibilityPontion?.data.length ?? 0}");
 
                         // Hide the section after search
                         setState(() {

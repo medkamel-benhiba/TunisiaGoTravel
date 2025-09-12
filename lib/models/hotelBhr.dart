@@ -29,8 +29,12 @@ class HotelBhr {
   }
 
   // NEW: Factory method for availability API response
-  factory HotelBhr.fromAvailabilityJson(Map<String, dynamic> json, dynamic hotelDetail) {
-    // Extract hotel info from hotelDetail parameter
+  factory HotelBhr.fromAvailabilityJson(
+      Map<String, dynamic> json,
+      dynamic hotelDetail, {
+        String? idHotelBbx,
+      }) {
+    // --- Extract hotel info from hotelDetail ---
     String hotelId = '';
     String hotelName = '';
     String hotelSlug = '';
@@ -40,14 +44,13 @@ class HotelBhr {
         hotelId = hotelDetail['id']?.toString() ?? '';
         hotelName = hotelDetail['name']?.toString() ?? '';
         hotelSlug = hotelDetail['slug']?.toString() ?? '';
-      } else if (hotelDetail.runtimeType.toString().contains('HotelDetail')) {
-        // If it's a HotelDetail object, access properties directly
+      } else {
         try {
+          // If hotelDetail is an object with properties
           hotelId = hotelDetail.id?.toString() ?? '';
           hotelName = hotelDetail.name?.toString() ?? '';
           hotelSlug = hotelDetail.slug?.toString() ?? '';
-        } catch (e) {
-          // Fallback if properties don't exist
+        } catch (_) {
           hotelId = '';
           hotelName = '';
           hotelSlug = '';
@@ -55,11 +58,11 @@ class HotelBhr {
       }
     }
 
-    // Handle the BHR response structure which might be different
+    // --- Parse disponibility ---
     DisponibilityBhr disponibility;
 
-    if (json.containsKey('rooms')) {
-      // Direct rooms in response
+    if (json.containsKey('rooms') && json['rooms'] != null) {
+      // Case: direct rooms array
       disponibility = DisponibilityBhr(
         id: hotelId,
         title: hotelName,
@@ -67,12 +70,12 @@ class HotelBhr {
         summary: json['summary']?.toString() ?? '',
         address: json['address']?.toString() ?? '',
         promotionDateTime: json['promotionDateTime']?.toString() ?? '',
-        rooms: (json['rooms'] as List<dynamic>? ?? [])
+        rooms: (json['rooms'] as List<dynamic>)
             .map((r) => RoomBhr.fromJson(Map<String, dynamic>.from(r)))
             .toList(),
       );
-    } else if (json.containsKey('pensions')) {
-      // Pensions structure (might need adaptation)
+    } else if (json.containsKey('pensions') && json['pensions'] != null) {
+      // Case: pensions structure
       final pensionsData = json['pensions'];
       if (pensionsData is Map) {
         disponibility = DisponibilityBhr.fromJson(Map<String, dynamic>.from(pensionsData));
@@ -88,6 +91,7 @@ class HotelBhr {
         );
       }
     } else {
+      // Default empty disponibility
       disponibility = DisponibilityBhr(
         id: hotelId,
         title: hotelName,
@@ -99,14 +103,17 @@ class HotelBhr {
       );
     }
 
+    // --- Return HotelBhr instance ---
     return HotelBhr(
       id: hotelId,
+      id_hotel_bbx: idHotelBbx ?? json['id_hotel_bbx']?.toString(),
       name: hotelName,
       slug: hotelSlug,
       disponibilityType: json['disponibilitytype']?.toString() ?? 'bhr',
       disponibility: disponibility,
     );
   }
+
 }
 
 

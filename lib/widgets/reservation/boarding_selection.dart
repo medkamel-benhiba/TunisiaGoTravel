@@ -6,10 +6,10 @@ import 'CounterButton.dart';
 
 class BoardingRoomSelection extends StatefulWidget {
   final List<BoardingOption> boardings;
-  final Map<int, Map<int, int>> selectedRoomsByBoarding;
+  final Map<int, Map<String, int>> selectedRoomsByBoarding; // Key: '${pax.adults}_${room.id}'
   final int maxRooms;
   final int totalSelected;
-  final Function(int boardingId, int roomId, int qty) onUpdate;
+  final Function(int boardingId, int paxAdults, int roomId, int qty) onUpdate;
 
   const BoardingRoomSelection({
     super.key,
@@ -180,7 +180,8 @@ class _BoardingRoomSelectionState extends State<BoardingRoomSelection>
                         const SizedBox(height: 12),
                         Column(
                           children: pax.rooms.map((room) {
-                            final qty = widget.selectedRoomsByBoarding[boarding.id]?[room.id] ?? 0;
+                            final roomKey = '${pax.adults}_${room.id}';
+                            final qty = widget.selectedRoomsByBoarding[boarding.id]?[roomKey] ?? 0;
                             final canAdd = widget.totalSelected < widget.maxRooms;
 
                             return Container(
@@ -222,7 +223,7 @@ class _BoardingRoomSelectionState extends State<BoardingRoomSelection>
                                                 fontWeight: FontWeight.w600)),
                                         const SizedBox(height: 4),
                                         Text(
-                                          "${room.price.toStringAsFixed(2)} TND",
+                                          "${(room.price*1.1).toStringAsFixed(2)} TND",
                                           style: TextStyle(
                                             color: AppColorstatic.primary,
                                             fontWeight: FontWeight.bold,
@@ -238,7 +239,7 @@ class _BoardingRoomSelectionState extends State<BoardingRoomSelection>
                                       CounterButton(
                                         icon: Icons.remove,
                                         onTap: qty > 0
-                                            ? () => widget.onUpdate(boarding.id, room.id, qty - 1)
+                                            ? () => widget.onUpdate(boarding.id, pax.adults, room.id, qty - 1)
                                             : null,
                                         color: AppColorstatic.primary,
                                       ),
@@ -258,7 +259,7 @@ class _BoardingRoomSelectionState extends State<BoardingRoomSelection>
                                       CounterButton(
                                         icon: Icons.add,
                                         onTap: canAdd
-                                            ? () => widget.onUpdate(boarding.id, room.id, qty + 1)
+                                            ? () => widget.onUpdate(boarding.id, pax.adults, room.id, qty + 1)
                                             : null,
                                         color: AppColorstatic.primary,
                                       ),
@@ -281,159 +282,3 @@ class _BoardingRoomSelectionState extends State<BoardingRoomSelection>
     );
   }
 }
-
-
-/*import 'package:flutter/material.dart';
-import '../../theme/color.dart';
-
-class BoardingSelection extends StatelessWidget {
-  final Map<String, dynamic> selectedRoom;
-  final Map<String, dynamic>? selectedBoarding;
-  final Function(Map<String, dynamic>) onBoardingSelected;
-
-  const BoardingSelection({
-    super.key,
-    required this.selectedRoom,
-    required this.selectedBoarding,
-    required this.onBoardingSelected,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    // Correctly extract the 'Boarding' list from the 'Boardings' map.
-    final dynamic rawBoardings = selectedRoom['Boardings']?['Boarding'];
-    final List<dynamic> boardingOptions = (rawBoardings is List)
-        ? rawBoardings
-        : (rawBoardings != null ? [rawBoardings] : []);
-
-    if (boardingOptions.isEmpty) {
-      return Card(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Icon(Icons.restaurant, color: AppColorstatic.primary, size: 20),
-                  const SizedBox(width: 8),
-                  const Text(
-                    'Type de pension',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-            ],
-          ),
-        ),
-      );
-    }
-
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.restaurant, color: AppColorstatic.primary, size: 20),
-                const SizedBox(width: 8),
-                const Text(
-                  'Choisir le type de pension',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            ...boardingOptions.map((board) {
-              final boardId = board['@attributes']?['id']?.toString() ?? board['id']?.toString() ?? '';
-              final isSelected = selectedBoarding != null &&
-                  (selectedBoarding!['@attributes']?['id']?.toString() == boardId ||
-                      selectedBoarding!['id']?.toString() == boardId);
-
-              final price = _getBoardingPrice(board);
-              final priceText = price == '0' ? 'Inclus' : '$price TND';
-
-              return InkWell(
-                onTap: () => onBoardingSelected(board),
-                child: Container(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                        color: isSelected ? AppColorstatic.primary : Colors.grey[300]!,
-                        width: 2),
-                    borderRadius: BorderRadius.circular(8),
-                    color: isSelected ? AppColorstatic.primary.withOpacity(0.05) : null,
-                  ),
-                  child: Row(
-                    children: [
-                      Radio<String>(
-                        value: boardId,
-                        groupValue: selectedBoarding != null
-                            ? (selectedBoarding!['@attributes']?['id']?.toString() ?? selectedBoarding!['id']?.toString() ?? '')
-                            : null,
-                        onChanged: (value) => onBoardingSelected(board),
-                        activeColor: AppColorstatic.primary,
-                      ),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              board['Title']?.toString() ?? 'Pension complète',
-                              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
-                            ),
-                            if (board['description'] != null)
-                              Text(
-                                board['description'].toString(),
-                                style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                              ),
-                          ],
-                        ),
-                      ),
-                      Text(priceText,
-                          style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 14,
-                              color: isSelected ? AppColorstatic.primary : Colors.grey[700])),
-                    ],
-                  ),
-                ),
-              );
-            }).toList(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  String _getBoardingPrice(Map<String, dynamic> boarding) {
-    String? rawPrice;
-
-    if (boarding['Rate'] != null) {
-      rawPrice = boarding['Rate'].toString();
-    } else if (boarding['RateWithoutPromotion'] != null) {
-      rawPrice = boarding['RateWithoutPromotion'].toString();
-    } else if (boarding['Price'] != null) {
-      rawPrice = boarding['Price'].toString();
-    } else if (boarding['@attributes']?['rate'] != null) {
-      rawPrice = boarding['@attributes']['rate'].toString();
-    } else if (boarding['CancellationPolicy']?['Fee'] != null) {
-      rawPrice = boarding['CancellationPolicy']['Fee'].toString();
-    }
-
-    if (rawPrice == null || rawPrice.trim().isEmpty) return '0';
-
-    // Replace comma with dot and then parse
-    rawPrice = rawPrice.replaceAll(',', '.');
-    final value = double.tryParse(rawPrice);
-
-    if (value == null) return '0';
-
-    // Format rounded to the nearest integer
-    return value.toStringAsFixed(2);
-  }
-}*/

@@ -19,7 +19,7 @@ class DestinationProvider extends ChangeNotifier {
     fetchDestinations();
   }
 
-  // Fetch all destinations once
+  /// Fetch all destinations once
   Future<void> fetchDestinations() async {
     _isLoading = true;
     _error = null;
@@ -29,7 +29,7 @@ class DestinationProvider extends ChangeNotifier {
       _destinations = await _apiService.getDestinations();
     } catch (e) {
       _destinations = [];
-      _error = "Error fetching destinations: $e";
+      _error = "Aucune destination disponible";
       debugPrint(_error);
     }
 
@@ -37,7 +37,7 @@ class DestinationProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Get a destination by its ID
+  /// Get a destination by its ID
   Destination? getDestinationById(String id) {
     try {
       return _destinations.firstWhere((d) => d.id == id);
@@ -46,7 +46,7 @@ class DestinationProvider extends ChangeNotifier {
     }
   }
 
-  /// Optionally get by name
+  /// Get a destination by its name (case-insensitive)
   Destination? getDestinationByName(String name) {
     try {
       return _destinations
@@ -54,5 +54,33 @@ class DestinationProvider extends ChangeNotifier {
     } catch (e) {
       return null;
     }
+  }
+
+  /// Get a destination's localized name
+  String getDestinationName(String id, Locale locale) {
+    final destination = getDestinationById(id);
+    if (destination == null) return "";
+    return destination.getName(locale);
+  }
+
+  /// Get a destination's localized description
+  String? getDestinationDescription(String id, Locale locale) {
+    final destination = getDestinationById(id);
+    if (destination == null) return null;
+    return destination.getDescription(locale);
+  }
+
+  /// Get a destination's localized title
+  String? getDestinationTitle(String id, Locale locale) {
+    final destination = getDestinationById(id);
+    if (destination == null) return null;
+    return destination.getTitle(locale);
+  }
+
+  /// Get a destination's localized subtitle
+  String? getDestinationSubtitle(String id, Locale locale) {
+    final destination = getDestinationById(id);
+    if (destination == null) return null;
+    return destination.getSubtitle(locale);
   }
 }
