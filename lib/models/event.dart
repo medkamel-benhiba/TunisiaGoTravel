@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 class Event {
   final String id;
   final String title;
@@ -23,6 +25,7 @@ class Event {
   final String? addressAr;
   final String? addressZh;
   final String? addressKo;
+  final String? addressRu;
   final String? addressJa;
   final String? lat;
   final String? lng;
@@ -56,6 +59,7 @@ class Event {
     this.addressEn,
     this.addressAr,
     this.addressZh,
+    this.addressRu,
     this.addressKo,
     this.addressJa,
     this.lat,
@@ -98,6 +102,7 @@ class Event {
       addressEn: json['address_en'],
       addressAr: json['address_ar'],
       addressZh: json['address_zh'],
+      addressRu: json['address_ru'],
       addressKo: json['address_ko'],
       addressJa: json['address_ja'],
       lat: json['lat'],
@@ -108,5 +113,60 @@ class Event {
       startDate: json['start_date'],
       endDate: json['end_date'],
     );
+  }
+  String getName(Locale locale) {
+    switch (locale.languageCode) {
+      case 'en':
+        return titleEn ?? title;
+      case 'ar':
+        return titleAr ?? title;
+      case 'ru':
+        return titleRu ?? title;
+      case 'zh':
+        return titleZh ?? title;
+      case 'ko':
+        return titleKo ?? title;
+      case 'ja':
+        return titleJa ?? title;
+      default:
+        return title;
+    }
+  }
+
+  String getDescription(Locale locale) {
+    switch (locale.languageCode) {
+      case 'en':
+        return descriptionEn ?? description ?? '';
+      case 'ar':
+        return descriptionAr ?? description ?? '';
+      case 'ru':
+        return descriptionRu ?? description ?? '';
+      case 'zh':
+        return descriptionZh ?? description ?? '';
+      case 'ko':
+        return descriptionKo ?? description ?? '';
+      case 'ja':
+        return descriptionJa ?? description ?? '';
+      default:
+        return description ?? '';
+    }
+  }
+  String getAddress(Locale locale) {
+    switch (locale.languageCode) {
+      case 'en':
+        return addressEn ?? address ?? '';
+      case 'ar':
+        return addressAr ?? address ?? '';
+      case 'ru':
+        return addressRu ?? address ?? '';
+      case 'zh':
+        return addressZh ?? address ?? '';
+      case 'ko':
+        return addressKo ?? address ?? '';
+      case 'ja':
+        return addressJa ?? address ?? '';
+      default:
+        return address ?? '';
+    }
   }
 }

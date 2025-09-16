@@ -1,4 +1,6 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_html/flutter_html.dart';
 import 'package:provider/provider.dart';
 import 'package:tunisiagotravel/screens/festival_details_screen.dart';
 import 'package:tunisiagotravel/screens/monument_details_screen.dart';
@@ -16,7 +18,7 @@ import 'musee_details_screen.dart';
 enum CulturesCategory { none, musee, monument, festival, artisanat }
 
 class CulturesScreen extends StatefulWidget {
-  final CulturesCategory? initialCategory; // <-- add this
+  final CulturesCategory? initialCategory;
   const CulturesScreen({super.key, this.initialCategory});
 
   @override
@@ -30,7 +32,6 @@ class _CulturesScreenState extends State<CulturesScreen> {
   void initState() {
     super.initState();
 
-    // Use the initialCategory if provided, otherwise default to none
     _selectedCategory = widget.initialCategory ?? CulturesCategory.none;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -41,31 +42,30 @@ class _CulturesScreenState extends State<CulturesScreen> {
     });
   }
 
-
-
   @override
   Widget build(BuildContext context) {
+    final locale=context.locale;
     final menuItems = [
       {
-        'title': 'Musées',
+        'title': tr('museums'),
         'image': 'assets/images/card/musees.png',
         'color': AppColorstatic.primary,
         'category': CulturesCategory.musee,
       },
       {
-        'title': 'Monuments',
+        'title': tr('monuments'),
         'image': 'assets/images/card/monument.png',
         'color': AppColorstatic.primary,
         'category': CulturesCategory.monument,
       },
       {
-        'title': 'Festivals',
+        'title': tr('festivals'),
         'image': 'assets/images/card/festival.png',
         'color': AppColorstatic.secondary,
         'category': CulturesCategory.festival,
       },
       {
-        'title': 'Artisanat',
+        'title': tr('crafts'),
         'image': 'assets/images/card/artisanat.png',
         'color': AppColorstatic.secondary,
         'category': CulturesCategory.artisanat,
@@ -79,7 +79,7 @@ class _CulturesScreenState extends State<CulturesScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12),
           child: ScreenTitle(
             title: _selectedCategory == CulturesCategory.none
-                ? 'Culture'
+                ? tr('culture')
                 : menuItems
                 .firstWhere((item) =>
             item['category'] == _selectedCategory)['title']
@@ -145,55 +145,45 @@ class _CulturesScreenState extends State<CulturesScreen> {
 
   Widget _buildCategoryContent(CulturesCategory category) {
     switch (category) {
-
       case CulturesCategory.musee:
         return Consumer<MuseeProvider>(
           builder: (context, provider, child) {
             if (provider.isLoading && provider.musees.isEmpty) {
               return const Center(child: CircularProgressIndicator());
             }
-
             if (provider.musees.isEmpty) {
-              return const Center(child: Text("Aucun festival disponible"));
+              return Center(child: Text(tr("no_museum_available")));
             }
 
-            final ScrollController _scrollController = ScrollController();
-
-            _scrollController.addListener(() {
-              if (_scrollController.position.pixels >=
-                  _scrollController.position.maxScrollExtent - 200 &&
+            final ScrollController scrollController = ScrollController();
+            scrollController.addListener(() {
+              if (scrollController.position.pixels >=
+                  scrollController.position.maxScrollExtent - 200 &&
                   !provider.isLoading) {
                 provider.fetchMusees();
               }
             });
 
             return ListView.builder(
-              controller: _scrollController,
+              controller: scrollController,
               padding: const EdgeInsets.all(8.0),
-              itemCount: provider.musees.length ,
+              itemCount: provider.musees.length,
               itemBuilder: (context, index) {
-                if (index < provider.musees.length) {
-                  final item = provider.musees[index];
-                  return ItemTile(
-                    title: item.name,
-                    subtitle: item.situation.toString(),
-                    imageUrl: item.cover,
-                    description: item.description,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => MuseeDetailsScreen(museeSlug: item.slug),
-                        ),
-                      );
-                    },
-                  );
-                } else {
-                  return const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 16.0),
-                    child: Center(child: CircularProgressIndicator()),
-                  );
-                }
+                final item = provider.musees[index];
+                return ItemTile(
+                  title: item.getName(Localizations.localeOf(context)),
+                  subtitle: item.getSituation(Localizations.localeOf(context)).toString(),
+                  imageUrl: item.cover,
+                  description: item.getDescription(Localizations.localeOf(context)),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => MuseeDetailsScreen(museeSlug: item.slug),
+                      ),
+                    );
+                  },
+                );
               },
             );
           },
@@ -202,24 +192,26 @@ class _CulturesScreenState extends State<CulturesScreen> {
       case CulturesCategory.monument:
         return Consumer<MonumentProvider>(
           builder: (context, provider, child) {
-            if (provider.isLoading) return const Center(child: CircularProgressIndicator());
-            if (provider.error != null) return Center(child: Text(provider.error!));
-            if (provider.monuments.isEmpty) return const Center(child: Text("Aucun monument disponible"));
+            if (provider.monuments.isEmpty) {
+              return Center(child: Text(tr("no_monument_available")));
+            }
             return ListView.builder(
-              padding: const EdgeInsets.all(8.0),
               itemCount: provider.monuments.length,
               itemBuilder: (context, index) {
                 final item = provider.monuments[index];
                 return ItemTile(
-                  title: item.name,
-                  subtitle: item.destination.name.toString(),
+                  title: item.getName(Localizations.localeOf(context)),
+                  subtitle:
+                  item.destination.getName(Localizations.localeOf(context)),
                   imageUrl: item.cover,
-                  description: item.description,
+                  description:
+                  item.getDescription(Localizations.localeOf(context)),
                   onTap: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => MonumentDetailsScreen(monumentSlug: item.slug),
+                        builder: (_) =>
+                            MonumentDetailsScreen(monumentSlug: item.slug),
                       ),
                     );
                   },
@@ -235,16 +227,14 @@ class _CulturesScreenState extends State<CulturesScreen> {
             if (provider.isLoading && provider.festivals.isEmpty) {
               return const Center(child: CircularProgressIndicator());
             }
-
             if (provider.festivals.isEmpty) {
-              return const Center(child: Text("Aucun festival disponible"));
+              return Center(child: Text(tr("no_festival_available")));
             }
 
-            final ScrollController _scrollController = ScrollController();
-
-            _scrollController.addListener(() {
-              if (_scrollController.position.pixels >=
-                  _scrollController.position.maxScrollExtent - 200 &&
+            final ScrollController scrollController = ScrollController();
+            scrollController.addListener(() {
+              if (scrollController.position.pixels >=
+                  scrollController.position.maxScrollExtent - 200 &&
                   provider.hasMore &&
                   !provider.isLoading) {
                 provider.fetchFestivals();
@@ -252,22 +242,24 @@ class _CulturesScreenState extends State<CulturesScreen> {
             });
 
             return ListView.builder(
-              controller: _scrollController,
+              controller: scrollController,
               padding: const EdgeInsets.all(8.0),
-              itemCount: provider.festivals.length + (provider.hasMore ? 1 : 0),
+              itemCount:
+              provider.festivals.length + (provider.hasMore ? 1 : 0),
               itemBuilder: (context, index) {
                 if (index < provider.festivals.length) {
                   final item = provider.festivals[index];
                   return ItemTile(
-                    title: item.name,
-                    subtitle: item.destination!.name,
+                    title: item.getName(Localizations.localeOf(context)),
+                    subtitle: item.getDestinationName(Localizations.localeOf(context)),
                     imageUrl: item.cover,
-                    description: item.description,
+                    description: item.getDescription(Localizations.localeOf(context)),
                     onTap: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => FestivalDetailsScreen(festivalSlug: item.slug),
+                          builder: (_) =>
+                              FestivalDetailsScreen(festivalSlug: item.slug),
                         ),
                       );
                     },
@@ -283,29 +275,35 @@ class _CulturesScreenState extends State<CulturesScreen> {
           },
         );
 
-
-
       case CulturesCategory.artisanat:
         return Consumer<ArtisanatProvider>(
           builder: (context, provider, child) {
-            if (provider.isLoading) return const Center(child: CircularProgressIndicator());
-            if (provider.error != null) return Center(child: Text(provider.error!));
-            if (provider.artisanats.isEmpty) return const Center(child: Text("Aucun artisanat disponible"));
+            if (provider.isLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (provider.error != null) {
+              return Center(child: Text(provider.error!));
+            }
+            if (provider.artisanats.isEmpty) {
+              return Center(child: Text(tr("no_craft_available")));
+            }
+
             return ListView.builder(
               padding: const EdgeInsets.all(8.0),
               itemCount: provider.artisanats.length,
               itemBuilder: (context, index) {
                 final item = provider.artisanats[index];
                 return ItemTile(
-                  title: item.name,
+                  title: item.getName(Localizations.localeOf(context)),
                   subtitle: "",
+                  descriptionHtml: item.getDescription(Localizations.localeOf(context)),
                   imageUrl: item.cover,
-                  description: item.description,
                   onTap: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => ArtisanatDetailsScreen(artisanatSlug: item.slug),
+                        builder: (_) =>
+                            ArtisanatDetailsScreen(artisanatSlug: item.slug),
                       ),
                     );
                   },
@@ -315,8 +313,10 @@ class _CulturesScreenState extends State<CulturesScreen> {
           },
         );
 
+
       default:
         return const SizedBox.shrink();
     }
   }
 }
+

@@ -48,7 +48,7 @@ class _AgilCardState extends State<AgilCard> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        widget.agil.ville,
+                        widget.agil.getVille(Localizations.localeOf(context)),
                         style: Theme.of(context).textTheme.titleMedium?.copyWith(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -57,7 +57,7 @@ class _AgilCardState extends State<AgilCard> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        widget.agil.adresse,
+                        widget.agil.getAdresse(Localizations.localeOf(context)),
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           fontSize: 14,
                           color: Colors.grey[700],
@@ -67,7 +67,7 @@ class _AgilCardState extends State<AgilCard> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Gouvernorat: ${widget.agil.gouverneurat}',
+                        'Gouvernorat: ${widget.agil.getGouverneurat(Localizations.localeOf(context))}',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           fontSize: 12,
                           color: Colors.grey[500],

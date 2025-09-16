@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 class Activity {
   final String id;
   final String title;
@@ -135,7 +137,80 @@ class Activity {
       categoryId: json['category_id'],
       slug: json['slug'],
       destinationId: json['destination_id'],
-
     );
   }
+
+  String getName(Locale locale) {
+    switch (locale.languageCode) {
+      case 'en':
+        return titleEn ?? title;
+      case 'ar':
+        return titleAr ?? title;
+      case 'ru':
+        return titleRu ?? title;
+      case 'zh':
+        return titleZh ?? title;
+      case 'ko':
+        return titleKo ?? title;
+      case 'ja':
+        return titleJa ?? title;
+      default:
+        return title;
+    }
+  }
+  String getDescription(Locale locale) {
+    switch (locale.languageCode) {
+      case 'en':
+        return descriptionEn ?? description ?? '';
+      case 'ar':
+        return descriptionAr ?? description ?? '';
+      case 'ru':
+        return descriptionRu ?? description ?? '';
+      case 'zh':
+        return descriptionZh ?? description ?? '';
+      case 'ko':
+        return descriptionKo ?? description ?? '';
+      case 'ja':
+        return descriptionJa ?? description ?? '';
+      default:
+        return description ?? '';
+    }
+  }
+  String getAddress(Locale locale) {
+    switch (locale.languageCode) {
+      case 'en':
+        return addressEn ?? address ?? '';
+      case 'ar':
+        return addressAr ?? address ?? '';
+      case 'ru':
+        return addressRu ?? address ?? '';
+      case 'zh':
+        return addressZh ?? address ?? '';
+      case 'ko':
+        return addressKo ?? address ?? '';
+      case 'ja':
+        return addressJa ?? address ?? '';
+      default:
+        return address ?? '';
+    }
+  }
+  String getSubtype(Locale locale) {
+    switch (locale.languageCode) {
+      case 'en':
+        return subtypeEn ?? subtype ?? '';
+      case 'ar':
+        return subtypeAr ?? subtype ?? '';
+      case 'ru':
+        return subtypeRu ?? subtype ?? '';
+      case 'zh':
+        return subtypeZh ?? subtype ?? '';
+      case 'ko':
+        return subtypeKo ?? subtype ?? '';
+      case 'ja':
+        return subtypeJa ?? subtype ?? '';
+      default:
+        return subtype ?? '';
+    }
+  }
+
 }

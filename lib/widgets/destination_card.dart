@@ -5,10 +5,16 @@ class DestinationCard extends StatelessWidget {
   final Destination destination;
   final VoidCallback onTap;
 
-  const DestinationCard({super.key, required this.destination, required this.onTap});
+  const DestinationCard({
+    super.key,
+    required this.destination,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final locale = Localizations.localeOf(context);
+
     return GestureDetector(
       onTap: onTap,
       child: Card(
@@ -32,12 +38,13 @@ class DestinationCard extends StatelessWidget {
               padding: const EdgeInsets.all(14),
               child: Center(
                 child: Text(
-                destination.name,
-                style: Theme.of(context)
-                    .textTheme
-                    .titleMedium
-                    ?.copyWith(fontWeight: FontWeight.w700),
-              ),)
+                  destination.getName(locale), // ✅ utilise le bon champ traduit
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleMedium
+                      ?.copyWith(fontWeight: FontWeight.w700),
+                ),
+              ),
             ),
           ],
         ),

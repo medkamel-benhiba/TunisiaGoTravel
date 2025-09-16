@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tunisiagotravel/theme/color.dart';
 import 'package:tunisiagotravel/theme/styletext.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../models/restaurant.dart';
 import '../../screens/ItineraryScreen.dart';
 import '../../screens/restaurant_reservation.dart';
@@ -16,18 +17,20 @@ class RestaurantInfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final locale = context.locale;
+
     return BaseCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SectionHeader(
             icon: Icons.restaurant,
-            title: 'Restaurant',
+            title: 'restaurant'.tr(),
             iconColor: Colors.deepPurple[600]!,
           ),
           const SizedBox(height: 16),
           Text(
-            restaurant.name,
+            restaurant.getName(locale),
             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
@@ -37,7 +40,7 @@ class RestaurantInfoCard extends StatelessWidget {
               const SizedBox(width: 4),
               Expanded(
                 child: Text(
-                  restaurant.address ?? '',
+                  restaurant.getAddress(locale),
                   style: Appstylestatic.textStyle21,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
@@ -47,11 +50,11 @@ class RestaurantInfoCard extends StatelessWidget {
           ),
           const SizedBox(height: 16),
 
-          if (restaurant.ville != null && restaurant.ville!.isNotEmpty)
+          if (restaurant.getVille(locale).isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(top: 8.0),
               child: Text(
-                restaurant.ville!,
+                restaurant.getVille(locale),
                 style: TextStyle(fontSize: 16, color: Colors.grey[700]),
               ),
             ),
@@ -72,8 +75,8 @@ class RestaurantInfoCard extends StatelessWidget {
               ),
               Text(
                 restaurant.startingPrice != null
-                    ? 'À partir de ${restaurant.startingPrice.toString()} TND'
-                    : 'Prix non disponible',
+                    ? '${'restaurantsScreen.startingFrom'.tr()} ${restaurant.startingPrice.toString()} ${'TND'}'
+                    : 'price_not_available'.tr(),
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
@@ -82,17 +85,7 @@ class RestaurantInfoCard extends StatelessWidget {
               ),
             ],
           ),
-          /*if (restaurant.isSpecial)
-            Padding(
-              padding: const EdgeInsets.only(top: 8.0),
-              child: Chip(
-                label: const Text('Spécial'),
-                backgroundColor: Colors.orange[100],
-                labelStyle: const TextStyle(color: Colors.orange),
-              ),
-            ),*/
           const SizedBox(height: 10),
-
 
           // Expanded Itinerary Button
           Row(
@@ -114,12 +107,12 @@ class RestaurantInfoCard extends StatelessWidget {
                       );
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Coordinates not available")),
+                        SnackBar(content: Text("coordinates_not_available".tr())),
                       );
                     }
                   },
                   icon: const Icon(Icons.directions, size: 18),
-                  label: const Text('Itinéraire'),
+                  label: Text('itinerary'.tr()),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColorstatic.primary,
                     foregroundColor: Colors.white,
@@ -137,12 +130,12 @@ class RestaurantInfoCard extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => RestaurantReservationScreen(restaurant:restaurant),
+                        builder: (_) => RestaurantReservationScreen(restaurant: restaurant),
                       ),
                     );
                   },
                   icon: const Icon(Icons.book_online, size: 18),
-                  label: const Text('Réserver'),
+                  label: Text('reserve'.tr()),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColorstatic.primary2,
                     foregroundColor: Colors.white,

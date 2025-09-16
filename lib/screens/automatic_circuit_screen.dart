@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 import '../../widgets/circuits/budget_input.dart';
 import '../../widgets/circuits/compose_button.dart';
@@ -98,9 +99,8 @@ class _AutoCircuitScreenState extends State<AutoCircuitScreen> {
 
     if (_startCityId == _endCityId) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content:
-          Text('La ville de départ et d\'arrivée doivent être différentes'),
+        SnackBar(
+          content: Text('departure_arrival_same'.tr()),
           backgroundColor: Colors.orange,
         ),
       );
@@ -146,17 +146,14 @@ class _AutoCircuitScreenState extends State<AutoCircuitScreen> {
   }
 
   void _showValidationError() {
-    String message = 'Veuillez vérifier les champs suivants:\n';
+    String message = 'validation_check_fields'.tr() + '\n';
     List<String> errors = [];
 
-    if (_startDate == null || _endDate == null) errors.add('• Dates de voyage');
-    if (_startCityId == null || _endCityId == null) {
-      errors.add('• Villes de départ et d\'arrivée');
-    }
-    if (adults == 0) errors.add('• Au moins 1 adulte requis');
-    if (_budgetController.text.isEmpty ||
-        double.tryParse(_budgetController.text) == null) {
-      errors.add('• Budget valide');
+    if (_startDate == null || _endDate == null) errors.add('• ' + 'travel_dates'.tr());
+    if (_startCityId == null || _endCityId == null) errors.add('• ' + 'departure_arrival_cities'.tr());
+    if (adults == 0) errors.add('• ' + 'at_least_one_adult'.tr());
+    if (_budgetController.text.isEmpty || double.tryParse(_budgetController.text) == null) {
+      errors.add('• ' + 'valid_budget'.tr());
     }
 
     message += errors.join('\n');
@@ -187,12 +184,12 @@ class _AutoCircuitScreenState extends State<AutoCircuitScreen> {
 
   Widget _buildResultsSection(AutoCircuitProvider provider) {
     if (provider.isLoading) {
-      return const Center(
+      return Center(
         child: Column(
           children: [
-            CircularProgressIndicator(),
-            SizedBox(height: 16),
-            Text('Génération de votre circuit...'),
+            const CircularProgressIndicator(),
+            const SizedBox(height: 16),
+            Text('generating_circuit'.tr()),
           ],
         ),
       );
@@ -204,9 +201,9 @@ class _AutoCircuitScreenState extends State<AutoCircuitScreen> {
           children: [
             const Icon(Icons.error_outline, size: 48, color: Colors.red),
             const SizedBox(height: 16),
-            const Text(
-              'Erreur lors de la génération du circuit',
-              style: TextStyle(
+            Text(
+              'circuit_generation_error'.tr(),
+              style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: Colors.red,
@@ -233,13 +230,13 @@ class _AutoCircuitScreenState extends State<AutoCircuitScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Votre Circuit',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              Text(
+                'your_circuit'.tr(),
+                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               TextButton(
                 onPressed: _resetForm,
-                child: const Text('Nouveau Circuit'),
+                child: Text('new_circuit'.tr()),
               ),
             ],
           ),
@@ -252,7 +249,7 @@ class _AutoCircuitScreenState extends State<AutoCircuitScreen> {
               final jour = provider.circuit!.listparjours[index];
               if (jour == null) return const SizedBox.shrink();
 
-              final name = jour['name'] ?? 'Jour ${index + 1}';
+              final name = jour['name'] ?? '${'days'.tr()} ${index + 1}';
               final description = jour['description'];
 
               return Card(
@@ -283,10 +280,10 @@ class _AutoCircuitScreenState extends State<AutoCircuitScreen> {
       );
     }
 
-    return const Center(
+    return Center(
       child: Text(
-        'Aucun circuit généré pour le moment.',
-        style: TextStyle(fontSize: 16, color: Colors.grey),
+        'no_circuit_generated'.tr(),
+        style: const TextStyle(fontSize: 16, color: Colors.grey),
       ),
     );
   }
@@ -299,6 +296,8 @@ class _AutoCircuitScreenState extends State<AutoCircuitScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final locale=context.locale;
+
     return ChangeNotifierProvider(
       create: (_) => AutoCircuitProvider(),
       child: Consumer<AutoCircuitProvider>(
@@ -309,10 +308,10 @@ class _AutoCircuitScreenState extends State<AutoCircuitScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
                     child: ScreenTitle(
-                      title: 'Circuit Automatique',
+                      title: 'auto_circuit'.tr(),
                       icon: Icons.account_tree_outlined,
                     ),
                   ),
@@ -348,7 +347,7 @@ class _AutoCircuitScreenState extends State<AutoCircuitScreen> {
                                   Icon(Icons.calendar_today, color: Colors.blue.shade600),
                                   const SizedBox(width: 8),
                                   Text(
-                                    'Durée du voyage: $duration jour${duration > 1 ? 's' : ''}',
+                                    tr('trip_duration', args: [duration.toString(), duration > 1 ? 's' : '']),
                                     style: TextStyle(
                                       fontWeight: FontWeight.w600,
                                       color: Colors.blue.shade700,
@@ -359,7 +358,7 @@ class _AutoCircuitScreenState extends State<AutoCircuitScreen> {
                             ),
                           const SizedBox(height: 16),
                           CityDropdown(
-                            label: 'Ville De Départ',
+                            label: 'departure_city'.tr(),
                             selectedValue: _startCity,
                             selectedId: _startCityId,
                             onChanged: (name, id) {
@@ -371,7 +370,7 @@ class _AutoCircuitScreenState extends State<AutoCircuitScreen> {
                           ),
                           const SizedBox(height: 16),
                           CityDropdown(
-                            label: 'Ville D\'arrivée',
+                            label: 'arrival_city'.tr(),
                             selectedValue: _endCity,
                             selectedId: _endCityId,
                             onChanged: (name, id) {

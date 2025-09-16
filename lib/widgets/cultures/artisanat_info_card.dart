@@ -1,6 +1,6 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import '../../models/artisanat.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class ArtisanatInfoCard extends StatelessWidget {
   final Artisanat artisanat;
@@ -35,16 +35,14 @@ class ArtisanatInfoCard extends StatelessWidget {
         child: Material(
           color: Colors.transparent,
           child: InkWell(
-            onTap: () {
-              // Optional: Handle card tap
-            },
+            onTap: () {},
             borderRadius: BorderRadius.circular(16),
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Header section with icon and title
+                  // Header
                   Row(
                     children: [
                       Container(
@@ -62,7 +60,7 @@ class ArtisanatInfoCard extends StatelessWidget {
                       const SizedBox(width: 16),
                       Expanded(
                         child: Text(
-                          artisanat.name,
+                          artisanat.getName(Localizations.localeOf(context)),
                           style: const TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
@@ -99,7 +97,7 @@ class ArtisanatInfoCard extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Type d\'artisanat',
+                                'artisanat_type'.tr(),
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w500,
@@ -109,7 +107,7 @@ class ArtisanatInfoCard extends StatelessWidget {
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                'Artisanat traditionnel tunisien',
+                                'traditional_tunisian_artisanat'.tr(),
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
@@ -122,41 +120,6 @@ class ArtisanatInfoCard extends StatelessWidget {
                       ],
                     ),
                   ),
-
-                  const SizedBox(height: 16),
-
-                 /* // Action buttons row
-                  Row(
-                    children: [
-                      if (artisanat.videoLink.isNotEmpty)
-                        Expanded(
-                          child: TextButton.icon(
-                            onPressed: () async {
-                              final videoUrl = artisanat.videoLink;
-                              if (videoUrl.isNotEmpty) {
-                                final uri = Uri.parse(videoUrl);
-                                // Check if the URL can be launched
-                                if (await canLaunchUrl(uri)) {
-                                  // Launch the URL, a browser will handle the video playback.
-                                  await launchUrl(uri, mode: LaunchMode.externalApplication);
-                                } else {
-                                  // Display an error message if the URL cannot be launched.
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text("Impossible d'ouvrir la vidéo")),
-                                  );
-                                }
-                              }
-                            },
-                            icon: const Icon(Icons.play_circle_outline, size: 18),
-                            label: const Text('Voir la vidéo'),
-                            style: TextButton.styleFrom(
-                              foregroundColor: Colors.red[600],
-                              padding: const EdgeInsets.symmetric(vertical: 8),
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),*/
                 ],
               ),
             ),

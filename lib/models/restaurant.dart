@@ -1,4 +1,6 @@
 
+import 'package:flutter/material.dart';
+
 class Restaurant {
   final String id;
   final String name;
@@ -9,6 +11,12 @@ class Restaurant {
   final String? destinationName;
   final String? cityId;
   final String? ville;
+  final String? villeAr;
+  final String? villeEn;
+  final String? villeRu;
+  final String? villeZh;
+  final String? villeKo;
+  final String? villeJa;
   final String? cover;
   final String? vignette;
   final List<String> images;
@@ -35,13 +43,22 @@ class Restaurant {
   final String? crtDescriptionAr;
   final String? addressAr;
 
-  // SEO related fields could be a separate class if very complex
-  // For simplicity, including a few meta titles as examples
-  final String? metaTitle;
-  final String? metaTitleEn;
-  final String? metaTitleAr;
+  // Russian fields
+  final String? nameRu;
+  final String? crtDescriptionRu;
+  final String? addressRu;
 
+  // Japanese fields
+  final String? nameJa;
+  final String? crtDescriptionJa;
+  final String? addressJa;
 
+  //Korean Fields
+  final String? nameKo;
+  final String? crtDescriptionKo;
+  final String? addressKo;
+
+  //Chinese Fields
   Restaurant({
     required this.id,
     required this.name,
@@ -73,10 +90,32 @@ class Restaurant {
     this.nameAr,
     this.crtDescriptionAr,
     this.addressAr,
-    this.metaTitle,
-    this.metaTitleEn,
-    this.metaTitleAr,
+    this.nameRu,
+    this.crtDescriptionRu,
+    this.addressRu,
+    this.nameJa,
+    this.crtDescriptionJa,
+    this.addressJa,
+    this.nameKo,
+    this.crtDescriptionKo,
+    this.addressKo,
+    this.nameZh,
+    this.crtDescriptionZh,
+    this.addressZh,
+    this.villeAr,
+    this.villeEn,
+    this.villeRu,
+    this.villeZh,
+    this.villeKo,
+    this.villeJa,
   });
+  final String? nameZh;
+  final String? crtDescriptionZh;
+
+
+
+
+  final String? addressZh;
 
   factory Restaurant.fromJson(Map<String, dynamic> json) {
     // Helper to safely parse double
@@ -137,11 +176,96 @@ class Restaurant {
       nameAr: json['name_ar'] as String?,
       crtDescriptionAr: json['crt_description_ar'] as String?,
       addressAr: json['address_ar'] as String?,
-      metaTitle: (json['seo'] is Map && json['seo']['meta_title'] != null) ? json['seo']['meta_title'] as String? : null,
-      metaTitleEn: (json['seo'] is Map && json['seo']['meta_title_en'] != null) ? json['seo']['meta_title_en'] as String? : null,
-      metaTitleAr: (json['seo'] is Map && json['seo']['meta_title_ar'] != null) ? json['seo']['meta_title_ar'] as String? : null,
+      nameRu: json['name_ru'] as String?,
+      crtDescriptionRu: json['crt_description_ru'] as String?,
+      addressRu: json['address_ru'] as String?,
+      nameJa: json['name_ja'] as String?,
+      crtDescriptionJa: json['crt_description_ja'] as String?,
+      addressJa: json['address_ja'] as String?,
+      nameKo: json['name_ko'] as String?,
+      crtDescriptionKo: json['crt_description_ko'] as String?,
+      addressKo: json['address_ko'] as String?,
+      nameZh: json['name_zh'] as String?,
+      crtDescriptionZh: json['crt_description_zh'] as String?,
+      addressZh: json['address_zh'] as String?,
     );
   }
+  String getName(Locale locale) {
+    switch (locale.languageCode) {
+      case 'ar':
+        return (nameAr != null && nameAr!.isNotEmpty) ? nameAr! : name;
+      case 'en':
+        return (nameEn != null && nameEn!.isNotEmpty) ? nameEn! : name;
+      case 'ru':
+        return (nameRu != null && nameRu!.isNotEmpty) ? nameRu! : name;
+      case 'ko':
+        return (nameKo != null && nameKo!.isNotEmpty) ? nameKo! : name;
+      case 'zh':
+        return (nameZh != null && nameZh!.isNotEmpty) ? nameZh! : name;
+      case 'ja':
+        return (nameJa != null && nameJa!.isNotEmpty) ? nameJa! : name;
+      default:
+        return name;
+    }
+  }
+  String getAddress(Locale locale) {
+    switch (locale.languageCode) {
+      case 'ar':
+        return (addressAr != null && addressAr!.isNotEmpty) ? addressAr! : (address ?? '');
+      case 'en':
+        return (addressEn != null && addressEn!.isNotEmpty) ? addressEn! : (address ?? '');
+      case 'ru':
+        return (addressRu != null && addressRu!.isNotEmpty) ? addressRu! : (address ?? '');
+      case 'ko':
+        return (addressKo != null && addressKo!.isNotEmpty) ? addressKo! : (address ?? '');
+      case 'zh':
+        return (addressZh != null && addressZh!.isNotEmpty) ? addressZh! : (address ?? '');
+      case 'ja':
+        return (addressJa != null && addressJa!.isNotEmpty) ? addressJa! : (address ?? '');
+      default:
+        return address ?? '';
+    }
+  }
+
+  String getVille(Locale locale) {
+    switch (locale.languageCode) {
+      case 'ar':
+        return (villeAr != null && villeAr!.isNotEmpty) ? villeAr! : (ville ?? '');
+      case 'en':
+        return (villeEn != null && villeEn!.isNotEmpty) ? villeEn! : (ville ?? '');
+      case 'ru':
+        return (villeRu != null && villeRu!.isNotEmpty) ? villeRu! : (ville ?? '');
+      case 'zh':
+        return (villeZh != null && villeZh!.isNotEmpty) ? villeZh! : (ville ?? '');
+      case 'ko':
+        return (villeKo != null && villeKo!.isNotEmpty) ? villeKo! : (ville ?? '');
+      case 'ja':
+        return (villeJa != null && villeJa!.isNotEmpty) ? villeJa! : (ville ?? '');
+      default:
+        return ville ?? '';
+    }
+  }
+
+  String getDescription(Locale locale) {
+    switch (locale.languageCode) {
+      case 'ar':
+        return (crtDescriptionAr != null && crtDescriptionAr!.isNotEmpty) ? crtDescriptionAr! : (crtDescription ?? '');
+      case 'en':
+        return (crtDescriptionEn != null && crtDescriptionEn!.isNotEmpty) ? crtDescriptionEn! : (crtDescription ?? '');
+      case 'ru':
+        return (crtDescriptionRu != null && crtDescriptionRu!.isNotEmpty) ? crtDescriptionRu! : (crtDescription ?? '');
+      case 'zh':
+        return (crtDescriptionZh != null && crtDescriptionZh!.isNotEmpty) ? crtDescriptionZh! : (crtDescription ?? '');
+      case 'ko':
+        return (crtDescriptionKo != null && crtDescriptionKo!.isNotEmpty) ? crtDescriptionKo! : (crtDescription ?? '');
+      case 'ja':
+        return (crtDescriptionJa != null && crtDescriptionJa!.isNotEmpty) ? crtDescriptionJa! : (crtDescription ?? '');
+
+      default:
+        return crtDescription ?? '';
+    }
+  }
+
 
   // For debugging purposes
   @override

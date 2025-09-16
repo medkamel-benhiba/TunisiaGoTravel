@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 import '../../widgets/circuits/budget_input.dart';
 import '../../widgets/circuits/compose_button.dart';
@@ -112,15 +113,15 @@ class _ManualCircuitScreenState extends State<ManualCircuitScreen> {
 
   /// Valider les données du formulaire
   String? _validateForm() {
-    if (_startDate == null || _endDate == null) return 'Veuillez sélectionner les dates de voyage';
-    if (_startCityId == null) return 'Veuillez sélectionner une ville de départ';
-    if (_endCityId == null) return 'Veuillez sélectionner une ville d\'arrivée';
-    if (_roomsData.fold(0, (sum, room) => sum + (room["adults"] as int)) < 1) return 'Au moins 1 adulte est requis';
-    if (duration < 1) return 'La durée du voyage doit être d\'au moins 1 jour';
-    if (_budgetController.text.isEmpty) return 'Veuillez saisir un budget';
+    if (_startDate == null || _endDate == null) return 'please_select_dates'.tr();
+    if (_startCityId == null) return 'please_select_departure_city'.tr();
+    if (_endCityId == null) return 'please_select_arrival_city'.tr();
+    if (_roomsData.fold(0, (sum, room) => sum + (room["adults"] as int)) < 1) return 'at_least_one_adult_required'.tr();
+    if (duration < 1) return 'minimum_duration'.tr();
+    if (_budgetController.text.isEmpty) return 'please_enter_budget'.tr();
     final budget = double.tryParse(_budgetController.text);
-    if (budget == null || budget <= 0) return 'Veuillez saisir un budget valide';
-    if (budget < 100) return 'Le budget minimum est de 100 TND';
+    if (budget == null || budget <= 0) return 'please_enter_valid_budget'.tr();
+    if (budget < 100) return 'minimum_budget'.tr();
     return null;
   }
 
@@ -157,16 +158,17 @@ class _ManualCircuitScreenState extends State<ManualCircuitScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final locale=context.locale;
     return Scaffold(
       body: Form(
         key: _formKey,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
               child: ScreenTitle(
-                title: 'Circuit Manuel',
+                title: 'manual_circuit'.tr(),
                 icon: Icons.edit_location_alt_outlined,
               ),
             ),
@@ -202,7 +204,7 @@ class _ManualCircuitScreenState extends State<ManualCircuitScreen> {
                             Icon(Icons.calendar_today, color: Colors.blue.shade600),
                             const SizedBox(width: 8),
                             Text(
-                              'Durée du voyage: $duration jour${duration > 1 ? 's' : ''}',
+                              '${"travel_duration".tr()}: $duration ${duration > 1 ? "days".tr() : "day".tr()}',
                               style: TextStyle(
                                 fontWeight: FontWeight.w600,
                                 color: Colors.blue.shade700,
@@ -212,7 +214,7 @@ class _ManualCircuitScreenState extends State<ManualCircuitScreen> {
                         ),
                       ),
                     CityDropdown(
-                      label: 'Ville de Départ',
+                      label: 'departure_city'.tr(),
                       selectedValue: _startCity,
                       selectedId: _startCityId,
                       onChanged: (name, id) {
@@ -224,7 +226,7 @@ class _ManualCircuitScreenState extends State<ManualCircuitScreen> {
                     ),
                     const SizedBox(height: 16),
                     CityDropdown(
-                      label: 'Ville d\'Arrivée',
+                      label: 'arrival_city'.tr(),
                       selectedValue: _endCity,
                       selectedId: _endCityId,
                       onChanged: (name, id) {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../models/restaurant.dart';
 import 'package:flutter_html/flutter_html.dart';
 import '../base_card.dart';
@@ -11,7 +12,10 @@ class RestaurantDescriptionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (restaurant.crtDescription == null || restaurant.crtDescription!.isEmpty) {
+    final locale = context.locale;
+    final description = restaurant.getDescription(locale);
+
+    if (description.isEmpty) {
       return const SizedBox.shrink();
     }
 
@@ -21,12 +25,12 @@ class RestaurantDescriptionCard extends StatelessWidget {
         children: [
           SectionHeader(
             icon: Icons.description,
-            title: 'À propos',
+            title: 'about'.tr(),
             iconColor: Colors.green[600]!,
           ),
           const SizedBox(height: 16),
           Html(
-            data: restaurant.crtDescription!,
+            data: description,
             style: {
               "body": Style(
                 margin: Margins.zero,

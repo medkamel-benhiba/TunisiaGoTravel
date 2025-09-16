@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../models/hotel_details.dart';
 import '../models/hotelAvailabilityResponse.dart';
 import '../models/hotelTgt.dart';
@@ -67,7 +68,7 @@ class _SearchDisponibilityScreenState extends State<SearchDisponibilityScreen> {
   Future<void> _searchDisponibility() async {
     if (_startDate == null || _endDate == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Veuillez choisir les dates")),
+        SnackBar(content: Text('no_date_selected_snackbar'.tr())),
       );
       return;
     }
@@ -98,8 +99,8 @@ class _SearchDisponibilityScreenState extends State<SearchDisponibilityScreen> {
         // Check for empty response
         if (mouradiResponse == null || mouradiResponse.isEmpty) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Aucune disponibilité n'a été trouvée pour ces dates."),
+            SnackBar(
+              content: Text('no_availability_snackbar'.tr()),
             ),
           );
           return;
@@ -128,11 +129,10 @@ class _SearchDisponibilityScreenState extends State<SearchDisponibilityScreen> {
               ),
             ),
           );
-
         } catch (e) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text("Erreur lors du traitement des données: $e"),
+              content: Text("${'error_processing_data_snackbar'.tr()} $e"),
             ),
           );
         }
@@ -148,13 +148,12 @@ class _SearchDisponibilityScreenState extends State<SearchDisponibilityScreen> {
         _rooms,
       );
 
-
       // Check for empty response
       if (rawResponse != null && rawResponse['pensions'].isEmpty) {
         // Display the snackbar for no availability
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Aucune disponibilité n'a été trouvée pour ces dates."),
+          SnackBar(
+            content: Text('no_availability_snackbar'.tr()),
           ),
         );
         return;
@@ -171,7 +170,8 @@ class _SearchDisponibilityScreenState extends State<SearchDisponibilityScreen> {
         };
 
         if (disponibilityType == 'tgt') {
-          final hotelTgt = HotelTgt.fromAvailabilityJson(rawResponse, widget.hotel);
+          final hotelTgt =
+          HotelTgt.fromAvailabilityJson(rawResponse, widget.hotel);
 
           Navigator.push(
             context,
@@ -194,7 +194,6 @@ class _SearchDisponibilityScreenState extends State<SearchDisponibilityScreen> {
           print("Name: ${hotelBhr.name}");
           print("id: ${hotelBhr.id}");
           print("idbbx: ${hotelBhr.id_hotel_bbx}");
-
 
           Navigator.push(
             context,
@@ -226,13 +225,12 @@ class _SearchDisponibilityScreenState extends State<SearchDisponibilityScreen> {
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Erreur: $e")),
+        SnackBar(content: Text("${'error_general_snackbar'.tr()} $e")),
       );
     } finally {
       setState(() => _isLoading = false);
     }
   }
-
 
   // --- Bottom Sheet ---
   void _openRoomSelectionBottomSheet() async {
@@ -285,7 +283,8 @@ class _SearchDisponibilityScreenState extends State<SearchDisponibilityScreen> {
         ),
         child: Row(
           children: [
-            const Icon(Icons.calendar_today, size: 14, color: AppColorstatic.primary2),
+            const Icon(Icons.calendar_today,
+                size: 14, color: AppColorstatic.primary2),
             const SizedBox(width: 5),
             Text(
               date == null ? label : dateFormat.format(date),
@@ -303,6 +302,7 @@ class _SearchDisponibilityScreenState extends State<SearchDisponibilityScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final locale = context.locale;
     int totalRooms = _rooms.length;
     int totalAdults =
     _rooms.fold(0, (sum, room) => sum + (room["adults"] as int));
@@ -311,7 +311,8 @@ class _SearchDisponibilityScreenState extends State<SearchDisponibilityScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("Disponibilité - ${widget.hotel.name}",
+        title: Text(
+          "${'search_disponibility_screen_title'.tr()} ${widget.hotel.getName(locale)}",
           style: TextStyle(
             color: AppColorstatic.lightTextColor,
             fontSize: 16,
@@ -325,30 +326,32 @@ class _SearchDisponibilityScreenState extends State<SearchDisponibilityScreen> {
         padding: const EdgeInsets.all(14.0),
         child: Card(
           elevation: 4,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape:
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 // Section: Dates de Voyage
-                _buildSectionTitle("Dates de Voyage", Icons.calendar_today),
+                _buildSectionTitle('travel_dates_section_title'.tr(),
+                    Icons.calendar_today),
                 const SizedBox(height: 8),
                 Row(
                   children: [
                     Expanded(
                       child: _buildDateInput(
                         context,
-                        "Date début",
+                        'start_date_label'.tr(),
                         _startDate,
                             () => _selectDate(context, true),
                       ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child:_buildDateInput(
+                      child: _buildDateInput(
                         context,
-                        "Date fin",
+                        'end_date_label'.tr(),
                         _endDate,
                             () => _selectDate(context, false),
                       ),
@@ -358,10 +361,11 @@ class _SearchDisponibilityScreenState extends State<SearchDisponibilityScreen> {
                 const SizedBox(height: 16),
 
                 // Section: Voyageurs
-                _buildSectionTitle("Voyageurs", Icons.group_outlined),
+                _buildSectionTitle(
+                    'guests_section_title'.tr(), Icons.group_outlined),
                 const SizedBox(height: 8),
-                _buildGuestSummary(
-                    totalRooms, totalAdults, totalChildren, _openRoomSelectionBottomSheet),
+                _buildGuestSummary(totalRooms, totalAdults, totalChildren,
+                    _openRoomSelectionBottomSheet),
                 const SizedBox(height: 16),
 
                 // Search Button
@@ -382,12 +386,14 @@ class _SearchDisponibilityScreenState extends State<SearchDisponibilityScreen> {
                     width: 20,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      valueColor:
+                      AlwaysStoppedAnimation<Color>(Colors.white),
                     ),
                   )
-                      : const Text(
-                    "Rechercher",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      : Text(
+                    'search_button'.tr(),
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ),
               ],
@@ -415,18 +421,18 @@ class _SearchDisponibilityScreenState extends State<SearchDisponibilityScreen> {
             Icon(Icons.person_pin, color: AppColorstatic.primary2, size: 16),
             const SizedBox(width: 4),
             Text(
-              "$totalRooms Chambre${totalRooms > 1 ? 's' : ''}",
+              "$totalRooms ${totalRooms > 1 ? 'rooms_label'.tr() : 'room_label'.tr()}",
               style: const TextStyle(fontWeight: FontWeight.w600),
             ),
             const Text(" • ", style: TextStyle(color: Colors.grey)),
             Text(
-              "$totalAdults Adulte${totalAdults > 1 ? 's' : ''}",
+              "$totalAdults ${totalAdults > 1 ? 'adults_label'.tr() : 'adult_label'.tr()}",
               style: const TextStyle(fontWeight: FontWeight.w500),
             ),
             if (totalChildren > 0) ...[
               const Text(" • ", style: TextStyle(color: Colors.grey)),
               Text(
-                "$totalChildren Enfant${totalChildren > 1 ? 's' : ''}",
+                "$totalChildren ${totalChildren > 1 ? 'children_label'.tr() : 'child_label'.tr()}",
                 style: const TextStyle(fontWeight: FontWeight.w500),
               ),
             ],
@@ -438,7 +444,6 @@ class _SearchDisponibilityScreenState extends State<SearchDisponibilityScreen> {
     );
   }
 }
-
 
 // ------------------------ WIDGETS (as they are) ------------------------
 
@@ -464,7 +469,7 @@ class DatePickers extends StatelessWidget {
           child: OutlinedButton(
             onPressed: onStartTap,
             child: Text(startDate == null
-                ? "Date début"
+                ? 'start_date_label'.tr()
                 : DateFormat("dd/MM/yyyy").format(startDate!)),
           ),
         ),
@@ -473,7 +478,7 @@ class DatePickers extends StatelessWidget {
           child: OutlinedButton(
             onPressed: onEndTap,
             child: Text(endDate == null
-                ? "Date fin"
+                ? 'end_date_label'.tr()
                 : DateFormat("dd/MM/yyyy").format(endDate!)),
           ),
         ),
@@ -511,14 +516,17 @@ class GuestSummary extends StatelessWidget {
           children: [
             Icon(Icons.person_pin, color: Colors.grey.shade600, size: 16),
             const SizedBox(width: 8),
-            Text("$totalRooms Chambre${totalRooms > 1 ? 's' : ''}",
+            Text(
+                "$totalRooms ${totalRooms > 1 ? 'rooms_label'.tr() : 'room_label'.tr()}",
                 style: const TextStyle(fontWeight: FontWeight.w600)),
             const Text(" • ", style: TextStyle(color: Colors.grey)),
-            Text("$totalAdults Adulte${totalAdults > 1 ? 's' : ''}",
+            Text(
+                "$totalAdults ${totalAdults > 1 ? 'adults_label'.tr() : 'adult_label'.tr()}",
                 style: const TextStyle(fontWeight: FontWeight.w500)),
             if (totalChildren > 0) ...[
               const Text(" • ", style: TextStyle(color: Colors.grey)),
-              Text("$totalChildren Enfant${totalChildren > 1 ? 's' : ''}",
+              Text(
+                  "$totalChildren ${totalChildren > 1 ? 'children_label'.tr() : 'child_label'.tr()}",
                   style: const TextStyle(fontWeight: FontWeight.w500)),
             ],
           ],
@@ -572,9 +580,9 @@ class _RoomSelectionBottomSheetState extends State<RoomSelectionBottomSheet> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  "Sélectionner les chambres",
-                  style: TextStyle(
+                Text(
+                  'select_rooms_title'.tr(),
+                  style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: Colors.black87,
@@ -604,7 +612,8 @@ class _RoomSelectionBottomSheetState extends State<RoomSelectionBottomSheet> {
     );
   }
 
-  Widget _buildRoomCard(BuildContext context, int index, Map<String, dynamic> room) {
+  Widget _buildRoomCard(
+      BuildContext context, int index, Map<String, dynamic> room) {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -617,7 +626,7 @@ class _RoomSelectionBottomSheetState extends State<RoomSelectionBottomSheet> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  "Chambre ${index + 1}",
+                  "${'room_label'.tr()} ${index + 1}",
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
@@ -633,7 +642,7 @@ class _RoomSelectionBottomSheetState extends State<RoomSelectionBottomSheet> {
             const Divider(height: 16),
             _buildCounterRow(
               icon: Icons.person_outline,
-              label: "Adultes",
+              label: 'adults_label'.tr(),
               count: room["adults"] as int,
               onIncrement: () {
                 setState(() {
@@ -648,13 +657,14 @@ class _RoomSelectionBottomSheetState extends State<RoomSelectionBottomSheet> {
             ),
             _buildCounterRow(
               icon: Icons.child_friendly,
-              label: "Enfants",
+              label: 'children_label'.tr(),
               count: room["children"] as int,
               onIncrement: () {
                 setState(() {
                   if ((room["children"] as int) < 5) {
                     room["children"]++;
-                    List<int> childAges = List<int>.from(room["childAges"] ?? []);
+                    List<int> childAges =
+                    List<int>.from(room["childAges"] ?? []);
                     childAges.add(2);
                     room["childAges"] = childAges;
                   }
@@ -664,7 +674,8 @@ class _RoomSelectionBottomSheetState extends State<RoomSelectionBottomSheet> {
                 setState(() {
                   if ((room["children"] as int) > 0) {
                     room["children"]--;
-                    List<int> childAges = List<int>.from(room["childAges"] ?? []);
+                    List<int> childAges =
+                    List<int>.from(room["childAges"] ?? []);
                     if (childAges.isNotEmpty) childAges.removeLast();
                     room["childAges"] = childAges;
                   }
@@ -704,9 +715,9 @@ class _RoomSelectionBottomSheetState extends State<RoomSelectionBottomSheet> {
             children: [
               Icon(Icons.cake, color: Colors.orange.shade600, size: 18),
               const SizedBox(width: 8),
-              const Text(
-                "Âge des enfants",
-                style: TextStyle(
+              Text(
+                'child_age_label'.tr(),
+                style: const TextStyle(
                   fontWeight: FontWeight.w600,
                   fontSize: 14,
                   color: Colors.black87,
@@ -719,12 +730,12 @@ class _RoomSelectionBottomSheetState extends State<RoomSelectionBottomSheet> {
             spacing: 12,
             runSpacing: 8,
             children: List.generate(childrenCount, (childIndex) {
-              return Container(
+              return SizedBox(
                 width: 70,
                 child: Column(
                   children: [
                     Text(
-                      "Enfant ${childIndex + 1}",
+                      "${'child_label_with_number'.tr()} ${childIndex + 1}",
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.grey.shade600,
@@ -733,7 +744,8 @@ class _RoomSelectionBottomSheetState extends State<RoomSelectionBottomSheet> {
                     ),
                     const SizedBox(height: 4),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         border: Border.all(color: Colors.grey.shade300),
                         borderRadius: BorderRadius.circular(8),
@@ -794,7 +806,8 @@ class _RoomSelectionBottomSheetState extends State<RoomSelectionBottomSheet> {
           Icon(icon, color: Colors.blueAccent),
           const SizedBox(width: 12),
           Expanded(
-            child: Text(label, style: const TextStyle(fontSize: 15, color: Colors.black87)),
+            child: Text(label,
+                style: const TextStyle(fontSize: 15, color: Colors.black87)),
           ),
           Row(
             children: [
@@ -803,7 +816,8 @@ class _RoomSelectionBottomSheetState extends State<RoomSelectionBottomSheet> {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Text(
                   count.toString(),
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),
               _buildCounterButton(icon: Icons.add, onPressed: onIncrement),
@@ -814,7 +828,8 @@ class _RoomSelectionBottomSheetState extends State<RoomSelectionBottomSheet> {
     );
   }
 
-  Widget _buildCounterButton({required IconData icon, required VoidCallback onPressed}) {
+  Widget _buildCounterButton(
+      {required IconData icon, required VoidCallback onPressed}) {
     return InkWell(
       onTap: onPressed,
       child: Container(
@@ -836,18 +851,17 @@ class _RoomSelectionBottomSheetState extends State<RoomSelectionBottomSheet> {
           child: OutlinedButton.icon(
             onPressed: () {
               setState(() {
-                _rooms.add({
-                  "adults": 2,
-                  "children": 0,
-                  "childAges": <int>[]
-                });
+                _rooms.add(
+                    {"adults": 2, "children": 0, "childAges": <int>[]});
               });
             },
             icon: const Icon(Icons.add_circle_outline, color: Colors.white),
-            label: const Text("Chambre", style: TextStyle(color: Colors.white)),
+            label: Text('add_room_button'.tr(),
+                style: const TextStyle(color: Colors.white)),
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
               backgroundColor: AppColorstatic.primary2,
               side: BorderSide.none,
             ),
@@ -861,9 +875,10 @@ class _RoomSelectionBottomSheetState extends State<RoomSelectionBottomSheet> {
               backgroundColor: Colors.blueAccent,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
             ),
-            child: const Text("Terminer"),
+            child: Text('done_button'.tr()),
           ),
         ),
       ],

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../theme/color.dart';
 
 class ScreenTitle extends StatelessWidget {
   final IconData? icon; // Optional IconData
   final String? imagePath; // Optional image path
-  final String title;
+  final String title; // This will now be a localization key
 
   const ScreenTitle({
     super.key,
@@ -18,6 +19,7 @@ class ScreenTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final locale=context.locale;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -38,7 +40,7 @@ class ScreenTitle extends StatelessWidget {
             ),
           const SizedBox(width: 8),
           Text(
-            title,
+            title.tr(), // Localized string
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.bold,

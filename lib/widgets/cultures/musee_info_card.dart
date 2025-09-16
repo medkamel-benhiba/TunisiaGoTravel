@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:tunisiagotravel/screens/ItineraryScreen.dart';
+import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../models/musee.dart';
 import '../../theme/styletext.dart';
+import '../../screens/ItineraryScreen.dart';
 
 class MuseeInfoCard extends StatelessWidget {
   final Musees musee;
@@ -11,6 +13,8 @@ class MuseeInfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final locale = context.locale;
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
@@ -37,9 +41,7 @@ class MuseeInfoCard extends StatelessWidget {
         child: Material(
           color: Colors.transparent,
           child: InkWell(
-            onTap: () {
-              // Handle card tap - navigate to details or show more info
-            },
+            onTap: () {},
             borderRadius: BorderRadius.circular(16),
             child: Padding(
               padding: const EdgeInsets.all(20),
@@ -64,7 +66,7 @@ class MuseeInfoCard extends StatelessWidget {
                       const SizedBox(width: 16),
                       Expanded(
                         child: Text(
-                          musee.name,
+                          musee.getName(locale),
                           style: Appstylestatic.titreStyle1,
                         ),
                       ),
@@ -98,7 +100,7 @@ class MuseeInfoCard extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Droits d\'entrée',
+                                  ('entry_fee'.tr()),
                                   style: TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w500,
@@ -108,7 +110,7 @@ class MuseeInfoCard extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
-                                  musee.droitsEntree,
+                                  musee.getEntryFee(Localizations.localeOf(context)),
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
@@ -123,7 +125,6 @@ class MuseeInfoCard extends StatelessWidget {
                     ),
                   ],
 
-                  // Additional info section (placeholder for future enhancements)
                   const SizedBox(height: 16),
 
                   // Action buttons row
@@ -132,26 +133,25 @@ class MuseeInfoCard extends StatelessWidget {
                       Expanded(
                         child: TextButton.icon(
                           onPressed: () {
-                            print('Museum lat: ${musee.lat}, lng: ${musee.lng}');
                             final double? lat = double.tryParse(musee.lat ?? '');
                             final double? lng = double.tryParse(musee.lng ?? '');
-
                             if (lat != null && lng != null) {
                               final destination = LatLng(lat, lng);
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (_) => ItineraryScreen(destination: destination),
+                                  builder: (_) =>
+                                      ItineraryScreen(destination: destination),
                                 ),
                               );
                             } else {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text("Invalid coordinates")),
+                                SnackBar(content: Text(tr("invalid_coordinates"))),
                               );
                             }
                           },
                           icon: const Icon(Icons.directions, size: 18),
-                          label: const Text('Itinéraire'),
+                          label: Text(tr('itinerary')),
                           style: TextButton.styleFrom(
                             foregroundColor: Colors.deepPurple,
                             padding: const EdgeInsets.symmetric(vertical: 8),

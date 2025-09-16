@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tunisiagotravel/theme/color.dart';
@@ -29,16 +30,16 @@ class HotelCard extends StatelessWidget {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => const Center(
+      builder: (context) => Center(
         child: Card(
           child: Padding(
-            padding: EdgeInsets.all(20),
+            padding: const EdgeInsets.all(20),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                CircularProgressIndicator(),
-                SizedBox(height: 16),
-                Text('Chargement des détails...'),
+                const CircularProgressIndicator(),
+                const SizedBox(height: 16),
+                Text('hotelsScreen.processing'.tr()),
               ],
             ),
           ),
@@ -59,8 +60,8 @@ class HotelCard extends StatelessWidget {
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Impossible de charger les détails de l\'hôtel'),
+          SnackBar(
+            content: Text('hotelCard.noAvailability'.tr()),
             backgroundColor: Colors.red,
           ),
         );
@@ -69,7 +70,7 @@ class HotelCard extends StatelessWidget {
       Navigator.pop(context); // Close loading dialog
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Erreur: $e'),
+          content: Text('${'hotelCard.error'.tr()}: $e'),
           backgroundColor: Colors.red,
         ),
       );
@@ -79,7 +80,7 @@ class HotelCard extends StatelessWidget {
   void _handleReservation(BuildContext context, dynamic hotel) async {
     final globalProvider = Provider.of<GlobalProvider>(context, listen: false);
 
-    // Préparer les rooms à partir des critères de recherche
+    // Prepare rooms from search criteria
     List<Map<String, dynamic>> originalRooms = [];
     if (globalProvider.searchCriteria['rooms'] is List) {
       originalRooms = List<Map<String, dynamic>>.from(globalProvider.searchCriteria['rooms']);
@@ -186,8 +187,8 @@ class HotelCard extends StatelessWidget {
         if (foundHotelData.disponibility.pensions.isEmpty) {
           print("No pensions found for TGT hotel ${hotel.name}");
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Aucune disponibilité trouvée pour ce séjour"),
+            SnackBar(
+              content: Text('hotelCard.noAvailability'.tr()),
               backgroundColor: Colors.orange,
             ),
           );
@@ -224,20 +225,14 @@ class HotelCard extends StatelessWidget {
         print("Current page: ${hotelProvider.hotelDisponibilityPontion?.currentPage}");
         print("Last page: ${hotelProvider.hotelDisponibilityPontion?.lastPage}");
 
-        // For TGT hotels that aren't found in availability data,
-        // we can still try to create a basic HotelTgt object
-        // This allows navigation even when availability data is incomple
-
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("Hotel ${hotel.name} non trouvé dans les données de disponibilité"),
+            content: Text('hotelCard.noAvailability'.tr()),
             backgroundColor: Colors.orange,
           ),
         );
         return;
       }
-
-
 
       // --- 3. Handle Mouradi hotels ---
       if (hotel.name.toLowerCase().contains('mouradi') &&
@@ -257,12 +252,12 @@ class HotelCard extends StatelessWidget {
           rooms: rooms,
         );
 
-        Navigator.pop(context); // fermer le loader
+        Navigator.pop(context); // Close the loader
 
         if (hotelProvider.selectedMouradiHotel == null) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Aucune disponibilité trouvée pour ce séjour"),
+            SnackBar(
+              content: Text('hotelCard.noAvailability'.tr()),
               backgroundColor: Colors.orange,
             ),
           );
@@ -285,8 +280,7 @@ class HotelCard extends StatelessWidget {
                 'adults': globalProvider.searchCriteria['adults'],
                 'children': globalProvider.searchCriteria['children'],
                 'roomsCount': rooms.length.toString(),
-                'mouradi_city_id': mouradiCityId, // <-- ici
-
+                'mouradi_city_id': mouradiCityId,
               },
             ),
           ),
@@ -302,12 +296,12 @@ class HotelCard extends StatelessWidget {
         builder: (_) => const Center(child: CircularProgressIndicator()),
       );
 
-      Navigator.pop(context); // fermer le loader
+      Navigator.pop(context); // Close the loader
 
       if (foundHotelData == null || foundHotelData.disponibility.pensions.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Aucune disponibilité trouvée pour ce séjour"),
+          SnackBar(
+            content: Text('hotelCard.noAvailability'.tr()),
             backgroundColor: Colors.orange,
           ),
         );
@@ -340,14 +334,14 @@ class HotelCard extends StatelessWidget {
 
     // If we reach here, show a generic error
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Type d'hôtel non reconnu"),
+      SnackBar(
+        content: Text('hotelCard.unknownHotelType'.tr()),
         backgroundColor: Colors.red,
       ),
     );
   }
 
-// Helper method to convert Hotel + HotelData to HotelTgt
+  // Helper method to convert Hotel + HotelData to HotelTgt
   HotelTgt _convertHotelToTgt(HotelData hotelData, Hotel originalHotel) {
     print("Converting to TGT: ${hotelData.name}");
     print("Raw pensions data: ${hotelData.disponibility.pensions}");
@@ -396,14 +390,13 @@ class HotelCard extends StatelessWidget {
       slug: hotelData.slug,
       idCityBbx: hotelData.idCityBbx,
       idHotelBbx: hotelData.idHotelBbx,
-      disponibility: DisponibilityTgt(  // Use the renamed class
+      disponibility: DisponibilityTgt(
         disponibilitytype: hotelData.disponibility.disponibilityType,
         pensions: pensionsList,
       ),
     );
   }
 
-// Helper method to convert rooms data to TGT format
   // Helper method to convert rooms data to TGT format
   List<RoomTgt> _convertRoomsToTgt(List<dynamic> roomsData) {
     List<RoomTgt> rooms = [];
@@ -428,7 +421,7 @@ class HotelCard extends StatelessWidget {
               .toList() ?? [],
           stillAvailable: roomData['still_available'] ?? 0,
           purchasePrice: _convertPurchasePriceToTgt(roomData['purchase_price'] ?? []),
-          conversionRates: conversionRates, // Use the new converted map
+          conversionRates: conversionRates,
         ));
       }
     }
@@ -481,7 +474,7 @@ class HotelCard extends StatelessWidget {
               .toList() ?? [],
           marchiId: price['marchi_id'] ?? '',
           currency: price['currency'] ?? 'TND',
-          conversionRates: conversionRates, // Use the corrected map
+          conversionRates: conversionRates,
           updatedAt: price['updated_at'] ?? '',
           createdAt: price['created_at'] ?? '',
           accommodation: price['accommodation'] != null
@@ -493,10 +486,12 @@ class HotelCard extends StatelessWidget {
     return prices;
   }
 
-
-
   @override
   Widget build(BuildContext context) {
+    final locale = context.locale;
+    final hotelName = hotel.getName(locale);
+    final hotelAddress = hotel.getAddress(locale);
+
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -567,7 +562,7 @@ class HotelCard extends StatelessWidget {
               children: [
                 // Hotel name
                 Text(
-                  hotel.name,
+                  hotelName,
                   maxLines: 2,
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
@@ -599,7 +594,7 @@ class HotelCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        '${hotel.categoryCode} étoiles',
+                        '${hotel.categoryCode} ${'hotelCard.stars'.tr()}',
                         style: TextStyle(
                           color: Colors.grey[600],
                           fontSize: 12,
@@ -622,7 +617,7 @@ class HotelCard extends StatelessWidget {
                     const SizedBox(width: 4),
                     Expanded(
                       child: Text(
-                        hotel.address ?? 'Adresse non disponible',
+                        hotelAddress?.isNotEmpty == true ? hotelAddress! : 'hotelCard.noAddress'.tr(),
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Colors.grey[600],
                           fontSize: 13,
@@ -645,7 +640,7 @@ class HotelCard extends StatelessWidget {
                       child: OutlinedButton.icon(
                         onPressed: () => _navigateToDetails(context),
                         icon: const Icon(Icons.info_outline, size: 16),
-                        label: const Text('Détails'),
+                        label: Text('hotelCard.details'.tr()),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppColorstatic.primary,
                           side: BorderSide(color: AppColorstatic.primary),
@@ -663,9 +658,9 @@ class HotelCard extends StatelessWidget {
                       Expanded(
                         flex: 1,
                         child: ElevatedButton.icon(
-                          onPressed: () => _handleReservation(context,hotel),
+                          onPressed: () => _handleReservation(context, hotel),
                           icon: const Icon(Icons.book_online, size: 16),
-                          label: const Text('Réserver'),
+                          label: Text('hotelCard.book'.tr()),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColorstatic.primary,
                             foregroundColor: Colors.white,

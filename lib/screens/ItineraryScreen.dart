@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -21,8 +22,8 @@ class _ItineraryScreenState extends State<ItineraryScreen> {
   List<LatLng> routePoints = [];
   final MapController _mapController = MapController();
 
-  double? distanceKm; // total distance
-  double? estimatedTimeHours; // estimated travel time
+  double? distanceKm;
+  double? estimatedTimeHours;
 
   @override
   void initState() {
@@ -35,8 +36,8 @@ class _ItineraryScreenState extends State<ItineraryScreen> {
     if (loc == null) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Impossible d\'obtenir votre position actuelle'),
+          SnackBar(
+            content: Text(tr('itineraryScreen.unable_to_get_location')),
             backgroundColor: Colors.orange,
           ),
         );
@@ -45,7 +46,7 @@ class _ItineraryScreenState extends State<ItineraryScreen> {
     }
 
     final distance = _calculateDistance(loc, widget.destination);
-    const avgSpeed = 60; // km/h (driving speed approx.)
+    const avgSpeed = 70;
     final time = distance / avgSpeed;
 
     final route = await getRoute(loc, widget.destination);
@@ -120,7 +121,7 @@ class _ItineraryScreenState extends State<ItineraryScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          "Itinéraire",
+          tr('itineraryScreen.title'),
           style: TextStyle(
             color: AppColorstatic.lightTextColor,
             fontSize: 22,
@@ -208,7 +209,7 @@ class _ItineraryScreenState extends State<ItineraryScreen> {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          const Text("Distance"),
+                          Text(tr('itineraryScreen.distance')),
                         ],
                       ),
                       Column(
@@ -223,7 +224,7 @@ class _ItineraryScreenState extends State<ItineraryScreen> {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          const Text("Durée estimée"),
+                          Text(tr('itineraryScreen.estimated_time')),
                         ],
                       ),
                     ],

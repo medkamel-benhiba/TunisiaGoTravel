@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import '../models/maisondHote.dart';
 import '../theme/color.dart';
@@ -16,7 +17,9 @@ class MaisonDetailsScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          maison.name,
+          maison != null
+              ? maison.getName(context.locale)
+              : "maison_details.title".tr(),
           style: const TextStyle(
             color: AppColorstatic.lightTextColor,
             fontSize: 18,

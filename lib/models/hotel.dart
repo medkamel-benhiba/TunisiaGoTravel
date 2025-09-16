@@ -3,14 +3,23 @@ import 'dart:ui';
 class Hotel {
   final String id;
   final String id_hotel_bbx;
+
   final String name;
   final String name_en;
   final String name_ar;
   final String name_ru;
+  final String name_ja;
   final String name_ko;
   final String name_zh;
 
   final String address;
+  final String? address_en;
+  final String? address_ar;
+  final String? address_ru;
+  final String? address_ja;
+  final String? address_ko;
+  final String? address_zh;
+
   final String cover;
   final bool reservable;
   final String slug;
@@ -39,6 +48,7 @@ class Hotel {
     required this.name_en,
     required this.name_ar,
     required this.name_ru,
+    required this.name_ja,
     required this.name_ko,
     required this.name_zh,
     required this.address,
@@ -57,6 +67,13 @@ class Hotel {
     this.description_ru,
     this.description_ko,
     this.description_zh,
+    this.address_en,
+    this.address_ar,
+    this.address_ru,
+    this.address_ja,
+    this.address_ko,
+    this.address_zh,
+
 
     this.idCityMouradi,
     this.idHotelMouradi,
@@ -73,8 +90,17 @@ class Hotel {
       name_ar: json['name_ar'] ?? '',
       name_ru: json['name_ru'] ?? '',
       name_ko: json['name_ko'] ?? '',
+      name_ja: json['name_ja'] ?? '',
       name_zh: json['name_zh'] ?? '',
       address: json['address'] ?? '',
+      address_en: json['address_en'] ?? '',
+      address_ar: json['address_ar'] ?? '',
+      address_ru: json['address_ru'] ?? '',
+      address_ko: json['address_ko'] ?? '',
+      address_ja: json['address_ja'] ?? '',
+      address_zh: json['address_zh'] ?? '',
+
+
       cover: json['cover'] ?? '',
       lat: json['lat'] ?? '',
       lng: json['lng'] ?? '',
@@ -134,6 +160,9 @@ class Hotel {
         return name_ko.isNotEmpty ? name_ko : name;
       case 'zh':
         return name_zh.isNotEmpty ? name_zh : name;
+      case 'ja':
+        return name_ja.isNotEmpty ? name_ja : name;
+
       default:
         return name;
     }
@@ -149,10 +178,30 @@ class Hotel {
         return description_ru!.isNotEmpty ? description_ru : description;
       case 'ko':
         return description_ko!.isNotEmpty ? description_ko : description;
+      case 'ja':
+        return description_ja!.isNotEmpty ? description_ja : description;
       case 'zh':
         return description_zh!.isNotEmpty ? description_zh : description;
       default:
         return description;
+    }
+  }
+  String? getAddress(Locale locale) {
+    switch (locale.languageCode) {
+      case 'ar':
+        return address_ar!.isNotEmpty ? address_ar : address;
+      case 'en':
+        return address_en!.isNotEmpty ? address_en : address;
+      case 'ru':
+        return address_ru!.isNotEmpty ? address_ru : address;
+      case 'ko':
+        return address_ko!.isNotEmpty ? address_ko : address;
+      case 'ja':
+        return address_ja!.isNotEmpty ? address_ja : address;
+      case 'zh':
+        return address_zh!.isNotEmpty ? address_zh : address;
+      default:
+        return address;
     }
   }
 }

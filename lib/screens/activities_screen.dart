@@ -1,5 +1,7 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:tunisiagotravel/providers/destination_provider.dart';
 import '../providers/activity_provider.dart';
 import '../widgets/activity/activity_card.dart';
 import '../widgets/destinations_list.dart';
@@ -44,16 +46,27 @@ class _ActivitiesScreenState extends State<ActivitiesScreenContent> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding:
-            const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
-            child: ScreenTitle(
-              icon: selectedDestinationId == null
-                  ? Icons.location_on
-                  : Icons.directions_run,
-              title: selectedDestinationId == null
-                  ? 'Destinations'
-                  : 'Activités à $selectedDestinationTitle',
-            ),
+            padding: const EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 5.0),
+            child: Builder(builder: (context) {
+              final destinationProvider =
+              Provider.of<DestinationProvider>(context, listen: false);
+
+              // Get the localized destination name if selected
+              String displayDestination = '';
+              if (selectedDestinationId != null) {
+                displayDestination = destinationProvider
+                    .getDestinationName(selectedDestinationId!, context.locale);
+              }
+
+              return ScreenTitle(
+                icon: selectedDestinationId == null ? Icons.location_on : Icons.local_activity_outlined,
+                title: selectedDestinationId == null
+                    ? 'restaurantsScreen.destinations'.tr()
+                    : 'activity_at'.tr(
+                  args: [displayDestination],
+                ),
+              );
+            }),
           ),
 
           Expanded(

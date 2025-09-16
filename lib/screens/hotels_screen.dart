@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:tunisiagotravel/providers/destination_provider.dart';
 import '../providers/global_provider.dart';
 import '../providers/hotel_provider.dart';
 import '../widgets/hotel/hotel_card.dart';
@@ -31,9 +33,9 @@ class _HotelsScreenState extends State<HotelsScreenContent> {
   void _onScroll() {
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 300) {
-      // Auto-load more when near bottom (optional)
       final hotelProvider = Provider.of<HotelProvider>(context, listen: false);
-      if (hotelProvider.hasMoreSearchResults && !hotelProvider.isLoadingMoreResults) {
+      if (hotelProvider.hasMoreSearchResults &&
+          !hotelProvider.isLoadingMoreResults) {
         hotelProvider.loadMoreSearchResults();
       }
     }
@@ -45,29 +47,22 @@ class _HotelsScreenState extends State<HotelsScreenContent> {
     final globalProvider = Provider.of<GlobalProvider>(context, listen: false);
     final hotelProvider = Provider.of<HotelProvider>(context, listen: false);
 
-    // Check if coming from search
     if (globalProvider.selectedCityForHotels != null &&
         globalProvider.availableHotels.isNotEmpty &&
         selectedDestinationTitle == null) {
-
       WidgetsBinding.instance.addPostFrameCallback((_) {
         final city = globalProvider.selectedCityForHotels!;
-
         setState(() {
           selectedDestinationTitle = city;
           _isFromSearch = true;
         });
-
-        // Clean up after getting data
         globalProvider.setSelectedCityForHotels(null);
       });
-    }
-    // Normal destination selection
-    else if (globalProvider.selectedCityForHotels != null && selectedDestinationTitle == null) {
+    } else if (globalProvider.selectedCityForHotels != null &&
+        selectedDestinationTitle == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         final city = globalProvider.selectedCityForHotels!;
         final destId = hotelProvider.getDestinationIdByCity(city);
-
         if (destId != null) {
           setState(() {
             selectedDestinationTitle = city;
@@ -76,7 +71,6 @@ class _HotelsScreenState extends State<HotelsScreenContent> {
           });
           hotelProvider.setHotelsByDestination(destId);
         }
-
         globalProvider.setSelectedCityForHotels(null);
       });
     }
@@ -84,18 +78,16 @@ class _HotelsScreenState extends State<HotelsScreenContent> {
 
   @override
   Widget build(BuildContext context) {
+    final locale=context.locale;
     final hotelProvider = Provider.of<HotelProvider>(context);
     final globalProvider = Provider.of<GlobalProvider>(context);
 
-    // Choose which hotels to display
     final List<dynamic> filteredHotels;
-
     if (_isFromSearch) {
-      // Use search results (which get updated silently in background)
       filteredHotels = globalProvider.availableHotels;
     } else if (selectedDestinationId != null) {
-      // Use destination-based hotels
-      filteredHotels = hotelProvider.getHotelsByDestination(selectedDestinationId!);
+      filteredHotels =
+          hotelProvider.getHotelsByDestination(selectedDestinationId!);
     } else {
       filteredHotels = <dynamic>[];
     }
@@ -105,17 +97,34 @@ class _HotelsScreenState extends State<HotelsScreenContent> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Screen title
           Padding(
-            padding: const EdgeInsets.fromLTRB(10.0,10.0,10.0,5.0),
-            child: ScreenTitle(
-              icon: selectedDestinationTitle == null ? Icons.location_on : Icons.hotel,
-              title: selectedDestinationTitle == null
-                  ? 'Destinations'
-                  : _isFromSearch
-                  ? 'Hôtels disponibles à $selectedDestinationTitle'
-                  : 'Hôtels à $selectedDestinationTitle',
-            ),
+            padding: const EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 5.0),
+            child: Builder(builder: (context) {
+              final destinationProvider =
+              Provider.of<DestinationProvider>(context, listen: false);
+
+              // Get the localized destination name if selected
+              String displayDestination = '';
+              if (selectedDestinationId != null) {
+                displayDestination = destinationProvider
+                    .getDestinationName(selectedDestinationId!, context.locale);
+              }
+
+              return ScreenTitle(
+                icon: selectedDestinationId == null ? Icons.location_on : Icons.hotel,
+                title: selectedDestinationId == null
+                    ? 'hotelsScreen.destinations'.tr()
+                    : _isFromSearch
+                    ? 'hotelsScreen.availableHotels'.tr(args: [displayDestination])
+                    : 'hotelsScreen.hotelsInDestination'.tr(args: [displayDestination]),
+              );
+            }),
           ),
+
+
+
+          // Back button and hotel count
           if (selectedDestinationTitle != null)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 1.0),
@@ -129,28 +138,34 @@ class _HotelsScreenState extends State<HotelsScreenContent> {
                         selectedDestinationTitle = null;
                         _isFromSearch = false;
                       });
-                      Provider.of<GlobalProvider>(context, listen: false).setAvailableHotels([]);
-                      // Reset search when going back
+                      Provider.of<GlobalProvider>(context, listen: false)
+                          .setAvailableHotels([]);
                       hotelProvider.resetSearch();
                     },
                     icon: const Icon(Icons.arrow_back, size: 16),
-                    label: const Text('Destinations'),
+                    label: Builder(
+                      builder: (context) =>
+                          Text('hotelsScreen.destinations'.tr()),
+                    ),
                   ),
                   if (_isFromSearch)
                     Padding(
                       padding: const EdgeInsets.only(right: 8.0),
-                      child: Text(
-                        '${filteredHotels.length} Hôtels (plus en cours...)',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey[600],
+                      child: Builder(
+                        builder: (context) => Text(
+                          '${filteredHotels.length} ${'hotelsScreen.hotelsCount'.tr()}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[600],
+                          ),
                         ),
                       ),
                     ),
-
                 ],
               ),
             ),
+
+          // Hotels list or destinations list
           Expanded(
             child: selectedDestinationTitle == null
                 ? DestinationsList(
@@ -164,10 +179,10 @@ class _HotelsScreenState extends State<HotelsScreenContent> {
               },
             )
                 : _buildHotels(
-                filteredHotels,
-                hotelProvider.isLoading ||
-                    hotelProvider.isLoadingAvailableHotels ||
-                    (hotelProvider.isInitialSearchLoading && _isFromSearch)
+              filteredHotels,
+              hotelProvider.isLoading ||
+                  hotelProvider.isLoadingAvailableHotels ||
+                  (hotelProvider.isInitialSearchLoading && _isFromSearch),
             ),
           ),
         ],
@@ -176,31 +191,32 @@ class _HotelsScreenState extends State<HotelsScreenContent> {
   }
 
   Widget _buildHotels(List<dynamic> hotels, bool isLoading) {
-    // Show initial loading only
     if (isLoading && hotels.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
 
     if (hotels.isEmpty && !isLoading) {
       return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.hotel_outlined, size: 64, color: Colors.grey[400]),
-            const SizedBox(height: 16),
-            Text(
-              _isFromSearch
-                  ? 'Aucun hôtel disponible pour ces critères'
-                  : 'Aucun hôtel disponible pour cette destination',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[600],
-                fontWeight: FontWeight.w500,
+        child: Builder(builder: (context) {
+          return Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.hotel_outlined, size: 64, color: Colors.grey[400]),
+              const SizedBox(height: 16),
+              Text(
+                _isFromSearch
+                    ? 'hotelsScreen.noHotelsForSearch'.tr()
+                    : 'hotelsScreen.noHotelsForDestination'.tr(),
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey[600],
+                  fontWeight: FontWeight.w500,
+                ),
+                textAlign: TextAlign.center,
               ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
+            ],
+          );
+        }),
       );
     }
 

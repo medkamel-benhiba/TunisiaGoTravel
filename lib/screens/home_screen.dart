@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 import '../providers/global_provider.dart';
 import '../theme/color.dart';
@@ -26,18 +27,6 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
   bool _isProcessingVoice = false;
   String _voiceText = '';
 
-  final List<String> greetings = [
-    "bonjour", "salut", "aslema", "hello", "hi", "yo", "salam", "salem", "ahla", "aloha", "hey",
-  ];
-
-  final List<String> greetingResponses = [
-    "Bonjour, comment puis-je vous aider ?",
-    "Salut ! Que puis-je faire pour toi ?",
-    "Bienvenue, en quoi puis-je vous aider ?",
-    "Hello ! Dis-moi ce que tu veux découvrir.",
-    "Aslema ! Que cherches-tu aujourd’hui ?",
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -55,7 +44,7 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
     var status = await Permission.microphone.request();
     if (!status.isGranted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Microphone permission is required')),
+        SnackBar(content: Text(tr('micPermissionRequired'))),
       );
       return;
     }
@@ -77,7 +66,7 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Voice recognition not available')),
+        SnackBar(content: Text(tr('voiceNotAvailable'))),
       );
     }
   }
@@ -90,13 +79,27 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
       setState(() => _isProcessingVoice = true);
 
       try {
-        if (greetings.any((g) => _voiceText.toLowerCase().contains(g))) {
+        // Localized greetings
+        final greetings = [
+          tr('chatbot.greetingWord1'),
+          tr('chatbot.greetingWord2'),
+          tr('chatbot.greetingWord3'),
+          tr('chatbot.greetingWord4'),
+        ];
+
+        final greetingResponses = [
+          tr('chatbot.greeting1'),
+          tr('chatbot.greeting2'),
+          tr('chatbot.greeting3'),
+          tr('chatbot.greeting4'),
+        ];
+
+        if (greetings.any((g) => _voiceText.toLowerCase().contains(g.toLowerCase()))) {
           final random = Random();
-          final response =
-          greetingResponses[random.nextInt(greetingResponses.length)];
+          final response = greetingResponses[random.nextInt(greetingResponses.length)];
           await _speak(response);
         } else {
-          await _speak("J'ai compris, voici le résultat.");
+          await _speak(tr('understood'));
           if (mounted) {
             final provider = Provider.of<GlobalProvider>(context, listen: false);
             provider.setChatbotInitialMessage(_voiceText);
@@ -104,10 +107,9 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
           }
         }
       } catch (e) {
-        print('Error processing voice question: $e');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erreur lors du traitement: $e'),
+            content: Text("${tr('processingError')} $e"),
             backgroundColor: Colors.red,
           ),
         );
@@ -119,17 +121,14 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
         });
       }
     } else {
-      await _speak("Je n'ai pas compris, pouvez-vous répéter ?");
+      await _speak(tr('didntUnderstand'));
     }
   }
 
   void _handleChatbotTap() {
     if (!_showChatbotOverlay) {
       setState(() => _showChatbotOverlay = true);
-      _speak(
-        "Bonjour ! Je suis votre guide pour découvrir la Tunisie. "
-            "Tapez ici pour poser votre question !",
-      );
+      _speak(tr('chatbotGreeting'));
     }
   }
 
@@ -162,17 +161,19 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
 
   @override
   Widget build(BuildContext context) {
+    final locale = context.locale;
+
     final menuItems = [
-      {'title': 'CIRCUITS', 'image': 'assets/images/card/circuit.jpg', 'color': AppColorstatic.primary, 'page': AppPage.circuits},
-      {'title': 'GUIDE', 'image': 'assets/images/card/guide.jpg', 'color': AppColorstatic.primary, 'page': AppPage.guide},
-      {'title': 'HÔTELS', 'image': 'assets/images/card/hotel.png', 'color': AppColorstatic.secondary, 'page': AppPage.hotels},
-      {'title': 'MAISONS D\'HÔTES', 'image': 'assets/images/card/maisondhote.png', 'color': AppColorstatic.secondary, 'page': AppPage.maisonsHotes},
-      {'title': 'RESTAURANTS', 'image': 'assets/images/card/resterant.png', 'color': AppColorstatic.primary2, 'page': AppPage.restaurants},
-      {'title': 'ÉVÉNEMENT', 'image': 'assets/images/card/event.png', 'color': AppColorstatic.primary2, 'page': AppPage.evenement},
-      {'title': 'ACTIVITÉS', 'image': 'assets/images/card/activite.png', 'color': AppColorstatic.secondary, 'page': AppPage.activites},
-      {'title': 'TRANSPORTS', 'image': 'assets/images/card/transport.png', 'color': AppColorstatic.secondary},
-      {'title': 'CULTURES', 'image': 'assets/images/card/cultures.png', 'color': AppColorstatic.primary, 'page': AppPage.cultures},
-      {'title': 'ARTISANAT', 'image': 'assets/images/card/artisanat.png', 'color': AppColorstatic.primary, 'page': AppPage.cultures, 'initialCategory': 'artisanat'},
+      {'title': tr('circuits'), 'image': 'assets/images/card/circuit.jpg', 'color': AppColorstatic.primary, 'page': AppPage.circuits},
+      {'title': tr('guide'), 'image': 'assets/images/card/guide.jpg', 'color': AppColorstatic.primary, 'page': AppPage.guide},
+      {'title': tr('hotels'), 'image': 'assets/images/card/hotel.png', 'color': AppColorstatic.secondary, 'page': AppPage.hotels},
+      {'title': tr('guestHouses'), 'image': 'assets/images/card/maisondhote.png', 'color': AppColorstatic.secondary, 'page': AppPage.maisonsHotes},
+      {'title': tr('restaurants'), 'image': 'assets/images/card/resterant.png', 'color': AppColorstatic.primary2, 'page': AppPage.restaurants},
+      {'title': tr('events'), 'image': 'assets/images/card/event.png', 'color': AppColorstatic.primary2, 'page': AppPage.evenement},
+      {'title': tr('activities'), 'image': 'assets/images/card/activite.png', 'color': AppColorstatic.secondary, 'page': AppPage.activites},
+      {'title': tr('transport'), 'image': 'assets/images/card/transport.png', 'color': AppColorstatic.secondary},
+      {'title': tr('cultures'), 'image': 'assets/images/card/cultures.png', 'color': AppColorstatic.primary, 'page': AppPage.cultures},
+      {'title': tr('handicraft'), 'image': 'assets/images/card/artisanat.png', 'color': AppColorstatic.primary, 'page': AppPage.cultures, 'initialCategory': 'artisanat'},
     ];
 
     final size = MediaQuery.of(context).size;
@@ -337,10 +338,10 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
                                         Expanded(
                                           child: Text(
                                             _isProcessingVoice
-                                                ? "Traitement en cours...\nVeuillez patienter"
+                                                ? tr('chatbot.processing')
                                                 : _isListening
-                                                ? "👂 Écoute en cours...\nDites votre question"
-                                                : "👋 Bonjour ! Je suis votre guide pour découvrir la Tunisie.\nTapez ici pour poser votre question !",
+                                                ? tr('chatbot.listening')
+                                                : tr('chatbot.welcome'),
                                             style: const TextStyle(
                                               fontSize: 14,
                                               color: Colors.black87,
@@ -369,7 +370,7 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
                                           border: Border.all(color: const Color(0xFF90CAF9)),
                                         ),
                                         child: Text(
-                                          "💬 Reconnu: $_voiceText",
+                                          tr('chatbot.recognized', args: [_voiceText]),
                                           style: TextStyle(
                                             fontSize: 12,
                                             color: Colors.blue[700],

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:tunisiagotravel/providers/destination_provider.dart';
 import '../models/restaurant.dart';
 import '../providers/restaurant_provider.dart';
 import '../widgets/screen_title.dart';
@@ -34,16 +36,27 @@ class _RestaurantsScreenState extends State<RestaurantsScreenContent> {
         children: [
           // Screen title
           Padding(
-            padding:
-            const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
-            child: ScreenTitle(
-              icon: selectedDestinationId == null
-                  ? Icons.location_on
-                  : Icons.restaurant,
-              title: selectedDestinationId == null
-                  ? 'Destinations'
-                  : 'Restaurants à $selectedDestinationTitle',
-            ),
+            padding: const EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 5.0),
+            child: Builder(builder: (context) {
+              final destinationProvider =
+              Provider.of<DestinationProvider>(context, listen: false);
+
+              // Get the localized destination name if selected
+              String displayDestination = '';
+              if (selectedDestinationId != null) {
+                displayDestination = destinationProvider
+                    .getDestinationName(selectedDestinationId!, context.locale);
+              }
+
+              return ScreenTitle(
+                icon: selectedDestinationId == null ? Icons.location_on : Icons.restaurant,
+                title: selectedDestinationId == null
+                    ? 'restaurantsScreen.destinations'.tr()
+                    : 'restaurantsScreen.restaurantsInDestination'.tr(
+                  args: [displayDestination],
+                ),
+              );
+            }),
           ),
 
           // Main content: Destinations list or filtered restaurants
@@ -72,8 +85,12 @@ class _RestaurantsScreenState extends State<RestaurantsScreenContent> {
     }
 
     if (restaurants.isEmpty) {
-      return const Center(
-          child: Text('Aucun restaurant disponible pour cette destination'));
+      return Center(
+        child: Text(
+          'restaurantsScreen.noRestaurants'.tr(),
+          textAlign: TextAlign.center,
+        ),
+      );
     }
 
     return ListView.builder(

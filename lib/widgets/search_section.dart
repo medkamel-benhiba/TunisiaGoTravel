@@ -2,10 +2,12 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
-import 'package:tunisiagotravel/theme/color.dart';
+import 'package:easy_localization/easy_localization.dart';
+
+import 'circuits/city_dropdown.dart';
 import '../providers/global_provider.dart';
 import '../screens/map_screen.dart';
-import 'circuits/city_dropdown.dart';
+import '../theme/color.dart';
 
 class SearchSection extends StatefulWidget {
   const SearchSection({super.key});
@@ -20,6 +22,9 @@ class _SearchSectionState extends State<SearchSection> {
 
   @override
   Widget build(BuildContext context) {
+    // Read locale to trigger rebuild when language changes
+    final locale = context.locale;
+
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
 
@@ -59,9 +64,9 @@ class _SearchSectionState extends State<SearchSection> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
-                    'Où partez-vous ?',
-                    style: TextStyle(
+                  Text(
+                    tr('whereAreYouGoing'),
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -70,7 +75,7 @@ class _SearchSectionState extends State<SearchSection> {
                   const SizedBox(height: 10),
 
                   CityDropdown(
-                    label: 'Choisissez destination',
+                    label: tr('chooseDestination'),
                     onChanged: (name, id) {
                       setState(() {
                         _selectedCityName = name;
@@ -101,19 +106,18 @@ class _SearchSectionState extends State<SearchSection> {
                           globalProvider.setSelectedCityForHotels(_selectedCityName!);
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Veuillez sélectionner une ville'),
+                            SnackBar(
+                              content: Text(tr('selectCity')),
                             ),
                           );
                         }
                       },
-                      child: const Text('Rechercher'),
+                      child: Text(tr('search')),
                     ),
                   ),
 
                   const SizedBox(height: 20),
 
-                  // Map SVG + Text clickable
                   GestureDetector(
                     onTap: () {
                       Navigator.push(
@@ -132,9 +136,9 @@ class _SearchSectionState extends State<SearchSection> {
                           ),
                         ),
                         const SizedBox(height: 4),
-                        const Text(
-                          'Ouvrir la carte',
-                          style: TextStyle(color: Colors.white, fontSize: 14),
+                        Text(
+                          tr('openMap'),
+                          style: const TextStyle(color: Colors.white, fontSize: 14),
                         ),
                       ],
                     ),

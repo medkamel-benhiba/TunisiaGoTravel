@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../models/restaurant.dart';
 import '../base_card.dart';
 import '../section_header.dart';
@@ -19,7 +20,7 @@ class RestaurantContactCard extends StatelessWidget {
         children: [
           SectionHeader(
             icon: Icons.contact_phone,
-            title: 'Contact',
+            title: 'contact'.tr(),
             iconColor: Colors.teal[600]!,
           ),
           const SizedBox(height: 16),
@@ -33,13 +34,28 @@ class RestaurantContactCard extends StatelessWidget {
     final items = <Map<String, dynamic>>[];
 
     if (restaurant.phone != null && restaurant.phone!.isNotEmpty) {
-      items.add({'icon': Icons.phone, 'label': 'Téléphone', 'value': restaurant.phone, 'color': Colors.green});
+      items.add({
+        'icon': Icons.phone,
+        'label': 'phone'.tr(),
+        'value': restaurant.phone,
+        'color': Colors.green
+      });
     }
     if (restaurant.email != null && restaurant.email!.isNotEmpty) {
-      items.add({'icon': Icons.email, 'label': 'Email', 'value': restaurant.email, 'color': Colors.orange});
+      items.add({
+        'icon': Icons.email,
+        'label': 'email'.tr(),
+        'value': restaurant.email,
+        'color': Colors.orange
+      });
     }
     if (restaurant.website != null && restaurant.website!.isNotEmpty) {
-      items.add({'icon': Icons.web, 'label': 'Site Web', 'value': restaurant.website, 'color': Colors.blue});
+      items.add({
+        'icon': Icons.web,
+        'label': 'website'.tr(),
+        'value': restaurant.website,
+        'color': Colors.blue
+      });
     }
 
     return items;
@@ -73,8 +89,8 @@ class RestaurantContactCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
-                    color: item['label'] == 'Site Web' ? Colors.blue[700] : Colors.grey[800],
-                    decoration: item['label'] == 'Site Web' ? TextDecoration.underline : null,
+                    color: item['label'] == 'website'.tr() ? Colors.blue[700] : Colors.grey[800],
+                    decoration: item['label'] == 'website'.tr() ? TextDecoration.underline : null,
                   ),
                 ),
               ],

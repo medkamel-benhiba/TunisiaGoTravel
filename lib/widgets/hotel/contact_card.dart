@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart'; // ✅ pour .tr()
 import '../../models/hotel_details.dart';
 import '../section_header.dart';
 import '../base_card.dart';
@@ -20,7 +21,7 @@ class HotelContactCard extends StatelessWidget {
         children: [
           SectionHeader(
             icon: Icons.contact_phone,
-            title: 'Contact',
+            title: 'hotel.contact.title'.tr(),
             iconColor: Colors.teal[600]!,
           ),
           const SizedBox(height: 16),
@@ -36,7 +37,7 @@ class HotelContactCard extends StatelessWidget {
     if (hotel.phone.isNotEmpty) {
       items.add({
         'icon': Icons.phone,
-        'label': 'Téléphone',
+        'label': 'hotel.contact.phone'.tr(),
         'value': hotel.phone,
         'color': Colors.green,
       });
@@ -45,7 +46,7 @@ class HotelContactCard extends StatelessWidget {
     if (hotel.email.isNotEmpty) {
       items.add({
         'icon': Icons.email,
-        'label': 'Email',
+        'label': 'hotel.contact.email'.tr(),
         'value': hotel.email,
         'color': Colors.orange,
       });
@@ -54,7 +55,7 @@ class HotelContactCard extends StatelessWidget {
     if (hotel.website.isNotEmpty) {
       items.add({
         'icon': Icons.web,
-        'label': 'Site Web',
+        'label': 'hotel.contact.website'.tr(),
         'value': hotel.website,
         'color': Colors.blue,
       });
@@ -99,10 +100,10 @@ class HotelContactCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
-                    color: item['label'] == 'Website'
+                    color: (item['label'] == 'hotel.contact.website'.tr())
                         ? Colors.blue[700]
                         : Colors.grey[800],
-                    decoration: item['label'] == 'Website'
+                    decoration: (item['label'] == 'hotel.contact.website'.tr())
                         ? TextDecoration.underline
                         : null,
                   ),

@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 import 'destination.dart';
 
 class MaisonDHote {
@@ -45,6 +47,23 @@ class MaisonDHote {
   final String noteGoogle;
   final String id;
   final Destination destination;
+  final String nameRu;
+  final String villeRu;
+  final String addressRu;
+  final String descriptionRu;
+  final String nameJa;
+  final String villeJa;
+  final String addressJa;
+  final String descriptionJa;
+  final String nameKo;
+  final String villeKo;
+  final String addressKo;
+  final String descriptionKo;
+  final String nameZh;
+  final String villeZh;
+  final String addressZh;
+  final String descriptionZh;
+
 
   MaisonDHote({
     required this.type,
@@ -91,6 +110,22 @@ class MaisonDHote {
     required this.noteGoogle,
     required this.id,
     required this.destination,
+    required this.nameRu,
+    required this.villeRu,
+    required this.addressRu,
+    required this.descriptionRu,
+    required this.nameJa,
+    required this.villeJa,
+    required this.addressJa,
+    required this.descriptionJa,
+    required this.nameKo,
+    required this.villeKo,
+    required this.addressKo,
+    required this.descriptionKo,
+    required this.nameZh,
+    required this.villeZh,
+    required this.addressZh,
+    required this.descriptionZh
   });
 
   factory MaisonDHote.fromJson(Map<String, dynamic> json) => MaisonDHote(
@@ -145,6 +180,22 @@ class MaisonDHote {
     noteGoogle: json['note_google'] ?? '0.0',
     id: json['id'] ?? '',
     destination: Destination.fromJson(json['destination'] ?? {}),
+    nameRu: json['name_ru'] ?? '',
+    villeRu: json['ville_ru'] ?? '',
+    addressRu: json['address_ru'] ?? '',
+    descriptionRu: json['description_ru'] ?? '',
+    nameJa: json['name_ja'] ?? '',
+    villeJa: json['ville_ja'] ?? '',
+    addressJa: json['address_ja'] ?? '',
+    descriptionJa: json['description_ja'] ?? '',
+    nameKo: json['name_ko'] ?? '',
+    villeKo: json['ville_ko'] ?? '',
+    addressKo: json['address_ko'] ?? '',
+    descriptionKo: json['description_ko'] ?? '',
+    nameZh: json['name_zh'] ?? '',
+    villeZh: json['ville_zh'] ?? '',
+    addressZh: json['address_zh'] ?? '',
+    descriptionZh: json['description_zh'] ?? '',
   );
 
 // Helper method to parse boolean values that might come as strings
@@ -209,6 +260,82 @@ class MaisonDHote {
     'id': id,
     'destination': destination,
   };
+
+  String getName(Locale locale) {
+    switch (locale.languageCode) {
+      case 'ar':
+        return (nameAr != null && nameAr!.isNotEmpty) ? nameAr! : name;
+      case 'en':
+        return (nameEn != null && nameEn!.isNotEmpty) ? nameEn! : name;
+      case 'ru':
+        return (nameRu != null && nameRu!.isNotEmpty) ? nameRu! : name;
+      case 'ko':
+        return (nameKo != null && nameKo!.isNotEmpty) ? nameKo! : name;
+      case 'zh':
+        return (nameZh != null && nameZh!.isNotEmpty) ? nameZh! : name;
+      case 'ja':
+        return (nameJa != null && nameJa!.isNotEmpty) ? nameJa! : name;
+      default:
+        return name;
+    }
+  }
+  String getAddress(Locale locale) {
+    switch (locale.languageCode) {
+      case 'ar':
+        return (addressAr != null && addressAr!.isNotEmpty) ? addressAr! : (address ?? '');
+      case 'en':
+        return (addressEn != null && addressEn!.isNotEmpty) ? addressEn! : (address ?? '');
+      case 'ru':
+        return (addressRu != null && addressRu!.isNotEmpty) ? addressRu! : (address ?? '');
+      case 'ko':
+        return (addressKo != null && addressKo!.isNotEmpty) ? addressKo! : (address ?? '');
+      case 'zh':
+        return (addressZh != null && addressZh!.isNotEmpty) ? addressZh! : (address ?? '');
+      case 'ja':
+        return (addressJa != null && addressJa!.isNotEmpty) ? addressJa! : (address ?? '');
+      default:
+        return address ?? '';
+    }
+  }
+
+  String getVille(Locale locale) {
+    switch (locale.languageCode) {
+      case 'ar':
+        return (villeAr != null && villeAr!.isNotEmpty) ? villeAr! : (ville ?? '');
+      case 'en':
+        return (villeEn != null && villeEn!.isNotEmpty) ? villeEn! : (ville ?? '');
+      case 'ru':
+        return (villeRu != null && villeRu!.isNotEmpty) ? villeRu! : (ville ?? '');
+      case 'zh':
+        return (villeZh != null && villeZh!.isNotEmpty) ? villeZh! : (ville ?? '');
+      case 'ko':
+        return (villeKo != null && villeKo!.isNotEmpty) ? villeKo! : (ville ?? '');
+      case 'ja':
+        return (villeJa != null && villeJa!.isNotEmpty) ? villeJa! : (ville ?? '');
+      default:
+        return ville ?? '';
+    }
+  }
+
+  String getDescription(Locale locale) {
+    switch (locale.languageCode) {
+      case 'ar':
+        return (descriptionAr != null && descriptionAr!.isNotEmpty) ? descriptionAr! : (description ?? '');
+      case 'en':
+        return (descriptionEn != null && descriptionEn!.isNotEmpty) ? descriptionEn! : (description ?? '');
+      case 'ru':
+        return (descriptionRu != null && descriptionRu!.isNotEmpty) ? descriptionRu! : (description ?? '');
+      case 'zh':
+        return (descriptionZh != null && descriptionZh!.isNotEmpty) ? descriptionZh! : (description ?? '');
+      case 'ko':
+        return (descriptionKo != null && descriptionKo!.isNotEmpty) ? descriptionKo! : (description ?? '');
+      case 'ja':
+        return (descriptionJa != null && descriptionJa!.isNotEmpty) ? descriptionJa! : (description ?? '');
+      default:
+        return description ?? '';
+    }
+  }
+
 }
 
 class Links {

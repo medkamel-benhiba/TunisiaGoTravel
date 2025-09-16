@@ -1,5 +1,7 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:tunisiagotravel/providers/destination_provider.dart';
 import '../providers/maisondhote_provider.dart';
 import '../widgets/maisonDhote/maisonDhote_card.dart';
 import '../widgets/screen_title.dart';
@@ -20,7 +22,6 @@ class _MaisonsScreenState extends State<MaisonsScreenContent> {
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    // Fetch maisons once after first frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final provider = Provider.of<MaisonProvider>(context, listen: false);
       if (provider.allMaisons.isEmpty) {
@@ -43,16 +44,27 @@ class _MaisonsScreenState extends State<MaisonsScreenContent> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding:
-            const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
-            child: ScreenTitle(
-              icon: selectedDestinationId == null
-                  ? Icons.location_on
-                  : Icons.house,
-              title: selectedDestinationId == null
-                  ? 'Destinations'
-                  : "Maisons d'hôtes à $selectedDestinationTitle",
-            ),
+            padding: const EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 5.0),
+            child: Builder(builder: (context) {
+              final destinationProvider =
+              Provider.of<DestinationProvider>(context, listen: false);
+
+              // Get the localized destination name if selected
+              String displayDestination = '';
+              if (selectedDestinationId != null) {
+                displayDestination = destinationProvider
+                    .getDestinationName(selectedDestinationId!, context.locale);
+              }
+
+              return ScreenTitle(
+                icon: selectedDestinationId == null ? Icons.location_on : Icons.maps_home_work_rounded,
+                title: selectedDestinationId == null
+                    ? 'restaurantsScreen.destinations'.tr()
+                    : 'maisons_dhote_at'.tr(
+                  args: [displayDestination],
+                ),
+              );
+            }),
           ),
 
           Expanded(

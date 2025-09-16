@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 class Artisanat {
   final String id;
   final String name;
@@ -66,6 +68,44 @@ class Artisanat {
       vignette: json['vignette'] ?? '',
       images: List<String>.from(json['images'] ?? []),
     );
+  }
+
+  String getName(Locale locale) {
+    switch (locale.languageCode) {
+      case 'en':
+        return nameEn;
+      case 'ar':
+        return nameAr;
+      case 'ru':
+        return nameRu;
+      case 'zh':
+        return nameZh;
+      case 'ko':
+        return nameKo;
+      case 'ja':
+        return nameJa;
+      default:
+        return name;
+    }
+  }
+
+  String getDescription(Locale locale) {
+    switch (locale.languageCode) {
+      case 'en':
+        return descriptionEn;
+      case 'ar':
+        return descriptionAr;
+      case 'ru':
+        return descriptionRu;
+      case 'zh':
+        return descriptionZh;
+      case 'ko':
+        return descriptionKo;
+      case 'ja':
+        return descriptionJa;
+      default:
+        return description;
+    }
   }
 }
 

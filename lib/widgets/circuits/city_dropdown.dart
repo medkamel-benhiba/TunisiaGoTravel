@@ -19,9 +19,10 @@ class CityDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final locale = Localizations.localeOf(context);
+
     return Consumer<DestinationProvider>(
       builder: (context, provider, child) {
-        // If still loading, show a minimal loading state
         if (provider.isLoading) {
           return _buildDropdownField(
             context,
@@ -33,7 +34,8 @@ class CityDropdown extends StatelessWidget {
                   height: 16,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(AppColorstatic.primary),
+                    valueColor:
+                    AlwaysStoppedAnimation<Color>(AppColorstatic.primary),
                   ),
                 ),
                 SizedBox(width: 12),
@@ -46,7 +48,6 @@ class CityDropdown extends StatelessWidget {
           );
         }
 
-        // If error occurred, show retry option
         if (provider.error != null) {
           return _buildDropdownField(
             context,
@@ -76,7 +77,6 @@ class CityDropdown extends StatelessWidget {
           );
         }
 
-        // If no destinations available
         if (provider.destinations.isEmpty) {
           return _buildDropdownField(
             context,
@@ -94,12 +94,12 @@ class CityDropdown extends StatelessWidget {
           );
         }
 
-        // Normal dropdown with destinations
         return Theme(
           data: Theme.of(context).copyWith(
             scrollbarTheme: ScrollbarThemeData(
               thumbColor: MaterialStateProperty.all(AppColorstatic.primary),
-              trackColor: MaterialStateProperty.all(AppColorstatic.primary.withOpacity(0.5)),
+              trackColor: MaterialStateProperty.all(
+                  AppColorstatic.primary.withOpacity(0.5)),
               thumbVisibility: MaterialStateProperty.all(true),
               trackVisibility: MaterialStateProperty.all(true),
               thickness: MaterialStateProperty.all(8.0),
@@ -109,44 +109,35 @@ class CityDropdown extends StatelessWidget {
           child: SizedBox(
             width: double.infinity,
             child: DropdownButtonFormField<String>(
-              value: selectedValue,
+              value: selectedId, // 🔑 utilisez l'ID unique ici
               decoration: InputDecoration(
                 labelText: label,
-                labelStyle: const TextStyle(fontSize: 12, color: AppColorstatic.mainColor),
+                prefixIcon: const Icon(Icons.location_on, size: 20, color: AppColorstatic.primary),
                 filled: true,
                 fillColor: AppColorstatic.cardColor,
-                border: OutlineInputBorder(
-                  borderSide: BorderSide.none,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                prefixIcon: const Icon(
-                  Icons.location_on,
-                  size: 20,
-                  color: AppColorstatic.primary,
-                ),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
               ),
               items: provider.destinations
                   .map((d) => DropdownMenuItem(
-                value: d.name,
-                child: Text(d.name),
+                value: d.id, // unique ID
+                child: Text(d.getName(locale)), // nom traduit
               ))
                   .toList(),
-              onChanged: (value) {
-                final selectedDestination = provider.destinations.firstWhere(
-                      (d) => d.name == value,
-                  orElse: () => provider.destinations.first,
-                );
-                onChanged(selectedDestination.name, selectedDestination.id);
+              onChanged: (id) {
+                final selectedDestination = provider.destinations.firstWhere((d) => d.id == id);
+                onChanged(selectedDestination.getName(locale), selectedDestination.id);
               },
               menuMaxHeight: 250,
-            ),
+            )
+
           ),
         );
       },
     );
   }
 
-  Widget _buildDropdownField(BuildContext context, {required bool enabled, required Widget child}) {
+  Widget _buildDropdownField(BuildContext context,
+      {required bool enabled, required Widget child}) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),

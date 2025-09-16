@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../models/restaurant.dart';
 import '../../theme/color.dart';
-import '../../theme/styletext.dart';
 import '../../services/api_service.dart';
-
 import '../widgets/base_card.dart';
-import '../widgets/section_header.dart';
 
 class RestaurantReservationScreen extends StatefulWidget {
   final Restaurant restaurant;
@@ -47,6 +45,9 @@ class _RestaurantReservationScreenState
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
     _animationController.forward();
+
+    // Set default country based on locale
+    _countryController.text = 'default_country'.tr();
   }
 
   @override
@@ -57,7 +58,6 @@ class _RestaurantReservationScreenState
     _phoneController.dispose();
     _cityController.dispose();
     _countryController.dispose();
-
     super.dispose();
   }
 
@@ -68,12 +68,12 @@ class _RestaurantReservationScreenState
     }
 
     if (_selectedDate == null) {
-      _showSnackBar("Veuillez sélectionner une date", isError: true);
+      _showSnackBar('please_select_date'.tr(), isError: true);
       return;
     }
 
     if (_selectedTime == null) {
-      _showSnackBar("Veuillez sélectionner une heure", isError: true);
+      _showSnackBar('please_select_time'.tr(), isError: true);
       return;
     }
 
@@ -82,7 +82,6 @@ class _RestaurantReservationScreenState
     });
 
     try {
-      // Create an instance of ApiService
       final apiService = ApiService();
 
       final response = await apiService.postreservationrestau(
@@ -98,21 +97,20 @@ class _RestaurantReservationScreenState
       );
 
       if (response.success) {
-        _showSnackBar("Réservation confirmée avec succès!", isError: false);
+        _showSnackBar('reservation_confirmed'.tr(), isError: false);
         await Future.delayed(const Duration(seconds: 1));
         Navigator.pop(context, true);
       } else {
-        _showSnackBar("Échec de la réservation", isError: true);
+        _showSnackBar('reservation_failed'.tr(), isError: true);
       }
     } catch (e) {
-      _showSnackBar("Erreur de connexion: ${e.toString()}", isError: true);
+      _showSnackBar('${'connection_error'.tr()}: ${e.toString()}', isError: true);
     } finally {
       setState(() {
         _isSubmitting = false;
       });
     }
   }
-
 
   void _showSnackBar(String message, {required bool isError}) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -137,7 +135,7 @@ class _RestaurantReservationScreenState
   }
 
   void _showValidationError() {
-    _showSnackBar("Veuillez remplir tous les champs requis", isError: true);
+    _showSnackBar('please_fill_required_fields'.tr(), isError: true);
   }
 
   Future<void> _pickDate() async {
@@ -266,11 +264,13 @@ class _RestaurantReservationScreenState
 
   @override
   Widget build(BuildContext context) {
+    final locale = context.locale;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          "Réserver Restaurant",
-          style: TextStyle(
+        title: Text(
+          'reserve_restaurant'.tr(),
+          style: const TextStyle(
             color: AppColorstatic.lightTextColor,
             fontSize: 22,
             fontWeight: FontWeight.bold,
@@ -308,8 +308,8 @@ class _RestaurantReservationScreenState
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
-                          widget.restaurant.name ?? 'Réservation',
-                          maxLines: 2, // allow wrapping up to 2 lines
+                          widget.restaurant.getName(locale),
+                          maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             fontWeight: FontWeight.w600,
@@ -320,10 +320,9 @@ class _RestaurantReservationScreenState
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 8),
                   Text(
-                    'Remplissez le formulaire ci-dessous pour réserver votre table',
+                    'reservation_form_description'.tr(),
                     style: TextStyle(
                       color: Colors.grey[600],
                       fontSize: 14,
@@ -337,7 +336,7 @@ class _RestaurantReservationScreenState
                       Icon(Icons.person_outline, color: AppColorstatic.primary2, size: 20),
                       const SizedBox(width: 8),
                       Text(
-                        'Informations personnelles',
+                        'personal_information'.tr(),
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -350,20 +349,20 @@ class _RestaurantReservationScreenState
 
                   _buildAnimatedTextField(
                     controller: _nameController,
-                    label: 'Nom complet',
+                    label: 'full_name'.tr(),
                     prefixIcon: Icons.person,
-                    validator: (v) => v == null || v.isEmpty ? 'Champ requis' : null,
+                    validator: (v) => v == null || v.isEmpty ? 'field_required'.tr() : null,
                   ),
 
                   _buildAnimatedTextField(
                     controller: _emailController,
-                    label: 'Email',
+                    label: 'email'.tr(),
                     prefixIcon: Icons.email,
                     keyboardType: TextInputType.emailAddress,
                     validator: (v) {
-                      if (v == null || v.isEmpty) return 'Champ requis';
+                      if (v == null || v.isEmpty) return 'field_required'.tr();
                       if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(v)) {
-                        return 'Email invalide';
+                        return 'invalid_email'.tr();
                       }
                       return null;
                     },
@@ -371,10 +370,10 @@ class _RestaurantReservationScreenState
 
                   _buildAnimatedTextField(
                     controller: _phoneController,
-                    label: 'Téléphone',
+                    label: 'phone'.tr(),
                     prefixIcon: Icons.phone,
                     keyboardType: TextInputType.phone,
-                    validator: (v) => v == null || v.isEmpty ? 'Champ requis' : null,
+                    validator: (v) => v == null || v.isEmpty ? 'field_required'.tr() : null,
                   ),
 
                   Row(
@@ -382,18 +381,18 @@ class _RestaurantReservationScreenState
                       Expanded(
                         child: _buildAnimatedTextField(
                           controller: _cityController,
-                          label: 'Ville',
+                          label: 'city'.tr(),
                           prefixIcon: Icons.location_city,
-                          validator: (v) => v == null || v.isEmpty ? 'Champ requis' : null,
+                          validator: (v) => v == null || v.isEmpty ? 'field_required'.tr() : null,
                         ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: _buildAnimatedTextField(
                           controller: _countryController,
-                          label: 'Pays',
+                          label: 'country'.tr(),
                           prefixIcon: Icons.flag,
-                          validator: (v) => v == null || v.isEmpty ? 'Champ requis' : null,
+                          validator: (v) => v == null || v.isEmpty ? 'field_required'.tr() : null,
                         ),
                       ),
                     ],
@@ -407,7 +406,7 @@ class _RestaurantReservationScreenState
                       Icon(Icons.schedule, color: AppColorstatic.primary2, size: 20),
                       const SizedBox(width: 8),
                       Text(
-                        'Détails de la réservation',
+                        'reservation_details'.tr(),
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -423,7 +422,7 @@ class _RestaurantReservationScreenState
                       _buildDateTimeButton(
                         text: _selectedDate != null
                             ? DateFormat('dd/MM/yyyy').format(_selectedDate!)
-                            : 'Choisir la date',
+                            : 'choose_date'.tr(),
                         onPressed: _pickDate,
                         icon: Icons.calendar_today,
                         isSelected: _selectedDate != null,
@@ -432,7 +431,7 @@ class _RestaurantReservationScreenState
                       _buildDateTimeButton(
                         text: _selectedTime != null
                             ? _selectedTime!.format(context)
-                            : 'Choisir l\'heure',
+                            : 'choose_time'.tr(),
                         onPressed: _pickTime,
                         icon: Icons.access_time,
                         isSelected: _selectedTime != null,
@@ -445,14 +444,14 @@ class _RestaurantReservationScreenState
                   _buildAnimatedTextField(
                     initialValue: _numberOfPeople.toString(),
                     controller: TextEditingController(),
-                    label: 'Nombre de personnes',
+                    label: 'number_of_people'.tr(),
                     prefixIcon: Icons.group,
                     keyboardType: TextInputType.number,
                     validator: (v) {
-                      if (v == null || v.isEmpty) return 'Champ requis';
+                      if (v == null || v.isEmpty) return 'field_required'.tr();
                       final num = int.tryParse(v);
-                      if (num == null || num < 1) return 'Nombre invalide';
-                      if (num > 20) return 'Maximum 20 personnes';
+                      if (num == null || num < 1) return 'invalid_number'.tr();
+                      if (num > 20) return 'maximum_20_people'.tr();
                       return null;
                     },
                     onChanged: (v) {
@@ -483,7 +482,7 @@ class _RestaurantReservationScreenState
                           ? Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          SizedBox(
+                          const SizedBox(
                             width: 20,
                             height: 20,
                             child: CircularProgressIndicator(
@@ -492,9 +491,9 @@ class _RestaurantReservationScreenState
                             ),
                           ),
                           const SizedBox(width: 12),
-                          const Text(
-                            'Réservation en cours...',
-                            style: TextStyle(
+                          Text(
+                            'reservation_in_progress'.tr(),
+                            style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                             ),
@@ -506,9 +505,9 @@ class _RestaurantReservationScreenState
                         children: [
                           const Icon(Icons.check_circle_outline, size: 22),
                           const SizedBox(width: 8),
-                          const Text(
-                            'Confirmer la réservation',
-                            style: TextStyle(
+                          Text(
+                            'confirm_reservation'.tr(),
+                            style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                             ),
@@ -534,7 +533,7 @@ class _RestaurantReservationScreenState
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            'En confirmant, vous acceptez les conditions du restaurant.',
+                            'terms_notice'.tr(),
                             style: TextStyle(
                               color: Colors.blue[700],
                               fontSize: 12,

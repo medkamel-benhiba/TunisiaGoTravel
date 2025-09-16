@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
+
 class HotelDetail {
   final String type;
   final bool auto;
@@ -11,6 +13,12 @@ class HotelDetail {
   final String name;
   final String address;
   final String ville;
+  final String? villeAr;
+  final String? villeEn;
+  final String? villeRu;
+  final String? villeZh;
+  final String? villeKo;
+  final String? villeJa;
   final String phone;
   final String fax;
   final String email;
@@ -19,6 +27,13 @@ class HotelDetail {
   final double lng;
   final String cover;
   final String description;
+  final String? descriptionAr;
+  final String? descriptionEn;
+  final String? descriptionRu;
+  final String? descriptionZh;
+  final String? descriptionKo;
+  final String? descriptionJa;
+
   final bool isSpecial;
   final Links links;
   final List<dynamic> options; // Assuming dynamic for now, as it's empty in sample
@@ -90,23 +105,35 @@ class HotelDetail {
     this.categoryCode,
     this.nameEn,
     this.addressEn,
+    this.descriptionEn,
     this.nameAr,
     this.addressAr,
+    this.descriptionAr,
     this.nameRu,
     this.addressRu,
+    this.descriptionRu,
     this.nameZh,
     this.addressZh,
+    this.descriptionZh,
     this.nameKo,
     this.addressKo,
+    this.descriptionKo,
     this.nameJa,
     this.addressJa,
+    this.descriptionJa,
     this.id,
     this.destination,
     this.gallery,
     this.images,
     this.idCityMouradi,
     this.idHotelMouradi,
-    this.idHotelBhr
+    this.idHotelBhr,
+    this.villeAr,
+    this.villeEn,
+    this.villeRu,
+    this.villeZh,
+    this.villeKo,
+    this.villeJa
 
   });
 
@@ -163,18 +190,37 @@ class HotelDetail {
       vignette: json['vignette'],
       destinationId: json['destination_id'],
       categoryCode: json['category_code'],
+
       nameEn: json['name_en'],
       addressEn: json['address_en'],
+      descriptionEn: json['description_en'],
+      villeEn: json['ville_en'],
+
       nameAr: json['name_ar'],
       addressAr: json['address_ar'],
+      villeAr: json['ville_ar'],
+      descriptionAr: json['description_ar'],
+
       nameRu: json['name_ru'],
       addressRu: json['address_ru'],
+      villeRu: json['ville_ru'],
+      descriptionRu: json['description_ru'],
+
       nameZh: json['name_zh'],
       addressZh: json['address_zh'],
+      villeZh: json['ville_zh'],
+      descriptionZh: json['description_zh'],
+
       nameKo: json['name_ko'],
       addressKo: json['address_ko'],
+      villeKo: json['ville_ko'],
+      descriptionKo: json['description_ko'],
+
       nameJa: json['name_ja'],
       addressJa: json['address_ja'],
+      villeJa: json['ville_ja'],
+      descriptionJa: json['description_ja'],
+
       id: json['id'],
       destination: json['destination'] != null
           ? Destination.fromJson(json['destination'])
@@ -245,11 +291,97 @@ class HotelDetail {
       'destination': destination?.toJson(),
       'gallery': gallery,
       'images': images,
-      'images': images,
-
 
     };
   }
+  String getName(Locale locale) {
+    switch (locale.languageCode) {
+      case 'ar':
+        return (nameAr != null && nameAr!.isNotEmpty) ? nameAr! : name;
+      case 'en':
+        return (nameEn != null && nameEn!.isNotEmpty) ? nameEn! : name;
+      case 'ru':
+        return (nameRu != null && nameRu!.isNotEmpty) ? nameRu! : name;
+      case 'ko':
+        return (nameKo != null && nameKo!.isNotEmpty) ? nameKo! : name;
+      case 'zh':
+        return (nameZh != null && nameZh!.isNotEmpty) ? nameZh! : name;
+      case 'ja':
+        return (nameJa != null && nameJa!.isNotEmpty) ? nameJa! : name;
+      default:
+        return name;
+    }
+  }
+  String getAddress(Locale locale) {
+    switch (locale.languageCode) {
+      case 'ar':
+        return (addressAr != null && addressAr!.isNotEmpty) ? addressAr! : address;
+      case 'en':
+        return (addressEn != null && addressEn!.isNotEmpty) ? addressEn! : address;
+      case 'ru':
+        return (addressRu != null && addressRu!.isNotEmpty) ? addressRu! : address;
+      case 'ko':
+        return (addressKo != null && addressKo!.isNotEmpty) ? addressKo! : address;
+      case 'zh':
+        return (addressZh != null && addressZh!.isNotEmpty) ? addressZh! : address;
+      case 'ja':
+        return (addressJa != null && addressJa!.isNotEmpty) ? addressJa! : address;
+      default:
+        return address;
+    }
+  }
+  String getVille(Locale locale) {
+    switch (locale.languageCode) {
+      case 'ar':
+        return (villeAr != null && villeAr!.isNotEmpty) ? villeAr! : ville;
+      case 'en':
+        return (villeEn != null && villeEn!.isNotEmpty) ? villeEn! : ville;
+      case 'ru':
+        return (villeRu != null && villeRu!.isNotEmpty) ? villeRu! : ville;
+      case 'zh':
+        return (villeZh != null && villeZh!.isNotEmpty) ? villeZh! : ville;
+        case 'ko':
+        return (villeKo != null && villeKo!.isNotEmpty) ? villeKo! : ville;
+      case 'ja':
+        return (villeJa != null && villeJa!.isNotEmpty) ? villeJa! : ville;
+      default:
+        return ville;
+    }
+  }
+  String getDescription(Locale locale) {
+    switch (locale.languageCode) {
+      case 'ar':
+        return (descriptionAr != null && descriptionAr!.isNotEmpty)
+            ? descriptionAr!
+            : description;
+      case 'en':
+        return (descriptionEn != null && descriptionEn!.isNotEmpty)
+            ? descriptionEn!
+            : description;
+      case 'ru':
+        return (descriptionRu != null && descriptionRu!.isNotEmpty)
+            ? descriptionRu!
+            : description;
+      case 'zh':
+        return (descriptionZh != null && descriptionZh!.isNotEmpty)
+            ? descriptionZh!
+            : description;
+      case 'ko':
+        return (descriptionKo != null && descriptionKo!.isNotEmpty)
+            ? descriptionKo!
+            : description;
+      case 'ja':
+        return (descriptionJa != null && descriptionJa!.isNotEmpty)
+            ? descriptionJa!
+            : description;
+      default:
+        return description;
+    }
+  }
+
+
+
+
 }
 
 class Links {
@@ -722,7 +854,6 @@ class Destination {
   final String nameAr;
   final String stateAr;
   final String countryAr;
-  final Map<String, dynamic> seo; // Nested SEO fields
 
   Destination({
     required this.name,
@@ -756,7 +887,6 @@ class Destination {
     required this.nameAr,
     required this.stateAr,
     required this.countryAr,
-    required this.seo,
   });
 
   factory Destination.fromJson(Map<String, dynamic> json) {
@@ -792,7 +922,6 @@ class Destination {
       nameAr: json['name_ar'] ?? '',
       stateAr: json['state_ar'] ?? '',
       countryAr: json['country_ar'] ?? '',
-      seo: json['seo'] ?? {},
     );
   }
 
@@ -829,9 +958,9 @@ class Destination {
       'name_ar': nameAr,
       'state_ar': stateAr,
       'country_ar': countryAr,
-      'seo': seo,
     };
   }
+
 }
 
 // Usage example: Parse from JSON string

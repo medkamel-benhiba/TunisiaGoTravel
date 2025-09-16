@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import '../base_card.dart';
@@ -19,7 +20,6 @@ class _DescriptionCardState extends State<DescriptionCard> {
   Widget build(BuildContext context) {
     final htmlContent = widget.description;
 
-    // Limite le contenu pour l'affichage "Voir plus"
     final displayContent = _isExpanded
         ? htmlContent
         : _truncateHtml(htmlContent, 200); // Limite à 200 caractères (approximatif)
@@ -28,9 +28,9 @@ class _DescriptionCardState extends State<DescriptionCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SectionHeader(
+          SectionHeader(
             icon: Icons.description,
-            title: 'Description',
+            title: 'about'.tr(),
             iconColor: Colors.green,
           ),
           const SizedBox(height: 16),
@@ -51,7 +51,7 @@ class _DescriptionCardState extends State<DescriptionCard> {
               child: Padding(
                 padding: const EdgeInsets.only(top: 8.0),
                 child: Text(
-                  _isExpanded ? 'Voir moins' : 'Voir plus',
+                  _isExpanded ? 'see_less'.tr() : 'see_more'.tr(),
                   style: const TextStyle(
                     color: Colors.blue,
                     fontWeight: FontWeight.bold,

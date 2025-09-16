@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/destination.dart';
@@ -27,20 +28,23 @@ class DestinationsList extends StatelessWidget {
         }
 
         if (provider.error != null) {
-          return Center(child: Text('Erreur: ${provider.error}'));
+          return Center(
+            child: Text(tr('destinations.error', args: [provider.error!])),
+          );
         }
 
         if (provider.destinations.isEmpty) {
-          return const Center(child: Text('Aucune destination disponible'));
+          return Center(child: Text(tr('destinations.empty')));
         }
 
         final destinations = category == null
             ? provider.destinations
-            : provider.destinations
-            .toList();
+            : provider.destinations.toList();
 
         if (destinations.isEmpty) {
-          return Center(child: Text('Aucune destination pour $category'));
+          return Center(
+            child: Text(tr('destinations.empty_category', args: [category!])),
+          );
         }
 
         if (viewType == DestinationsViewType.list) {
@@ -63,7 +67,6 @@ class DestinationsList extends StatelessWidget {
           padding: const EdgeInsets.all(12.0),
           child: LayoutBuilder(
             builder: (context, constraints) {
-              // Determine number of columns dynamically
               int crossAxisCount = 2;
               double width = constraints.maxWidth;
 
@@ -96,7 +99,6 @@ class DestinationsList extends StatelessWidget {
             },
           ),
         );
-
       },
     );
   }

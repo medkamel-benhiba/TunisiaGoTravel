@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:tunisiagotravel/screens/ItineraryScreen.dart';
@@ -63,7 +64,7 @@ class MonumentInfoCard extends StatelessWidget {
                       const SizedBox(width: 16),
                       Expanded(
                         child: Text(
-                          monument.name,
+                          monument.getName(Localizations.localeOf(context)),
                           style: const TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
@@ -101,7 +102,7 @@ class MonumentInfoCard extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Catégorie',
+                                  'category'.tr(),
                                   style: TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w500,
@@ -111,7 +112,7 @@ class MonumentInfoCard extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
-                                  monument.categories,
+                                  monument.getCategories(Localizations.localeOf(context)),
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
@@ -151,7 +152,7 @@ class MonumentInfoCard extends StatelessWidget {
                               }
                             },
                             icon: const Icon(Icons.directions, size: 18),
-                            label: const Text('Itinéraire'),
+                            label: Text('itinerary'.tr()),
                             style: TextButton.styleFrom(
                               foregroundColor: Colors.deepPurple,
                               padding: const EdgeInsets.symmetric(vertical: 8),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:latlong2/latlong.dart';
 import '../../models/maisondHote.dart';
 import '../base_card.dart';
@@ -10,6 +11,14 @@ class MaisonInfoCard extends StatelessWidget {
 
   const MaisonInfoCard({super.key, required this.maison});
 
+  String _getLocalizedName(BuildContext context) {
+    return maison.getName(context.locale);
+  }
+
+  String _getLocalizedAddress(BuildContext context) {
+    return maison.getAddress(context.locale);
+  }
+
   @override
   Widget build(BuildContext context) {
     return BaseCard(
@@ -18,17 +27,17 @@ class MaisonInfoCard extends StatelessWidget {
         children: [
           SectionHeader(
             icon: Icons.home,
-            title: "Maison D'hôte",
+            title: 'guestHouses'.tr(),
             iconColor: Colors.deepPurple[600]!,
           ),
           const SizedBox(height: 16),
           Text(
-            maison.name,
+            _getLocalizedName(context),
             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           Text(
-            maison.address,
+            _getLocalizedAddress(context),
             style: TextStyle(fontSize: 16, color: Colors.grey[700]),
           ),
           const SizedBox(height: 12),
@@ -51,7 +60,7 @@ class MaisonInfoCard extends StatelessWidget {
               ),
               Text(
                 maison.startingPrice > 0
-                    ? '${maison.startingPrice.toStringAsFixed(2)} TND'
+                    ? 'starting_price_tnd'.tr(namedArgs: {'price': maison.startingPrice.toStringAsFixed(2)})
                     : '',
                 style: TextStyle(
                   fontSize: 14,
@@ -63,7 +72,7 @@ class MaisonInfoCard extends StatelessWidget {
           ),
           const SizedBox(height: 12),
 
-          // ✅ Bouton Itinéraire
+          // Itinerary button
           SizedBox(
             width: double.infinity,
             child: TextButton.icon(
@@ -81,17 +90,17 @@ class MaisonInfoCard extends StatelessWidget {
                     );
                   } catch (e) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Invalid coordinates format")),
+                      SnackBar(content: Text('invalid_coordinates'.tr())),
                     );
                   }
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Coordinates not available")),
+                    SnackBar(content: Text('coordinates_not_available'.tr())),
                   );
                 }
               },
               icon: const Icon(Icons.directions, size: 18),
-              label: const Text('Itinéraire'),
+              label: Text('itinerary'.tr()),
               style: TextButton.styleFrom(
                 foregroundColor: Colors.deepPurple[600],
                 padding: const EdgeInsets.symmetric(vertical: 12),

@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart'; // Ajout
 import 'package:flutter/material.dart';
 import 'package:tunisiagotravel/theme/color.dart';
 import '../../models/activity.dart';
@@ -33,18 +34,20 @@ class ActivityCard extends StatelessWidget {
         );
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Format de coordonnées invalide")),
+          SnackBar(content: Text(tr("invalid_coordinates"))),
         );
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Coordonnées non disponibles")),
+        SnackBar(content: Text(tr("coordinates_unavailable"))),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final locale = context.locale;
+
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -54,7 +57,7 @@ class ActivityCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Image avec overlay
+          // --- IMAGE ---
           Stack(
             children: [
               if (activity.cover != null)
@@ -68,9 +71,7 @@ class ActivityCard extends StatelessWidget {
                     return Container(
                       height: 180,
                       color: Colors.grey[200],
-                      child: const Center(
-                        child: CircularProgressIndicator(),
-                      ),
+                      child: const Center(child: CircularProgressIndicator()),
                     );
                   },
                   errorBuilder: (context, error, stackTrace) {
@@ -116,15 +117,15 @@ class ActivityCard extends StatelessWidget {
             ],
           ),
 
-          // Contenu
+          // --- CONTENU ---
           Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Nom de l’activité
+                // Nom
                 Text(
-                  activity.title,
+                  activity.getName(locale),
                   maxLines: 2,
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
@@ -153,7 +154,8 @@ class ActivityCard extends StatelessWidget {
                     const Spacer(),
                     if (activity.price != null && activity.price != "0")
                       Text(
-                        'À partir de ${activity.price} TND',
+                        tr("starting_price_tnd",
+                            args: [activity.price.toString()]),
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
@@ -173,11 +175,13 @@ class ActivityCard extends StatelessWidget {
                     const SizedBox(width: 4),
                     Expanded(
                       child: Text(
-                        activity.address ?? 'Adresse non disponible',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors.grey[600],
-                          fontSize: 13,
-                        ),
+                        activity.getAddress(locale).isNotEmpty
+                            ? activity.getAddress(locale)
+                            : tr("address_unavailable"),
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodySmall
+                            ?.copyWith(color: Colors.grey[600], fontSize: 13),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -187,14 +191,14 @@ class ActivityCard extends StatelessWidget {
 
                 const SizedBox(height: 16),
 
-                // Boutons d’action
+                // Boutons
                 Row(
                   children: [
                     Expanded(
                       child: OutlinedButton.icon(
                         onPressed: () => _navigateToDetails(context),
                         icon: const Icon(Icons.info_outline, size: 16),
-                        label: const Text('Détails'),
+                        label: Text(tr("details")),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppColorstatic.primary,
                           side: BorderSide(color: AppColorstatic.primary),
@@ -210,7 +214,7 @@ class ActivityCard extends StatelessWidget {
                       child: ElevatedButton.icon(
                         onPressed: () => _handleItinerary(context),
                         icon: const Icon(Icons.directions, size: 16),
-                        label: const Text('Itinéraire'),
+                        label: Text(tr("itinerary")),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColorstatic.primary,
                           foregroundColor: Colors.white,

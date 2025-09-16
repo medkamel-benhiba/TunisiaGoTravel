@@ -35,7 +35,20 @@ class _CircuitPreDetailsScreenState extends State<CircuitPreDetailsScreen> {
 
         if (voyage == null) {
           return Scaffold(
-            appBar: AppBar(title: const Text("Circuit Prédifini")),
+            appBar: AppBar(
+              titleSpacing: 0,
+              title: Text(
+                voyage!.getName(Localizations.localeOf(context)),
+                style: const TextStyle(
+                  color: AppColorstatic.lightTextColor,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              backgroundColor: AppColorstatic.primary,
+              iconTheme: const IconThemeData(color: Colors.white),
+            ),
+
             body: Center(
               child: Padding(
                 padding: const EdgeInsets.all(15),

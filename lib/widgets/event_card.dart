@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import '../models/event.dart';
 import '../screens/event_details_screen.dart';
@@ -18,6 +19,8 @@ class EventCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final locale = Localizations.localeOf(context);
+
     return GestureDetector(
       onTap: () => _navigateToDetails(context),
       child: Card(
@@ -46,7 +49,7 @@ class EventCard extends StatelessWidget {
                 children: [
                   // Title
                   Text(
-                    event.title,
+                    event.getName(locale),
                     style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -56,19 +59,18 @@ class EventCard extends StatelessWidget {
                   // Date
                   if (event.startDate != null)
                     Text(
-                      'Date: ${event.startDate}' +
+                      '${tr('date')}: ${event.startDate}' +
                           (event.endDate != null && event.endDate != event.startDate
                               ? ' - ${event.endDate}'
                               : ''),
                       style: const TextStyle(fontSize: 14, color: Colors.grey),
                     ),
-
                   const SizedBox(height: 6),
 
                   // Address
-                  if (event.address != null)
+                  if (event.address != null && event.address!.isNotEmpty)
                     Text(
-                      event.address!,
+                      event.getAddress(locale),
                       style: const TextStyle(fontSize: 14, color: Colors.grey),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -77,11 +79,14 @@ class EventCard extends StatelessWidget {
                   const SizedBox(height: 6),
 
                   // Price
-                  if (event.price != null && event.price != "0")
+                  if (event.price != null)
                     Text(
-                      'Prix: ${event.price} TND',
+                      event.price == "0"
+                          ? tr('free')
+                          : tr('starting_price_tnd', args: [event.price!]),
                       style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                     ),
+
                 ],
               ),
             ),

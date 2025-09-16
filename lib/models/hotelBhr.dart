@@ -1,7 +1,16 @@
+import 'package:flutter/material.dart';
+
 class HotelBhr {
   final String id;
   final String? id_hotel_bbx;
   final String name;
+  final String? name_en;
+  final String? name_ar;
+  final String? name_ru;
+  final String? name_ja;
+  final String? name_ko;
+  final String? name_zh;
+
   final String slug;
   final String disponibilityType;
   final DisponibilityBhr disponibility;
@@ -13,6 +22,13 @@ class HotelBhr {
     required this.slug,
     required this.disponibilityType,
     required this.disponibility,
+    this.name_en,
+    this.name_ar,
+    this.name_ru,
+    this.name_ja,
+    this.name_ko,
+    this.name_zh,
+
   });
 
   factory HotelBhr.fromJson(Map<String, dynamic> json) {
@@ -25,6 +41,12 @@ class HotelBhr {
       disponibility: DisponibilityBhr.fromJson(
         Map<String, dynamic>.from(json['disponibility']?['pensions'] ?? {}),
       ),
+      name_en: json['name_en'] ?? '',
+      name_ar: json['name_ar'] ?? '',
+      name_ru: json['name_ru'] ?? '',
+      name_ko: json['name_ko'] ?? '',
+      name_ja: json['name_ja'] ?? '',
+      name_zh: json['name_zh'] ?? '',
     );
   }
 
@@ -113,6 +135,25 @@ class HotelBhr {
       disponibility: disponibility,
     );
   }
+  String getName(Locale locale) {
+    switch (locale.languageCode) {
+      case 'ar':
+        return (name_ar != null && name_ar!.isNotEmpty) ? name_ar! : name;
+      case 'en':
+        return (name_en != null && name_en!.isNotEmpty) ? name_en! : name;
+      case 'ru':
+        return (name_ru != null && name_ru!.isNotEmpty) ? name_ru! : name;
+      case 'ko':
+        return (name_ko != null && name_ko!.isNotEmpty) ? name_ko! : name;
+      case 'zh':
+        return (name_zh != null && name_zh!.isNotEmpty) ? name_zh! : name;
+      case 'ja':
+        return (name_ja != null && name_ja!.isNotEmpty) ? name_ja! : name;
+      default:
+        return name;
+    }
+  }
+
 
 }
 

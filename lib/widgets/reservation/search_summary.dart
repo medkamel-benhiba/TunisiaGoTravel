@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../theme/color.dart';
 
 class SearchCriteriaCard extends StatelessWidget {
@@ -12,27 +13,19 @@ class SearchCriteriaCard extends StatelessWidget {
   });
 
   String _getRoomCountText() {
-    // Try multiple ways to get the room count
     int roomCount = 0;
 
-    // Method 1: Check if rooms is a List
     if (searchCriteria['rooms'] is List) {
       roomCount = (searchCriteria['rooms'] as List).length;
-    }
-    // Method 2: Check if roomsCount exists as string
-    else if (searchCriteria['roomsCount'] != null) {
+    } else if (searchCriteria['roomsCount'] != null) {
       roomCount = int.tryParse(searchCriteria['roomsCount'].toString()) ?? 0;
-    }
-    // Method 3: Check if rooms is a string number
-    else if (searchCriteria['rooms'] is String) {
+    } else if (searchCriteria['rooms'] is String) {
       roomCount = int.tryParse(searchCriteria['rooms'].toString()) ?? 0;
-    }
-    // Method 4: Default fallback
-    else {
+    } else {
       roomCount = 1;
     }
 
-    return "$roomCount chambre${roomCount > 1 ? 's' : ''}";
+    return tr('rooms_count', args: [roomCount.toString()]);
   }
 
   @override
@@ -47,7 +40,6 @@ class SearchCriteriaCard extends StatelessWidget {
             color: Colors.black.withOpacity(0.08),
             blurRadius: 12,
             offset: const Offset(0, 4),
-            spreadRadius: 0,
           ),
         ],
       ),
@@ -90,9 +82,9 @@ class SearchCriteriaCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Critères de recherche',
-                        style: TextStyle(
+                      Text(
+                        tr('search_criteria'),
+                        style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                           color: Color(0xFF1A1A1A),
@@ -100,7 +92,7 @@ class SearchCriteriaCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        'Détails de votre séjour',
+                        tr('stay_details'),
                         style: TextStyle(
                           fontSize: 13,
                           color: Colors.grey[600],
@@ -119,24 +111,20 @@ class SearchCriteriaCard extends StatelessWidget {
             padding: const EdgeInsets.all(20),
             child: Column(
               children: [
-                // Dates
                 _buildCriteriaItem(
                   Icons.calendar_month,
-                  "Dates de séjour",
+                  tr('stay_dates'),
                   "${searchCriteria['dateStart']} - ${searchCriteria['dateEnd']}",
                   AppColorstatic.buttonbg.withOpacity(0.04),
                   AppColorstatic.primary,
                 ),
-
                 const SizedBox(height: 16),
-
-                // Travelers and Rooms Row
                 Row(
                   children: [
                     Expanded(
                       child: _buildCriteriaItem(
                         Icons.group,
-                        "Voyageurs",
+                        tr('travelers'),
                         travelersSummary,
                         Colors.orange.withOpacity(0.1),
                         Colors.orange,
@@ -146,7 +134,7 @@ class SearchCriteriaCard extends StatelessWidget {
                     Expanded(
                       child: _buildCriteriaItem(
                         Icons.hotel,
-                        "Chambres",
+                        tr('rooms'),
                         _getRoomCountText(),
                         Colors.teal.withOpacity(0.1),
                         Colors.teal,
@@ -225,6 +213,7 @@ class SearchCriteriaCard extends StatelessWidget {
     );
   }
 }
+
 
 /*import 'package:flutter/material.dart';
 import '../../theme/color.dart';

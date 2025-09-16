@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
+
 class Voyage {
   final String id;
   final String name;
@@ -156,6 +158,60 @@ class Voyage {
     'created_at': createdAt.toIso8601String(),
     'updated_at': updatedAt.toIso8601String(),
   };
+  String getName(Locale locale) {
+    switch (locale.languageCode) {
+      case 'ar':
+        return name_ar;
+      case 'en':
+        return name_en;
+      case 'ru':
+        return name_ru;
+      case 'zh':
+        return name_zh;
+      case 'ko':
+        return name_ko;
+      case 'ja':
+        return name_ja;
+      default:
+        return name;
+    }
+  }
+  String getDescription(Locale locale) {
+    switch (locale.languageCode) {
+      case 'ar':
+        return description_ar;
+      case 'en':
+        return description_en;
+      case 'ru':
+        return description_ru;
+      case 'zh':
+        return description_zh;
+      case 'ko':
+        return description_ko;
+      case 'ja':
+        return description_ja;
+      default:
+        return description;
+    }
+  }
+  String getPrograme(Locale locale) {
+    switch (locale.languageCode) {
+      case 'ar':
+        return programe_ar.map((p) => p.description).join('\n');
+      case 'en':
+        return programe_en.map((p) => p.description).join('\n');
+      case 'ru':
+        return programe_ru.map((p) => p.description).join('\n');
+      case 'zh':
+        return programe_zh.map((p) => p.description).join('\n');
+      case 'ko':
+        return programe_ko.map((p) => p.description).join('\n');
+      case 'ja':
+        return programe_ja.map((p) => p.description).join('\n');
+      default:
+        return programe.map((p) => p.description).join('\n');
+    }
+  }
 }
 
 class Program {

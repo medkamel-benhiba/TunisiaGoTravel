@@ -35,7 +35,7 @@ class ProgrammeItem extends StatelessWidget {
                   description,
                   style: const TextStyle(
                     fontSize: 14,
-                    color: Colors.grey,
+                    color: Colors.black54,
                   ),
                 ),
               ],

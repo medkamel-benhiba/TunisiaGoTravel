@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../providers/monument_provider.dart';
 import '../theme/color.dart';
 import '../widgets/cultures/DescriptionCard.dart';
 import '../widgets/cultures/monument_info_card.dart';
-import '../widgets/cultures/ContactCard.dart';
 import '../widgets/gallery.dart';
 
 class MonumentDetailsScreen extends StatefulWidget {
@@ -20,7 +20,6 @@ class _MonumentDetailsScreenState extends State<MonumentDetailsScreen> {
   @override
   void initState() {
     super.initState();
-    // Fetch the selected monument by slug
     Future.microtask(() {
       final provider = Provider.of<MonumentProvider>(context, listen: false);
       provider.fetchMonumentBySlug(widget.monumentSlug);
@@ -43,12 +42,12 @@ class _MonumentDetailsScreenState extends State<MonumentDetailsScreen> {
         // Error or empty
         if (monument == null) {
           return Scaffold(
-            appBar: AppBar(title: const Text("Monument")),
+            appBar: AppBar(title: Text("monument".tr())),
             body: Center(
               child: Padding(
                 padding: const EdgeInsets.all(15),
                 child: Text(
-                  provider.error ?? 'Aucune information disponible pour ce monument.',
+                  provider.error ?? 'no_monument_info'.tr(),
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -60,7 +59,7 @@ class _MonumentDetailsScreenState extends State<MonumentDetailsScreen> {
           appBar: AppBar(
             titleSpacing: 0,
             title: Text(
-              monument.name,
+              monument.getName(Localizations.localeOf(context)),
               style: const TextStyle(
                 color: AppColorstatic.lightTextColor,
                 fontSize: 18,
@@ -76,24 +75,20 @@ class _MonumentDetailsScreenState extends State<MonumentDetailsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Gallery
                 if (monument.images.isNotEmpty)
                   ImageGridPreview(images: monument.images),
 
                 const SizedBox(height: 12),
 
-                // Monument Info Card
                 MonumentInfoCard(monument: monument),
 
                 const SizedBox(height: 12),
 
-                // Description
                 if (monument.description.isNotEmpty)
-                  DescriptionCard(description: monument.description),
+                  DescriptionCard(description: monument.getDescription(Localizations.localeOf(context))),
 
                 const SizedBox(height: 12),
 
-                // Destination Info
                 if (monument.destination.name.isNotEmpty)
                   Padding(
                     padding: const EdgeInsets.all(8.0),
@@ -113,9 +108,9 @@ class _MonumentDetailsScreenState extends State<MonumentDetailsScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text(
-                                    'Destination',
-                                    style: TextStyle(
+                                  Text(
+                                    'destination'.tr(),
+                                    style: const TextStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w500,
                                       color: Colors.grey,
@@ -123,10 +118,11 @@ class _MonumentDetailsScreenState extends State<MonumentDetailsScreen> {
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
-                                    monument.destination.name,
+                                    monument.getDestinationName(Localizations.localeOf(context)),
                                     style: const TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w600,
+                                      color: Colors.black,
                                     ),
                                   ),
                                 ],

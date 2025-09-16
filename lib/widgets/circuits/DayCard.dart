@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../theme/color.dart';
 import 'SectionWidget.dart';
 
@@ -81,7 +82,7 @@ class _DayCardState extends State<DayCard> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Jour ${widget.dayKey}',
+                    tr('day_of', args: [widget.dayKey]),
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 20,
@@ -89,7 +90,13 @@ class _DayCardState extends State<DayCard> {
                     ),
                   ),
                   Text(
-                    '$totalActivities activité${totalActivities > 1 ? 's' : ''} planifiée${totalActivities > 1 ? 's' : ''}',
+                    tr(
+                      'planned_activities',
+                      args: [
+                        totalActivities.toString(),
+                        totalActivities > 1 ? '' : ''
+                      ],
+                    ),
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.grey[600],
@@ -103,11 +110,11 @@ class _DayCardState extends State<DayCard> {
         children: [
           Column(
             children: [
-              SectionWidget(title: 'Hôtels', items: safeList(widget.dayData['hotel'])),
-              SectionWidget(title: 'Restaurants', items: safeList(widget.dayData['Restaurant'])),
-              SectionWidget(title: 'Activités', items: safeList(widget.dayData['Activity'])),
-              SectionWidget(title: 'Musées', items: safeList(widget.dayData['musees'])),
-              SectionWidget(title: 'Monuments', items: safeList(widget.dayData['monuments'])),
+              SectionWidget(title: tr('hotels'), items: safeList(widget.dayData['hotel'])),
+              SectionWidget(title: tr('restaurants'), items: safeList(widget.dayData['Restaurant'])),
+              SectionWidget(title: tr('activities'), items: safeList(widget.dayData['Activity'])),
+              SectionWidget(title: tr('museums'), items: safeList(widget.dayData['musees'])),
+              SectionWidget(title: tr('monuments'), items: safeList(widget.dayData['monuments'])),
               const SizedBox(height: 16),
             ],
           ),

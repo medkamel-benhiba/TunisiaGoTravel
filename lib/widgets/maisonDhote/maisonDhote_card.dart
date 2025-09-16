@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:tunisiagotravel/theme/color.dart';
 import 'package:latlong2/latlong.dart';
@@ -49,6 +50,8 @@ class MaisonCard extends StatelessWidget {
     final imageUrl = maison.cover.isNotEmpty
         ? maison.cover
         : (maison.images.isNotEmpty ? maison.images.first : null);
+    final locale = context.locale;
+
 
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
@@ -150,7 +153,7 @@ class MaisonCard extends StatelessWidget {
               children: [
                 // Maison name
                 Text(
-                  maison.name,
+                  maison.getName(locale),
                   maxLines: 2,
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
@@ -205,7 +208,9 @@ class MaisonCard extends StatelessWidget {
                     const SizedBox(width: 4),
                     Expanded(
                       child: Text(
-                        maison.ville,
+                        maison.getAddress(locale).isNotEmpty
+                            ? '${maison.getAddress(locale)}, ${maison.getVille(locale)}'
+                            : 'restaurantsScreen.addressUnavailable'.tr(),
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Colors.grey[600],
                           fontSize: 13,
@@ -227,7 +232,7 @@ class MaisonCard extends StatelessWidget {
                       child: OutlinedButton.icon(
                         onPressed: () => _navigateToDetails(context),
                         icon: const Icon(Icons.info_outline, size: 16),
-                        label: const Text('Détails'),
+                        label: Text('details'.tr()),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppColorstatic.primary,
                           side: BorderSide(color: AppColorstatic.primary),
@@ -246,7 +251,7 @@ class MaisonCard extends StatelessWidget {
                       child: ElevatedButton.icon(
                         onPressed: () => _handleItinerary(context),
                         icon: const Icon(Icons.directions, size: 16),
-                        label: const Text('Itinéraire'),
+                        label: Text('itinerary'.tr()),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColorstatic.primary,
                           foregroundColor: Colors.white,

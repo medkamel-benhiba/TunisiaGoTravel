@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:tunisiagotravel/theme/color.dart';
 import 'package:tunisiagotravel/theme/styletext.dart';
 import '../../models/activity.dart';
@@ -14,28 +15,30 @@ class ActivityInfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final locale = context.locale;
+
     return BaseCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SectionHeader(
             icon: Icons.local_activity,
-            title: 'Activité',
+            title: tr("activity"),
             iconColor: Colors.deepPurple[600]!,
           ),
           const SizedBox(height: 16),
           Text(
-            activity.title ?? '',
+            activity.getName(locale),
             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           Row(
             children: [
-              const Icon(Icons.location_on, size: 14, color: Colors.grey),
+              const Icon(Icons.location_on, size: 14, color: AppColorstatic.primary),
               const SizedBox(width: 4),
               Expanded(
                 child: Text(
-                  activity.address ?? '',
+                  activity.getAddress(locale),
                   style: Appstylestatic.textStyle21,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
@@ -49,7 +52,7 @@ class ActivityInfoCard extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(top: 8.0),
               child: Text(
-                activity.subtype!,
+                activity.getSubtype(locale),
                 style: TextStyle(fontSize: 16, color: Colors.grey[700]),
               ),
             ),
@@ -66,18 +69,19 @@ class ActivityInfoCard extends StatelessWidget {
                     Text(
                       activity.rate!.toStringAsFixed(1),
                       style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey[800],
-                          fontWeight: FontWeight.w500),
+                        fontSize: 14,
+                        color: Colors.grey[800],
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ],
                 ),
               Text(
                 activity.price != null
                     ? (activity.price == "0"
-                    ? 'Gratuit'
-                    : 'À partir de ${activity.price} TND')
-                    : 'Prix non disponible',
+                    ? tr("free")
+                    : tr("starting_price_tnd", args: [activity.price!]))
+                    : tr("price_unavailable"),
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
@@ -87,7 +91,6 @@ class ActivityInfoCard extends StatelessWidget {
             ],
           ),
 
-          // Itinerary Button
           if (activity.lat != null && activity.lng != null)
             SizedBox(
               width: double.infinity,
@@ -100,17 +103,18 @@ class ActivityInfoCard extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => ItineraryScreen(destination: destination),
+                        builder: (_) =>
+                            ItineraryScreen(destination: destination),
                       ),
                     );
                   } catch (e) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Format des coordonnées invalide")),
+                      SnackBar(content: Text(tr("invalid_coordinates"))),
                     );
                   }
                 },
                 icon: const Icon(Icons.directions, size: 18),
-                label: const Text('Itinéraire'),
+                label: Text(tr("itinerary")), // <- key
                 style: TextButton.styleFrom(
                   foregroundColor: AppColorstatic.primary,
                   padding: const EdgeInsets.symmetric(vertical: 12),

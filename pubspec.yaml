@@ -58,6 +58,8 @@ flutter:
     - assets/images/card/
     - assets/icon/
     - assets/images/marker/
+    - assets/translations/
+
 
 
   fonts:

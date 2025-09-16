@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class BudgetInput extends StatelessWidget {
   final TextEditingController controller;
@@ -10,13 +11,14 @@ class BudgetInput extends StatelessWidget {
     return TextField(
       controller: controller,
       decoration: InputDecoration(
-        labelText: "Budget",
+        labelText: tr('budget'), // clé de traduction
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
         ),
-        prefixIcon: const Icon(Icons.money_rounded),
+        prefixIcon: const Icon(Icons.attach_money_rounded),
       ),
       keyboardType: TextInputType.number,
+      textInputAction: TextInputAction.done,
     );
   }
 }

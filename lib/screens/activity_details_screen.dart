@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:tunisiagotravel/theme/color.dart';
@@ -13,10 +14,13 @@ class ActivityDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final locale = context.locale;
+    final title = activity.getName(locale);
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          activity.title ?? '',
+          title ?? '',
           style: const TextStyle(
             color: AppColorstatic.lightTextColor,
             fontSize: 18,

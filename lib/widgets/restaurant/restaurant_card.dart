@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:tunisiagotravel/theme/color.dart';
 import '../../models/restaurant.dart';
 import '../../screens/restaurant_details_screen.dart';
@@ -20,32 +21,27 @@ class RestaurantCard extends StatelessWidget {
   }
 
   void _handleItinerary(BuildContext context) {
-    print('Restaurant lat: ${restaurant.lat}, lng: ${restaurant.lng}');
-    if (restaurant.lat != null && restaurant.lng != null) {
-      try {
-        final lat = double.parse(restaurant.lat!);
-        final lng = double.parse(restaurant.lng!);
-        final destination = LatLng(lat, lng);
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => ItineraryScreen(destination: destination),
-          ),
-        );
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Format de coordonnées invalide")),
-        );
-      }
-    } else {
+    try {
+      final lat = double.parse(restaurant.lat);
+      final lng = double.parse(restaurant.lng);
+      final destination = LatLng(lat, lng);
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ItineraryScreen(destination: destination),
+        ),
+      );
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Coordonnées non disponibles")),
+        SnackBar(content: Text('restaurantsScreen.invalidCoordinates'.tr())),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final locale = context.locale;
+
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -55,7 +51,6 @@ class RestaurantCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Image with gradient overlay
           Stack(
             children: [
               if (restaurant.cover != null)
@@ -79,8 +74,7 @@ class RestaurantCard extends StatelessWidget {
                       height: 180,
                       color: Colors.grey[200],
                       child: const Center(
-                        child: Icon(Icons.restaurant,
-                            size: 50, color: Colors.grey),
+                        child: Icon(Icons.restaurant, size: 50, color: Colors.grey),
                       ),
                     );
                   },
@@ -114,7 +108,7 @@ class RestaurantCard extends StatelessWidget {
                 ),
               ),
 
-              // Special tag if restaurant is special
+              // Special tag
               if (restaurant.isSpecial)
                 Positioned(
                   top: 8,
@@ -125,9 +119,9 @@ class RestaurantCard extends StatelessWidget {
                       color: Colors.orange,
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Text(
-                      'Spécial',
-                      style: TextStyle(
+                    child: Text(
+                      'restaurantsScreen.special'.tr(),
+                      style: const TextStyle(
                         color: Colors.white,
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
@@ -146,7 +140,7 @@ class RestaurantCard extends StatelessWidget {
               children: [
                 // Restaurant name
                 Text(
-                  restaurant.name,
+                  restaurant.getName(locale),
                   maxLines: 2,
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
@@ -157,7 +151,7 @@ class RestaurantCard extends StatelessWidget {
 
                 const SizedBox(height: 8),
 
-                // Rating row
+                // Rating and price
                 Row(
                   children: [
                     Icon(
@@ -169,7 +163,7 @@ class RestaurantCard extends StatelessWidget {
                     Text(
                       restaurant.rate != null
                           ? (restaurant.rate! as num).toDouble().toStringAsFixed(1)
-                          : 'N/A',
+                          : 'restaurantsScreen.na'.tr(),
                       style: TextStyle(
                         color: Colors.grey[800],
                         fontSize: 14,
@@ -179,7 +173,7 @@ class RestaurantCard extends StatelessWidget {
                     const Spacer(),
                     if (restaurant.startingPrice != null)
                       Text(
-                        'À partir de ${restaurant.startingPrice} TND',
+                        '${'restaurantsScreen.startingFrom'.tr()} ${restaurant.startingPrice} TND',
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
@@ -191,7 +185,7 @@ class RestaurantCard extends StatelessWidget {
 
                 const SizedBox(height: 12),
 
-                // Address/Description
+                // Address/City
                 Row(
                   children: [
                     Icon(
@@ -202,7 +196,9 @@ class RestaurantCard extends StatelessWidget {
                     const SizedBox(width: 4),
                     Expanded(
                       child: Text(
-                          restaurant.address ?? 'Adresse non disponible',
+                        restaurant.getAddress(locale).isNotEmpty
+                            ? '${restaurant.getAddress(locale)}, ${restaurant.getVille(locale)}'
+                            : 'restaurantsScreen.addressUnavailable'.tr(),
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Colors.grey[600],
                           fontSize: 13,
@@ -224,7 +220,7 @@ class RestaurantCard extends StatelessWidget {
                       child: OutlinedButton.icon(
                         onPressed: () => _navigateToDetails(context),
                         icon: const Icon(Icons.info_outline, size: 16),
-                        label: const Text('Détails'),
+                        label: Text('restaurantsScreen.details'.tr()),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppColorstatic.primary,
                           side: BorderSide(color: AppColorstatic.primary),
@@ -243,7 +239,7 @@ class RestaurantCard extends StatelessWidget {
                       child: ElevatedButton.icon(
                         onPressed: () => _handleItinerary(context),
                         icon: const Icon(Icons.directions, size: 16),
-                        label: const Text('Itinéraire'),
+                        label: Text('restaurantsScreen.itinerary'.tr()),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColorstatic.primary,
                           foregroundColor: Colors.white,

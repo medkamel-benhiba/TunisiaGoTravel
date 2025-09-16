@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/hotel.dart';
@@ -155,7 +156,7 @@ class _HotelTgtReservationScreenState extends State<HotelTgtReservationScreen> {
         0, (s, r) => s + int.tryParse(r['adults']?.toString() ?? '0')!);
     final totalChildren = rooms.fold<int>(
         0, (s, r) => s + int.tryParse(r['children']?.toString() ?? '0')!);
-    return "$totalAdults adultes, $totalChildren enfants";
+    return tr('guests_summary', args: [totalAdults.toString(), totalChildren.toString()]);
   }
 
   void _updateRoomSelection(String pensionId, String roomId, int newQty) {

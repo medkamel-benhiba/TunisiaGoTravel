@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:tunisiagotravel/theme/color.dart';
 import '../../models/restaurant.dart';
@@ -16,7 +17,7 @@ class RestaurantDetailsScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          restaurant.name,
+          restaurant.getName(context.locale),
           style: const TextStyle(
             color: AppColorstatic.lightTextColor,
             fontSize: 18,

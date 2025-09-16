@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -34,6 +35,7 @@ class _HotelDetailsScreenState extends State<HotelDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final locale=context.locale;
     return Consumer<HotelProvider>(
       builder: (context, provider, child) {
         final HotelDetail? hotel = provider.selectedHotel;
@@ -41,7 +43,9 @@ class _HotelDetailsScreenState extends State<HotelDetailsScreen> {
         return Scaffold(
           appBar: AppBar(
             title: Text(
-              hotel?.name ?? "Détails de l'Hôtel",
+              hotel != null
+                  ? hotel.getName(context.locale)
+                  : "hotel_details.title".tr(),
               style: const TextStyle(
                 color: AppColorstatic.lightTextColor,
                 fontSize: 22,

@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:tunisiagotravel/theme/color.dart';
 import 'package:tunisiagotravel/theme/styletext.dart';
@@ -14,6 +15,11 @@ class HotelInfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final locale = context.locale;
+    final hotelName = hotel.getName(locale);
+    final hotelAddress = hotel.getAddress(locale);
+    final hotelVille = hotel.getVille(locale); // Use getVille for localization
+
     return BaseCard(
       margin: const EdgeInsets.all(10),
       child: Column(
@@ -36,10 +42,10 @@ class HotelInfoCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 15),
-              Flexible( // replaced Expanded
+              Flexible(
                 fit: FlexFit.loose,
                 child: Text(
-                  hotel.name,
+                  hotelName,
                   style: Appstylestatic.titreStyle1,
                   softWrap: true,
                   maxLines: 2,
@@ -68,10 +74,10 @@ class HotelInfoCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              Flexible( // replaced Expanded
+              Flexible(
                 fit: FlexFit.loose,
                 child: Text(
-                  '${hotel.address}, ${hotel.ville}',
+                  '$hotelAddress, $hotelVille', // Use localized city
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                     color: Colors.grey[700],
                     height: 1.4,
@@ -83,29 +89,22 @@ class HotelInfoCard extends StatelessWidget {
 
           const SizedBox(height: 16),
 
-          // Expanded Itinerary Button
+          // Buttons Row
           Row(
             children: [
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: () {
-                    print('Hotel lat: ${hotel.lat}, lng: ${hotel.lng}');
-                    if (hotel.lat != null && hotel.lng != null) {
-                      final destination = LatLng(hotel.lat!, hotel.lng!);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => ItineraryScreen(destination: destination),
-                        ),
-                      );
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Coordinates not available")),
-                      );
-                    }
+                    final destination = LatLng(hotel.lat, hotel.lng);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ItineraryScreen(destination: destination),
+                      ),
+                    );
                   },
                   icon: const Icon(Icons.directions, size: 18),
-                  label: const Text('Itinéraire'),
+                  label: Text('itinerary'.tr()), // multilingual
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColorstatic.primary,
                     foregroundColor: Colors.white,
@@ -128,7 +127,7 @@ class HotelInfoCard extends StatelessWidget {
                     );
                   },
                   icon: const Icon(Icons.book_online, size: 18),
-                  label: const Text('Réserver'),
+                  label: Text('book'.tr()), // multilingual
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColorstatic.primary2,
                     foregroundColor: Colors.white,

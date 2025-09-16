@@ -1,7 +1,16 @@
 
+import 'package:flutter/material.dart';
+
 class HotelTgt {
   final String id;
   final String name;
+  final String? name_en;
+  final String? name_ar;
+  final String? name_ru;
+  final String? name_ja;
+  final String? name_ko;
+  final String? name_zh;
+
   final String slug;
   final String? idCityBbx;
   final String? idHotelBbx;
@@ -14,6 +23,13 @@ class HotelTgt {
     this.idCityBbx,
     this.idHotelBbx,
     required this.disponibility,
+    this.name_en,
+    this.name_ar,
+    this.name_ru,
+    this.name_ja,
+    this.name_ko,
+    this.name_zh,
+
   });
 
   factory HotelTgt.fromJson(Map<String, dynamic> json) {
@@ -24,6 +40,11 @@ class HotelTgt {
     return HotelTgt(
       id: json["id"]?.toString() ?? '',
       name: json["name"] ?? '',
+      name_ar: json["name_ar"] ?? '',
+      name_en: json["name_en"] ?? '',
+      name_ru: json["name_ru"] ?? '',
+      name_ja: json["name_ja"] ?? '',
+      name_ko: json["name_ko"] ?? '',
       slug: json["slug"] ?? '',
       idCityBbx: json["id_city_bbx"]?.toString(),
       idHotelBbx: json["id_hotel_bbx"]?.toString(),
@@ -42,6 +63,7 @@ class HotelTgt {
       if (hotelDetail is Map<String, dynamic>) {
         hotelId = hotelDetail['id']?.toString() ?? '';
         hotelName = hotelDetail['name']?.toString() ?? '';
+
         hotelSlug = hotelDetail['slug']?.toString() ?? '';
       } else if (hotelDetail.runtimeType.toString().contains('HotelDetail')) {
         // If it's a HotelDetail object, access properties directly
@@ -89,6 +111,17 @@ class HotelTgt {
     "id_hotel_bbx": idHotelBbx,
     "disponibility": disponibility.toJson(),
   };
+  String getName(Locale locale) {
+    switch (locale.languageCode) {
+      case 'ar': return name_ar?.isNotEmpty == true ? name_ar! : name;
+      case 'en': return name_en?.isNotEmpty == true ? name_en! : name;
+      case 'ru': return name_ru?.isNotEmpty == true ? name_ru! : name;
+      case 'ja': return name_ja?.isNotEmpty == true ? name_ja! : name;
+      case 'ko': return name_ko?.isNotEmpty == true ? name_ko! : name;
+      case 'zh': return name_zh?.isNotEmpty == true ? name_zh! : name;
+      default: return name;
+    }
+  }
 }
 
 class DisponibilityTgt {

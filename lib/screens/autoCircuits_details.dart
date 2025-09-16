@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../theme/color.dart';
 import '../theme/styletext.dart';
 import '../widgets/circuits/DayCard.dart';
@@ -9,12 +10,13 @@ class CircuitDayScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final locale=context.locale;
     final days = listparjours.keys.toList()..sort();
 
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          "Votre Circuit",
+          'your_circuit'.tr(),
           style: Appstylestatic.appBarTitle1.copyWith(color: Colors.white),
         ),
         centerTitle: true,

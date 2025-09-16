@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/festival_provider.dart';
@@ -31,16 +32,14 @@ class _FestivalDetailsScreenState extends State<FestivalDetailsScreen> {
       builder: (context, provider, child) {
         final festival = provider.selectedFestival;
 
-        // Si festival introuvable
         if (festival == null) {
           return Scaffold(
-            appBar: AppBar(title: const Text("Festival")),
+            appBar: AppBar(title: Text('festival'.tr())),
             body: Center(
               child: Padding(
                 padding: const EdgeInsets.all(15),
                 child: Text(
-                  provider.error ??
-                      'Aucune information disponible pour ce festival.',
+                  provider.error ?? 'no_info_festival'.tr(),
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -52,7 +51,7 @@ class _FestivalDetailsScreenState extends State<FestivalDetailsScreen> {
           appBar: AppBar(
             titleSpacing: 0,
             title: Text(
-              festival.name,
+              festival.getName(Localizations.localeOf(context)),
               style: const TextStyle(
                 color: AppColorstatic.lightTextColor,
                 fontSize: 18,
@@ -67,26 +66,16 @@ class _FestivalDetailsScreenState extends State<FestivalDetailsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Galerie d’images
                 if (festival.images.isNotEmpty)
                   ImageGridPreview(images: festival.images),
-
-                // Carte info festival
                 FestivalInfoCard(festival: festival),
-
                 const SizedBox(height: 12),
-
-                // Description
                 if (festival.description.isNotEmpty)
-                  DescriptionCard(description: festival.description),
-
+                  DescriptionCard(description: festival.getDescription(Localizations.localeOf(context))),
                 const SizedBox(height: 12),
-
-                // Destination
-                if (festival.destination != null &&
-                    festival.destination!.name.isNotEmpty)
-                  _buildDestinationCard(festival.destination!.name),
-
+                if (festival.getDestinationName(Localizations.localeOf(context)) != null &&
+                    festival.getDestinationName(Localizations.localeOf(context)).isNotEmpty)
+                  _buildDestinationCard(festival.getDestinationName(Localizations.localeOf(context))),
                 const SizedBox(height: 12),
               ],
             ),
@@ -96,7 +85,6 @@ class _FestivalDetailsScreenState extends State<FestivalDetailsScreen> {
     );
   }
 
-  /// Widget séparé pour la carte Destination
   Widget _buildDestinationCard(String destinationName) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -116,9 +104,9 @@ class _FestivalDetailsScreenState extends State<FestivalDetailsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Destination',
-                      style: TextStyle(
+                    Text(
+                      'destination'.tr(),
+                      style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                         color: Colors.grey,

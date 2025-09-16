@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:latlong2/latlong.dart';
@@ -14,10 +15,12 @@ class EventDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final locale = Localizations.localeOf(context);
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          event.title,
+          event.getName(locale),
           style: const TextStyle(
             color: AppColorstatic.lightTextColor,
             fontSize: 18,
@@ -32,7 +35,6 @@ class EventDetailsScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ✅ Image principale
             if (event.cover != null)
               Padding(
                 padding: const EdgeInsets.only(bottom: 12),
@@ -70,18 +72,19 @@ class EventInfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final locale = Localizations.localeOf(context);
     return BaseCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SectionHeader(
+          SectionHeader(
             icon: Icons.event,
-            title: "Informations",
+            title: "event".tr(),
             iconColor: Colors.deepPurple,
           ),
           const SizedBox(height: 12),
           Text(
-            event.title,
+            event.getName(locale),
             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
@@ -93,7 +96,7 @@ class EventInfoCard extends StatelessWidget {
                 const SizedBox(width: 4),
                 Expanded(
                   child: Text(
-                    event.address!,
+                    event.getAddress(locale),
                     style: const TextStyle(fontSize: 14, color: Colors.grey),
                   ),
                 ),
@@ -103,8 +106,9 @@ class EventInfoCard extends StatelessWidget {
           const SizedBox(height: 8),
 
           if (event.price != null)
-            Text(
-              event.price == "0" ? "Gratuit" : "Prix: ${event.price} TND",
+            Text(event.price == "0"
+                ? tr("free")
+                : tr("price_with_currency", args: [event.price ?? ""]),
               style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
@@ -124,13 +128,13 @@ class EventInfoCard extends StatelessWidget {
                 children: [
                   const Icon(Icons.calendar_today, size: 16, color: AppColorstatic.primary2),
                   const SizedBox(width: 6),
-                  const Text("Du ", style: TextStyle(fontSize: 14, color: Colors.black)),
+                  Text(tr("from") + " ", style: const TextStyle(fontSize: 14, color: Colors.black)),
                   Text(
                     event.startDate!,
                     style: const TextStyle(
                         fontSize: 14, fontWeight: FontWeight.bold, color: AppColorstatic.primary),
                   ),
-                  const Text(" Au ", style: TextStyle(fontSize: 14, color: Colors.black)),
+                  Text(" "+tr("to")+" ", style: const TextStyle(fontSize: 14, color: Colors.black)),
                   Text(
                     event.endDate!,
                     style: const TextStyle(
@@ -138,16 +142,15 @@ class EventInfoCard extends StatelessWidget {
                   ),
                 ],
               ),
+
             ),
 
           const SizedBox(height: 16),
 
-          // ✅ Bouton Itinéraire identique au RestaurantInfoCard
           SizedBox(
             width: double.infinity,
             child: TextButton.icon(
               onPressed: () {
-                print('Restaurant lat: ${event.lat}, lng: ${event.lng}');
                 if (event.lat != null && event.lng != null) {
                   try {
                     final lat = double.parse(event.lat!);
@@ -171,7 +174,7 @@ class EventInfoCard extends StatelessWidget {
                 }
               },
               icon: const Icon(Icons.directions, size: 18),
-              label: const Text('Itinéraire'),
+              label: Text('itinerary'.tr()),
               style: TextButton.styleFrom(
                 foregroundColor: AppColorstatic.primary,
                 padding: const EdgeInsets.symmetric(vertical: 12),
@@ -192,6 +195,8 @@ class EventDescriptionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final locale = Localizations.localeOf(context);
+
     if (event.description == null || event.description!.isEmpty) {
       return const SizedBox.shrink();
     }
@@ -200,14 +205,14 @@ class EventDescriptionCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SectionHeader(
+           SectionHeader(
             icon: Icons.description,
-            title: "Description",
+            title: "about".tr(),
             iconColor: Colors.green,
           ),
           const SizedBox(height: 12),
           Html(
-            data: event.description!,
+            data: event.getDescription(locale),
             style: {
               "body": Style(
                 fontSize: FontSize(16),

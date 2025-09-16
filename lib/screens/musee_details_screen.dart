@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/musee_provider.dart';
@@ -29,6 +30,8 @@ class _MuseeDetailsScreenState extends State<MuseeDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final locale = context.locale;
+
     return Consumer<MuseeProvider>(
       builder: (context, provider, child) {
         final musee = provider.selectedMusee;
@@ -43,12 +46,12 @@ class _MuseeDetailsScreenState extends State<MuseeDetailsScreen> {
         // Error or empty
         if (musee == null) {
           return Scaffold(
-            appBar: AppBar(title: const Text("Musée")),
+            appBar: AppBar(title: Text(tr("museum"))),
             body: Center(
               child: Padding(
                 padding: const EdgeInsets.all(15),
                 child: Text(
-                  provider.error ?? 'Aucune information disponible pour ce musée.',
+                  provider.error ?? tr('no_information_available_museum'),
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -60,7 +63,7 @@ class _MuseeDetailsScreenState extends State<MuseeDetailsScreen> {
           appBar: AppBar(
             titleSpacing: 0,
             title: Text(
-              musee.name,
+              musee.getName(locale),
               style: const TextStyle(
                 color: AppColorstatic.lightTextColor,
                 fontSize: 18,
@@ -86,13 +89,15 @@ class _MuseeDetailsScreenState extends State<MuseeDetailsScreen> {
                 MuseeInfoCard(musee: musee),
 
                 const SizedBox(height: 12),
+
                 // Description
-                if (musee.description.isNotEmpty)
-                  DescriptionCard(description: musee.description),
+                if (musee.getDescription(locale).isNotEmpty)
+                  DescriptionCard(description: musee.getDescription(locale)),
+
                 const SizedBox(height: 12),
 
                 // Destination Info
-                if (musee.situation.isNotEmpty)
+                if (musee.getSituation(locale).isNotEmpty)
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Card(
@@ -111,9 +116,9 @@ class _MuseeDetailsScreenState extends State<MuseeDetailsScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text(
-                                    'Destination',
-                                    style: TextStyle(
+                                  Text(
+                                    tr('destination_title'),
+                                    style: const TextStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w500,
                                       color: Colors.grey,
@@ -121,7 +126,7 @@ class _MuseeDetailsScreenState extends State<MuseeDetailsScreen> {
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
-                                    musee.situation,
+                                    musee.getSituation(locale),
                                     style: const TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w600,

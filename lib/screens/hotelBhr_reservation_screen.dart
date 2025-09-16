@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../models/hotel.dart';
 import '../models/hotelBhr.dart';
 import '../theme/color.dart';
@@ -84,7 +85,7 @@ class _HotelBhrReservationScreenState extends State<HotelBhrReservationScreen> {
         0, (s, r) => s + int.tryParse(r['adults']?.toString() ?? '0')!);
     final totalChildren = rooms.fold<int>(
         0, (s, r) => s + int.tryParse(r['children']?.toString() ?? '0')!);
-    return "$totalAdults adultes, $totalChildren enfants";
+    return tr('guests_summary', args: [totalAdults.toString(), totalChildren.toString()]);
   }
 
   void _updateRoomSelection(String boardingId, String roomId, int qty) {
@@ -101,9 +102,7 @@ class _HotelBhrReservationScreenState extends State<HotelBhrReservationScreen> {
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            'Vous ne pouvez pas dépasser ${maxRoomsAllowed()} chambres au total.',
-          ),
+          content: Text(tr('max_rooms_error', args: [maxRoomsAllowed().toString()])),
         ),
       );
     }
@@ -126,9 +125,9 @@ class _HotelBhrReservationScreenState extends State<HotelBhrReservationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final locale = context.locale;
     final mappedHotel = getHotelFromBhr();
-    final hotelName = mappedHotel?.name ?? widget.hotelBhr.name;
-    // Prioritize hotelCover from SharedPreferences, fallback to mappedHotel.cover, then empty string
+    final hotelName = mappedHotel?.getName(locale) ?? widget.hotelBhr.getName(locale);
     final coverImage = hotelCover ?? mappedHotel?.cover ?? '';
 
     return Scaffold(
@@ -150,7 +149,7 @@ class _HotelBhrReservationScreenState extends State<HotelBhrReservationScreen> {
             HotelHeaderBhr(
               hotelName: hotelName,
               address: widget.hotelBhr.disponibility.address,
-              cover: coverImage, // Use the prioritized cover image
+              cover: coverImage,
               category: widget.hotelBhr.disponibility.category,
             ),
             const SizedBox(height: 16),
@@ -184,8 +183,8 @@ class _HotelBhrReservationScreenState extends State<HotelBhrReservationScreen> {
 
     if (totalSelected == 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Veuillez sélectionner au moins une chambre.'),
+        SnackBar(
+          content: Text(tr('select_at_least_one_room')),
         ),
       );
       return;
@@ -194,7 +193,9 @@ class _HotelBhrReservationScreenState extends State<HotelBhrReservationScreen> {
     if (totalSelected != maxAllowed) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Vous devez sélectionner exactement $maxAllowed chambre(s). Actuellement: $totalSelected sélectionnée(s).'),
+          content: Text(
+            tr('must_select_exact_rooms', args: [maxAllowed.toString(), totalSelected.toString()]),
+          ),
         ),
       );
       return;

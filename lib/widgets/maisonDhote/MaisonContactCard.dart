@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import '../../models/maisondHote.dart';
 import '../base_card.dart';
@@ -19,7 +20,7 @@ class MaisonContactCard extends StatelessWidget {
         children: [
           SectionHeader(
             icon: Icons.contact_phone,
-            title: 'Contact',
+            title: 'contact'.tr(),
             iconColor: Colors.teal[600]!,
           ),
           const SizedBox(height: 16),
@@ -33,13 +34,13 @@ class MaisonContactCard extends StatelessWidget {
     final items = <Map<String, dynamic>>[];
 
     if (maison.phone.isNotEmpty) {
-      items.add({'icon': Icons.phone, 'label': 'Téléphone', 'value': maison.phone, 'color': Colors.green});
+      items.add({'icon': Icons.phone, 'label': 'phone'.tr(), 'value': maison.phone, 'color': Colors.green});
     }
     if (maison.email.isNotEmpty) {
-      items.add({'icon': Icons.email, 'label': 'E-mail', 'value': maison.email, 'color': Colors.orange});
+      items.add({'icon': Icons.email, 'label': 'email'.tr(), 'value': maison.email, 'color': Colors.orange});
     }
     if (maison.website.isNotEmpty) {
-      items.add({'icon': Icons.web, 'label': 'Site Web', 'value': maison.website, 'color': Colors.blue});
+      items.add({'icon': Icons.web, 'label': 'website'.tr(), 'value': maison.website, 'color': Colors.blue});
     }
 
     return items;
@@ -73,8 +74,8 @@ class MaisonContactCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
-                    color: item['label'] == 'Website' ? Colors.blue[700] : Colors.grey[800],
-                    decoration: item['label'] == 'Website' ? TextDecoration.underline : null,
+                    color: item['label'] == 'website'.tr() ? Colors.blue[700] : Colors.grey[800],
+                    decoration: item['label'] == 'website'.tr() ? TextDecoration.underline : null,
                   ),
                 ),
               ],

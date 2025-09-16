@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import '../../models/maisondHote.dart';
 import 'package:flutter_html/flutter_html.dart';
@@ -13,6 +14,9 @@ class MaisonDescriptionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (maison.description.isEmpty) return const SizedBox.shrink();
+    final locale = context.locale;
+    final description = maison.getDescription(locale);
+
 
     return BaseCard(
       child: Column(
@@ -20,12 +24,12 @@ class MaisonDescriptionCard extends StatelessWidget {
         children: [
           SectionHeader(
             icon: Icons.description,
-            title: 'À propos',
+            title: 'about'.tr(),
             iconColor: Colors.green[600]!,
           ),
           const SizedBox(height: 16),
           Html(
-            data: maison.description,
+            data: description,
             style: {
               "body": Style(
                 margin: Margins.zero,

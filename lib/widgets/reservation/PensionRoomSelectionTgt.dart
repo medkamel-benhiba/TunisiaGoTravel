@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../models/hotelTgt.dart';
 import '../../theme/color.dart';
 import 'CounterButton.dart';
@@ -81,7 +82,10 @@ class _PensionRoomSelectionTgtState extends State<PensionRoomSelectionTgt>
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(20),
       decoration: _cardDecoration(),
-      child: const Text('Aucune pension disponible'),
+      child: Text(
+        'no_pension_available'.tr(),
+        style: TextStyle(color: Colors.grey[700], fontSize: 14),
+      ),
     );
   }
 
@@ -184,16 +188,16 @@ class _Header extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Chambres & Pension',
-                  style: TextStyle(
+                Text(
+                  'rooms_and_pension'.tr(),
+                  style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: Color(0xFF1A1A1A)),
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'Choisissez votre pension et vos chambres',
+                  'select_pension_and_rooms'.tr(),
                   style: const TextStyle(fontSize: 13, color: Colors.grey),
                 ),
               ],
@@ -275,7 +279,11 @@ class _RoomTgtCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final singleAdultPrice = calculateRoomPrice(pension.id, room.id, numberOfAdults: 1);
+    final capacity = room.capacity.isNotEmpty
+        ? room.capacity.first
+        : Capacity(adults: 0, children: 0, babies: 0);
+    final displayAdults = capacity.adults;
+    final displayedPrice = calculateRoomPrice(pension.id, room.id, numberOfAdults: displayAdults);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -298,7 +306,35 @@ class _RoomTgtCard extends StatelessWidget {
             children: [
               _buildIcon(),
               const SizedBox(width: 12),
-              _buildRoomInfo(singleAdultPrice),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      room.title,
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'capacity'.tr(args: [displayAdults.toString(), capacity.children.toString()]),
+                      style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      "${displayedPrice.toStringAsFixed(2)} TND",
+                      style: TextStyle(
+                        color: AppColorstatic.primary,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    Text(
+                      'per_adult'.tr(args: [displayAdults.toString()]),
+                      style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
               _buildCounter(),
             ],
           ),
@@ -316,57 +352,6 @@ class _RoomTgtCard extends StatelessWidget {
     ),
     child: Icon(Icons.bed, color: AppColorstatic.primary),
   );
-
-  Widget _buildRoomInfo(double displayedPrice) {
-    final capacity = room.capacity.isNotEmpty
-        ? room.capacity.first
-        : Capacity(adults: 0, children: 0, babies: 0);
-
-    // Change: Use capacity.adults instead of 1
-    final displayAdults = capacity.adults;
-    final displayedPrice = calculateRoomPrice(pension.id, room.id, numberOfAdults: displayAdults);
-
-    return Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            room.title,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Capacité: ${capacity.adults} adultes, ${capacity.children} enfants',
-            style: TextStyle(color: Colors.grey[600], fontSize: 12),
-          ),
-          const SizedBox(height: 6),
-          if (calculateRoomPrice != null) ...[
-            Text(
-              "${displayedPrice.toStringAsFixed(2)} TND",
-              style: TextStyle(
-                color: AppColorstatic.primary,
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
-            ),
-            // Add label for clarity (optional but recommended)
-            Text(
-              "pour ${displayAdults} adulte${displayAdults > 1 ? 's' : ''}",
-              style: TextStyle(color: Colors.grey[600], fontSize: 12),
-            ),
-          ] else ...[
-            Text(
-              "${pension.devise}",
-              style: TextStyle(
-                color: AppColorstatic.primary,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
 
   Widget _buildCounter() => Row(
     children: [

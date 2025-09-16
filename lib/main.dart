@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tunisiagotravel/providers/activity_provider.dart';
@@ -19,36 +20,47 @@ import 'package:tunisiagotravel/services/api_service.dart';
 import 'providers/global_provider.dart';
 import 'providers/destination_provider.dart';
 import 'providers/hotel_provider.dart';
-import 'package:tunisiagotravel/services/network_listener.dart';
 
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await EasyLocalization.ensureInitialized();
+
   runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => GlobalProvider()),
-        ChangeNotifierProvider(create: (_) => DestinationProvider()),
-        ChangeNotifierProvider(create: (_) => HotelProvider()),
-        ChangeNotifierProvider(create: (_) => RestaurantProvider()),
-        ChangeNotifierProvider(create: (_) => MaisonProvider()),
-        ChangeNotifierProvider(create: (_) => ActivityProvider()),
-        ChangeNotifierProvider(create: (_) => EventProvider()),
-        ChangeNotifierProvider(create: (_) => GuideProvider()),
-        ChangeNotifierProvider(create: (_) => MuseeProvider(apiService: ApiService())),
-        ChangeNotifierProvider(create: (_) => FestivalProvider()),
-        ChangeNotifierProvider(create: (_) => MonumentProvider(apiService: ApiService()),),
-        ChangeNotifierProvider(create: (_) => ArtisanatProvider(apiService: ApiService())),
-        ChangeNotifierProvider(create: (_) => ManualCircuitProvider()),
-        ChangeNotifierProvider(create: (_) => AutoCircuitProvider()),
-        ChangeNotifierProvider(create: (_) => VoyageProvider(), child: const CircuitPreScreen()),
-        ChangeNotifierProvider(create: (_) => AuthProvider()),
-
-
-
-
-
+    EasyLocalization(
+      supportedLocales: const [
+        Locale('fr', 'FR'),
+        Locale('en', 'US'),
+        Locale('ar', 'TN'),
+        Locale('ru', 'RU'),
+        Locale('ja', 'JA'),
+        Locale('ko', 'KO'),
+        Locale('zh', 'CN'),
       ],
-      child: const MyApp(),
+      path: 'assets/translations',
+      fallbackLocale: const Locale('fr', 'FR'),
+      startLocale: const Locale('fr', 'FR'),
+      child: MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => GlobalProvider()),
+          ChangeNotifierProvider(create: (_) => DestinationProvider()),
+          ChangeNotifierProvider(create: (_) => HotelProvider()),
+          ChangeNotifierProvider(create: (_) => RestaurantProvider()),
+          ChangeNotifierProvider(create: (_) => MaisonProvider()),
+          ChangeNotifierProvider(create: (_) => ActivityProvider()),
+          ChangeNotifierProvider(create: (_) => EventProvider()),
+          ChangeNotifierProvider(create: (_) => GuideProvider()),
+          ChangeNotifierProvider(create: (_) => MuseeProvider(apiService: ApiService())),
+          ChangeNotifierProvider(create: (_) => FestivalProvider()),
+          ChangeNotifierProvider(create: (_) => MonumentProvider(apiService: ApiService())),
+          ChangeNotifierProvider(create: (_) => ArtisanatProvider(apiService: ApiService())),
+          ChangeNotifierProvider(create: (_) => ManualCircuitProvider()),
+          ChangeNotifierProvider(create: (_) => AutoCircuitProvider()),
+          ChangeNotifierProvider(create: (_) => VoyageProvider(), child: const CircuitPreScreen()),
+          ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ],
+        child: const MyApp(),
+      ),
     ),
   );
 }
@@ -58,9 +70,13 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     return MaterialApp(
       title: 'Tunisia Go Travel',
+
+      localizationsDelegates: context.localizationDelegates,
+      supportedLocales: context.supportedLocales,
+      locale: context.locale,
+
       home: const SplashScreen(),
       debugShowCheckedModeBanner: false,
     );

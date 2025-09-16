@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tunisiagotravel/theme/color.dart';
-
+import 'package:easy_localization/easy_localization.dart';
 
 class GuestSummary extends StatefulWidget {
   final List<Map<String, dynamic>> initialRoomsData;
@@ -48,18 +48,18 @@ class _GuestSummaryState extends State<GuestSummary> {
             Icon(Icons.person_pin, color: Colors.grey.shade600, size: 16),
             const SizedBox(width: 8),
             Text(
-              "$rooms Chambre${rooms > 1 ? 's' : ''}",
+              "$rooms ${tr('room')}${rooms > 1 ? 's' : ''}",
               style: const TextStyle(fontWeight: FontWeight.w600),
             ),
             const Text(" • ", style: TextStyle(color: Colors.grey)),
             Text(
-              "$adults Adulte${adults > 1 ? 's' : ''}",
+              "$adults ${tr('adults')}",
               style: const TextStyle(fontWeight: FontWeight.w500),
             ),
             if (children > 0) ...[
               const Text(" • ", style: TextStyle(color: Colors.grey)),
               Text(
-                "$children Enfant${children > 1 ? 's' : ''}",
+                "$children ${tr('children')}${children > 1 ? 's' : ''}",
                 style: const TextStyle(fontWeight: FontWeight.w500),
               ),
             ],
@@ -99,9 +99,9 @@ class _GuestSummaryState extends State<GuestSummary> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
-                          "Sélectionner les chambres",
-                          style: TextStyle(
+                        Text(
+                          tr('select_rooms'),
+                          style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                             color: Colors.black87,
@@ -138,7 +138,7 @@ class _GuestSummaryState extends State<GuestSummary> {
       setState(() {
         roomsData = List<Map<String, dynamic>>.from(result);
       });
-      widget.onRoomsChanged?.call(roomsData); // <-- Notify parent
+      widget.onRoomsChanged?.call(roomsData);
     }
   }
 
@@ -156,7 +156,7 @@ class _GuestSummaryState extends State<GuestSummary> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  "Chambre ${index + 1}",
+                  "${tr('room')} ${index + 1}",
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
@@ -176,7 +176,7 @@ class _GuestSummaryState extends State<GuestSummary> {
             const Divider(height: 16),
             _buildCounterRow(
               icon: Icons.person_outline,
-              label: "Adultes",
+              label: tr('adults'),
               count: room["adults"] as int,
               onIncrement: () {
                 setModalState(() {
@@ -191,7 +191,7 @@ class _GuestSummaryState extends State<GuestSummary> {
             ),
             _buildCounterRow(
               icon: Icons.child_friendly,
-              label: "Enfants",
+              label: tr('children'),
               count: room["children"] as int,
               onIncrement: () {
                 setModalState(() {
@@ -208,9 +208,7 @@ class _GuestSummaryState extends State<GuestSummary> {
                   if ((room["children"] as int) > 0) {
                     room["children"]--;
                     List<int> childAges = List<int>.from(room["childAges"] ?? []);
-                    if (childAges.isNotEmpty) {
-                      childAges.removeLast();
-                    }
+                    if (childAges.isNotEmpty) childAges.removeLast();
                     room["childAges"] = childAges;
                   }
                 });
@@ -230,12 +228,8 @@ class _GuestSummaryState extends State<GuestSummary> {
     int childrenCount = room["children"] as int;
     List<int> childAges = List<int>.from(room["childAges"] ?? []);
 
-    while (childAges.length < childrenCount) {
-      childAges.add(2);
-    }
-    while (childAges.length > childrenCount) {
-      childAges.removeLast();
-    }
+    while (childAges.length < childrenCount) childAges.add(2);
+    while (childAges.length > childrenCount) childAges.removeLast();
 
     room["childAges"] = childAges;
 
@@ -253,9 +247,9 @@ class _GuestSummaryState extends State<GuestSummary> {
             children: [
               Icon(Icons.cake, color: Colors.orange.shade600, size: 18),
               const SizedBox(width: 8),
-              const Text(
-                "Âge des enfants",
-                style: TextStyle(
+              Text(
+                tr('children_age'),
+                style: const TextStyle(
                   fontWeight: FontWeight.w600,
                   fontSize: 14,
                   color: Colors.black87,
@@ -273,7 +267,7 @@ class _GuestSummaryState extends State<GuestSummary> {
                 child: Column(
                   children: [
                     Text(
-                      "Enfant ${childIndex + 1}",
+                      "${tr('child')} ${childIndex + 1}",
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.grey.shade600,
@@ -302,7 +296,7 @@ class _GuestSummaryState extends State<GuestSummary> {
                             return DropdownMenuItem<int>(
                               value: age,
                               child: Text(
-                                age == 0 ? "< 1 an" : "$age ans",
+                                age == 0 ? tr('less_than_one_year') : "$age ${tr('years')}",
                                 style: const TextStyle(fontSize: 13),
                               ),
                             );
@@ -398,7 +392,7 @@ class _GuestSummaryState extends State<GuestSummary> {
               });
             },
             icon: const Icon(Icons.add_circle_outline, color: AppColorstatic.lightTextColor),
-            label: const Text("Chambre", style: TextStyle(color: AppColorstatic.lightTextColor)),
+            label: Text(tr('room'), style: const TextStyle(color: AppColorstatic.lightTextColor)),
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(
@@ -422,7 +416,7 @@ class _GuestSummaryState extends State<GuestSummary> {
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
-            child: const Text("Terminer"),
+            child: Text(tr('done')),
           ),
         ),
       ],

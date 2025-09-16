@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../models/voyage.dart';
 import '../../screens/circuitPre_details_screen.dart';
 import 'package:tunisiagotravel/theme/color.dart';
+import 'package:easy_localization/easy_localization.dart'; // Add this
 
 class CircuitPreCard extends StatelessWidget {
   final Voyage voyage;
@@ -13,6 +15,8 @@ class CircuitPreCard extends StatelessWidget {
     final imageUrl = voyage.images.isNotEmpty
         ? voyage.images.first
         : 'https://via.placeholder.com/300';
+
+    final locale = context.locale; // Get current locale
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -60,10 +64,11 @@ class CircuitPreCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 12),
+                // Name
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
                   child: Text(
-                    voyage.name,
+                    voyage.getName(locale),
                     style: TextStyle(
                       fontSize: titleFontSize,
                       fontWeight: FontWeight.bold,
@@ -73,13 +78,14 @@ class CircuitPreCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 6),
+                // Duration & Price
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'Durée: ${voyage.programe.length} jours',
+                        '${tr("Duration")}: ${voyage.programe.length} ${tr("days")}',
                         style: TextStyle(
                           fontSize: subtitleFontSize,
                           fontWeight: FontWeight.w500,
@@ -87,7 +93,7 @@ class CircuitPreCard extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        'Prix: \$${voyage.price.isNotEmpty ? voyage.price.first.price : 'N/A'}',
+                        '${tr("price")}: \$${voyage.price.isNotEmpty ? voyage.price.first.price : 'N/A'}',
                         style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
@@ -98,10 +104,11 @@ class CircuitPreCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 6),
+                // Description
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
                   child: Text(
-                    voyage.description,
+                    voyage.getDescription(locale),
                     style: TextStyle(
                       fontSize: descriptionFontSize,
                       color: Colors.black87,
@@ -111,6 +118,7 @@ class CircuitPreCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 12),
+                // Button
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: buttonHorizontalPadding, vertical: 8),
                   child: SizedBox(
@@ -131,7 +139,7 @@ class CircuitPreCard extends StatelessWidget {
                         ),
                       ),
                       child: Text(
-                        "Voir les détails",
+                        tr("view_details"),
                         style: TextStyle(
                           color: AppColorstatic.lightTextColor,
                           fontWeight: FontWeight.bold,

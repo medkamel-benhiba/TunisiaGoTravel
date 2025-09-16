@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:tunisiagotravel/widgets/language_switch/language_selector.dart';
 import 'package:tunisiagotravel/widgets/search/destination_drop_section.dart';
 import '../providers/global_provider.dart';
 import '../screens/map_screen.dart';
@@ -25,6 +27,8 @@ class _TopMenuBar1State extends State<TopMenuBar1> {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<GlobalProvider>(context);
+    final locale = context.locale;
+
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -63,7 +67,7 @@ class _TopMenuBar1State extends State<TopMenuBar1> {
                           child: Row(
                             children: [
                               Text(
-                                "Destination",
+                                'destination_title'.tr(),
                                 style: Appstylestatic.textStyletitle2,
                               ),
                               Icon(
@@ -97,7 +101,7 @@ class _TopMenuBar1State extends State<TopMenuBar1> {
                           child: Row(
                             children: [
                               Text(
-                                "Circuits",
+                                'circuits'.tr(), // Changed from hardcoded "Circuits"
                                 style: Appstylestatic.textStyletitle2,
                               ),
                               const Icon(
@@ -114,6 +118,10 @@ class _TopMenuBar1State extends State<TopMenuBar1> {
                   // Right buttons
                   Row(
                     children: [
+                      // Add Language Selector here
+                      const LanguageSelector(showInTopMenu: true),
+                      SizedBox(width: spacing),
+
                       Container(
                         height: iconButtonHeight,
                         width: iconButtonHeight,
@@ -125,7 +133,6 @@ class _TopMenuBar1State extends State<TopMenuBar1> {
                           icon: const Icon(Icons.chat_outlined, color: Colors.white),
                           onPressed: () {
                             provider.setPage(AppPage.chatbot);
-
                           },
                         ),
                       ),
@@ -144,7 +151,6 @@ class _TopMenuBar1State extends State<TopMenuBar1> {
                           },
                         ),
                       ),
-
                     ],
                   ),
                 ],
@@ -199,6 +205,8 @@ class TopMenuBar2 extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<GlobalProvider>(context);
+    final locale = context.locale;
+
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -221,13 +229,13 @@ class TopMenuBar2 extends StatelessWidget {
                     bottomLeft: Radius.circular(6),
                   ),
                 ),
-                child: const Row(
+                child: Row(
                   children: [
-                    Icon(Icons.location_on, color: Colors.white, size: 24),
-                    SizedBox(width: 6),
+                    const Icon(Icons.location_on, color: Colors.white, size: 24),
+                    const SizedBox(width: 6),
                     Text(
-                      "Tunisie",
-                      style: TextStyle(
+                      'tunisia'.tr(), // Changed from hardcoded "Tunisie"
+                      style: const TextStyle(
                           color: Colors.white,
                           fontSize: 16,
                           fontWeight: FontWeight.w500),
@@ -254,19 +262,19 @@ class TopMenuBar2 extends StatelessWidget {
                       }
                     },
                     itemBuilder: (_) => [
-                      _buildStyledMenuItem(AppPage.home, 'Accueil', menuWidth),
-                      _buildStyledMenuItem(AppPage.hotels, 'Hôtels', menuWidth),
-                      _buildStyledMenuItem(AppPage.restaurants, 'Restaurants', menuWidth),
-                      _buildStyledMenuItem(AppPage.maisonsHotes, "Maison d'hôtes", menuWidth),
-                      _buildStyledMenuItem(AppPage.activites, "Activités", menuWidth),
-                      _buildStyledMenuItem(AppPage.evenement, "Événement", menuWidth),
-                      _buildStyledMenuItem(AppPage.circuits, 'Tous les circuits', menuWidth),
-                      _buildStyledMenuItem(AppPage.circuitsPredefini, 'Circuits prédéfini', menuWidth),
-                      _buildStyledMenuItem(AppPage.circuitsManuel, 'Circuit Manuel', menuWidth),
-                      _buildStyledMenuItem(AppPage.circuitsAuto, 'Circuit Automatique', menuWidth),
-                      _buildStyledMenuItem(AppPage.cultures, 'Cultures', menuWidth),
-                      _buildStyledMenuItem(AppPage.agil, 'Agil', menuWidth),
-                      _buildStyledMenuItem(AppPage.guide, 'Guide', menuWidth),
+                      _buildStyledMenuItem(AppPage.home, 'home'.tr(), menuWidth), // Changed
+                      _buildStyledMenuItem(AppPage.hotels, 'hotels'.tr(), menuWidth), // Changed
+                      _buildStyledMenuItem(AppPage.restaurants, 'restaurants'.tr(), menuWidth), // Changed
+                      _buildStyledMenuItem(AppPage.maisonsHotes, 'guestHouses'.tr(), menuWidth), // Changed
+                      _buildStyledMenuItem(AppPage.activites, 'activities'.tr(), menuWidth), // Changed
+                      _buildStyledMenuItem(AppPage.evenement, 'events'.tr(), menuWidth), // Changed
+                      _buildStyledMenuItem(AppPage.circuits, 'allCircuits'.tr(), menuWidth), // Changed
+                      _buildStyledMenuItem(AppPage.circuitsPredefini, 'predefinedCircuits'.tr(), menuWidth), // Changed
+                      _buildStyledMenuItem(AppPage.circuitsManuel, 'manualCircuit'.tr(), menuWidth), // Changed
+                      _buildStyledMenuItem(AppPage.circuitsAuto, 'automaticCircuit'.tr(), menuWidth), // Changed
+                      _buildStyledMenuItem(AppPage.cultures, 'cultures'.tr(), menuWidth), // Changed
+                      _buildStyledMenuItem(AppPage.agil, 'agil'.tr(), menuWidth), // Changed
+                      _buildStyledMenuItem(AppPage.guide, 'guide'.tr(), menuWidth), // Changed
                     ],
                     child: Container(
                       padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
@@ -275,7 +283,7 @@ class TopMenuBar2 extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            _getPageLabel(provider.currentPage),
+                            _getPageLabel(provider.currentPage, context), // Modified to accept context
                             style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 16,
@@ -323,40 +331,40 @@ class TopMenuBar2 extends StatelessWidget {
   }
 }
 
-String _getPageLabel(AppPage page) {
+// Updated function to use translations
+String _getPageLabel(AppPage page, BuildContext context) {
   switch (page) {
     case AppPage.home:
-      return 'Accueil';
+      return 'home'.tr();
     case AppPage.hotels:
-      return 'Hôtels';
+      return 'hotels'.tr();
     case AppPage.restaurants:
-      return 'Restaurants';
+      return 'restaurants'.tr();
     case AppPage.maisonsHotes:
-      return "Maison d'hôtes";
+      return 'guestHouses'.tr();
     case AppPage.activites:
-      return "Activités";
+      return 'activities'.tr();
     case AppPage.evenement:
-      return "Événement";
+      return 'events'.tr();
     case AppPage.circuits:
-      return 'Circuits';
+      return 'circuits'.tr();
     case AppPage.circuitsPredefini:
-      return 'Circuits prédéfini';
+      return 'predefinedCircuits'.tr();
     case AppPage.circuitsManuel:
-      return 'Circuits Manuel';
+      return 'manualCircuit'.tr();
     case AppPage.circuitsAuto:
-      return 'Circuits Automatique';
+      return 'automaticCircuit'.tr();
     case AppPage.cultures:
-      return 'Cultures';
+      return 'cultures'.tr();
     case AppPage.agil:
-      return 'Agil';
+      return 'agil'.tr();
     case AppPage.guide:
-      return 'Guide';
+      return 'guide'.tr();
     case AppPage.login:
-      return "Connexion";
+      return 'connection'.tr();
     case AppPage.signup:
-      return "Connexion";
+      return 'connection'.tr();
     case AppPage.chatbot:
-      return "ChatBot";
-
+      return 'chatbot_title'.tr();
   }
 }
