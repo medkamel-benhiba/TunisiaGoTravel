@@ -115,8 +115,8 @@
   "child_age_label": "儿童年龄",
   "child_label_with_number": "儿童",
   "booking_button": "立即预订",
-  "adults": "{}位成人",
-  "children": "{}位儿童",
+  "adults": "位成人",
+  "children": "位儿童",
   "stars": "星",
   "select_at_least_one_room": "请至少选择一个房间。",
   "select_exactly_rooms": "您必须选择恰好{}个房间。当前：已选择{}个。",
@@ -267,7 +267,7 @@
   "please_enter_valid_budget": "请输入有效预算",
   "minimum_budget": "最低预算为1000第纳尔",
   "day_of": "第{}天",
-  "planned_activities": "{}项计划活动{}",
+  "planned_activities": "{} 项计划活动{}",
   "compose": "组成",
   "voyage": {
     "details": "旅行详情",
@@ -333,7 +333,30 @@
   "departure": "出发",
   "selected_destinations": "已选择目的地",
   "creating_circuit": "正在创建行程...",
-  "create_circuit": "创建行程"
+  "create_circuit": "创建行程",
+  "images": "图片",
+  "assistant_chatbot": "助手聊天机器人",
+  "welcome": "欢迎使用突尼斯去旅行",
+  "login_subtitle": "登录以探索突尼斯",
+  "enter_email": "请输入您的邮箱",
+  "password": "密码",
+  "enter_password": "请输入您的密码",
+  "forgot_password": "忘记密码？",
+  "coming_soon": "功能即将上线",
+  "login_button": "登录",
+  "login_failed": "登录失败",
+  "no_account": "还没有账号？",
+  "create_account": "创建账号",
+  "signup_title": "创建账户",
+  "name": "姓名",
+  "enter_name": "请输入姓名",
+  "enter_phone": "请输入电话号码",
+  "enter_city": "请输入城市",
+  "signup_button": "注册",
+  "signup_success": "注册成功！请登录。",
+  "signup_failed": "注册失败",
+  "already_account": "已有账号？"
+
 
 
 }

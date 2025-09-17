@@ -119,7 +119,6 @@ class _TopMenuBar1State extends State<TopMenuBar1> {
                   Row(
                     children: [
                       // Add Language Selector here
-                      const LanguageSelector(showInTopMenu: true),
                       SizedBox(width: spacing),
 
                       Container(
@@ -219,7 +218,9 @@ class TopMenuBar2 extends StatelessWidget {
           padding: EdgeInsets.symmetric(vertical: spacing, horizontal: spacing),
           child: Row(
             children: [
-              Container(
+              const LanguageSelector(showInTopMenu: true),
+
+              /*Container(
                 height: boxHeight,
                 padding: EdgeInsets.symmetric(horizontal: 12),
                 decoration: const BoxDecoration(
@@ -242,7 +243,7 @@ class TopMenuBar2 extends StatelessWidget {
                     ),
                   ],
                 ),
-              ),
+              ),*/
               SizedBox(width: spacing),
 
               Expanded(

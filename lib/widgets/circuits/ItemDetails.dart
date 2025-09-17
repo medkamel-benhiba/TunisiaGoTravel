@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -13,7 +14,7 @@ import 'package:tunisiagotravel/theme/color.dart';
 
 class ItemDetail extends StatefulWidget {
   final Map<String, dynamic> item;
-  final DateTime? startDate; // itinerary start date
+  final DateTime? startDate;
   final List<Map<String, dynamic>>? selectedRooms;
   final int dayIndex;
 
@@ -34,28 +35,27 @@ class _ItemDetailState extends State<ItemDetail> {
   DateTime? _checkIn;
   DateTime? _checkOut;
   List<Map<String, dynamic>>? _rooms;
+  bool _isConfirmed = false;
 
   @override
   void initState() {
     super.initState();
     _loadDatesAndRooms();
+    _loadConfirmation(); // load saved confirmation state
   }
 
   Future<void> _loadDatesAndRooms() async {
     final prefs = await SharedPreferences.getInstance();
 
-    // Load the base itinerary start date from prefs or widget
     final savedBaseDate = prefs.getString('manual_start_date');
     final baseDate = savedBaseDate != null
         ? DateTime.tryParse(savedBaseDate)
         : widget.startDate ?? DateTime.now().add(const Duration(days: 1));
 
     setState(() {
-      // _checkIn depends on the dayIndex
       _checkIn = baseDate?.add(Duration(days: widget.dayIndex));
       _checkOut = _checkIn!.add(const Duration(days: 1));
 
-      // Load rooms
       final roomsJson = prefs.getString('manual_rooms_data');
       _rooms = widget.selectedRooms ??
           (roomsJson != null
@@ -68,8 +68,29 @@ class _ItemDetailState extends State<ItemDetail> {
     });
   }
 
+  // Load saved confirmation state
+  Future<void> _loadConfirmation() async {
+    final prefs = await SharedPreferences.getInstance();
+    final key = 'confirmed_${widget.item['id'] ?? widget.item['slug']}';
+    final confirmed = prefs.getBool(key) ?? false;
+    setState(() {
+      _isConfirmed = confirmed;
+    });
+  }
 
-  Future<void> _saveDatesAndRooms(DateTime checkIn, DateTime checkOut, List<Map<String, dynamic>> rooms) async {
+  // Confirm button handler
+  void _confirm() async {
+    final prefs = await SharedPreferences.getInstance();
+    final key = 'confirmed_${widget.item['id'] ?? widget.item['slug']}';
+    await prefs.setBool(key, true);
+
+    setState(() {
+      _isConfirmed = true;
+    });
+  }
+
+  Future<void> _saveDatesAndRooms(
+      DateTime checkIn, DateTime checkOut, List<Map<String, dynamic>> rooms) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('manual_start_date', checkIn.toIso8601String());
     await prefs.setString('manual_end_date', checkOut.toIso8601String());
@@ -271,40 +292,6 @@ class _ItemDetailState extends State<ItemDetail> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (_isHotel() && _checkIn != null && _checkOut != null)
-            Container(
-              padding: const EdgeInsets.all(12),
-              margin: const EdgeInsets.only(bottom: 16),
-              decoration: BoxDecoration(
-                color: Colors.green.shade50,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.green.shade200),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(Icons.event_available, color: Colors.green.shade700),
-                      const SizedBox(width: 8),
-                      Text(
-                        "Dates de réservation",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.green.shade700,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    "Check-in: ${DateFormat('dd/MM/yyyy').format(_checkIn!)}\n"
-                        "Check-out: ${DateFormat('dd/MM/yyyy').format(_checkOut!)}",
-                    style: TextStyle(color: Colors.green.shade600),
-                  ),
-                ],
-              ),
-            ),
           if (widget.item['Situation'] != null)
             _buildInfoRow("Situation", widget.item['Situation'], Icons.location_on),
           if (widget.item['Horaires_d_ouverture'] != null)
@@ -316,9 +303,9 @@ class _ItemDetailState extends State<ItemDetail> {
             _buildInfoRow("Tarif", widget.item['Droits_d_entre'], Icons.payments),
           const SizedBox(height: 12),
           if (gallery != null && gallery.isNotEmpty) ...[
-            const Text(
-              "Galerie",
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            Text(
+              "images".tr(),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
             const SizedBox(height: 8),
             _buildGallery(gallery),
@@ -327,27 +314,19 @@ class _ItemDetailState extends State<ItemDetail> {
             const SizedBox(height: 16),
             Center(
               child: ElevatedButton(
-                onPressed: _isCheckingAvailability ? null : _handleHotelReservation,
+                onPressed: _isConfirmed ? null : _confirm,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColorstatic.primary,
-                  padding:
-                  const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                  backgroundColor: _isConfirmed ? Colors.grey : AppColorstatic.primary,
+                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: _isCheckingAvailability
-                    ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                  ),
-                )
-                    : const Text(
-                  "Réserver",
-                  style: TextStyle(fontSize: 15, color: Colors.white),
+                child: Text(
+                  _isConfirmed
+                      ? tr('reservation_confirmed')
+                      : tr('confirm_reservation'),
+                  style: const TextStyle(fontSize: 15, color: Colors.white),
                 ),
               ),
             ),

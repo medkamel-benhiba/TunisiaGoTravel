@@ -8,6 +8,7 @@ import '../../providers/global_provider.dart';
 import '../../providers/hotel_provider.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:easy_localization/easy_localization.dart'; // Import easy_localization
 
 class DestinationDropSection extends StatefulWidget {
   const DestinationDropSection({super.key});
@@ -52,10 +53,10 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // City dropdown
-              _buildSectionTitle("Destination", Icons.location_on_outlined),
+              _buildSectionTitle("destination".tr(), Icons.location_on_outlined),
               const SizedBox(height: 8),
               CityDropdown(
-                label: "Choisir votre destination",
+                label: "select_destinations".tr(),
                 onChanged: (name, id) {
                   setState(() {
                     _selectedCityName = name;
@@ -67,14 +68,14 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
               const SizedBox(height: 16),
 
               // Date pickers
-              _buildSectionTitle("Dates de Voyage", Icons.calendar_today),
+              _buildSectionTitle("travel_dates".tr(), Icons.calendar_today),
               const SizedBox(height: 8),
               Row(
                 children: [
                   Expanded(
                     child: _buildDateInput(
                       context,
-                      "Date début",
+                      "start_date_label".tr(),
                       _startDate,
                           (picked) {
                         setState(() {
@@ -90,7 +91,7 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
                   Expanded(
                     child: _buildDateInput(
                       context,
-                      "Date fin",
+                      "end_date_label".tr(),
                       _endDate,
                           (picked) => setState(() => _endDate = picked),
                       firstDate: _startDate ?? DateTime.now(),
@@ -102,7 +103,7 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
               const SizedBox(height: 16),
 
               // Room/Adults/Children summary
-              _buildSectionTitle("Voyageurs", Icons.group_outlined),
+              _buildSectionTitle("travelers".tr(), Icons.group_outlined),
               const SizedBox(height: 8),
               _buildGuestSummary(totalRooms, totalAdults, totalChildren),
               const SizedBox(height: 16),
@@ -125,8 +126,8 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
                         : () async {
                       if (_selectedCityId == null || _startDate == null || _endDate == null) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Veuillez remplir tous les champs!'),
+                          SnackBar(
+                            content: Text('please_fill_all_fields'.tr()),
                             backgroundColor: Colors.orange,
                           ),
                         );
@@ -146,8 +147,8 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
 
                       if (hasIncompleteChildAges) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Veuillez sélectionner l\'âge de tous les enfants!'),
+                          SnackBar(
+                            content: Text('select_all_child_ages'.tr()),
                             backgroundColor: Colors.orange,
                           ),
                         );
@@ -272,7 +273,7 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
                         );
                       } catch (e) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("Erreur lors de la recherche: $e")),
+                          SnackBar(content: Text("search_error".tr())),
                         );
                       }
                     },
@@ -285,9 +286,9 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
                         valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                       ),
                     )
-                        : const Text(
-                      "Rechercher",
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        : Text(
+                      "search".tr(),
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                   );
                 },
@@ -423,7 +424,7 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
       print("Error fetching remaining pages: $e");
       // Notify user of background fetch error
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Erreur lors du chargement des pages supplémentaires: $e")),
+        SnackBar(content: Text("background_fetch_error".tr())),
       );
     }
   }
@@ -540,8 +541,6 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
     );
   }
 
-
-
   Widget _buildGuestSummary(int rooms, int adults, int children) {
     return InkWell(
       onTap: () => _openRoomSelectionBottomSheet(context),
@@ -556,18 +555,18 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
             Icon(Icons.person_pin, color: Colors.grey.shade600, size: 16),
             const SizedBox(width: 8),
             Text(
-              "$rooms Chambre${rooms > 1 ? 's' : ''}",
+              rooms > 1 ? "$rooms ${'rooms'.tr()}" : "$rooms ${'room'.tr()}",
               style: const TextStyle(fontWeight: FontWeight.w600),
             ),
             const Text(" • ", style: TextStyle(color: Colors.grey)),
             Text(
-              "$adults Adulte${adults > 1 ? 's' : ''}",
+              adults > 1 ? "$adults ${'adults'.tr()}" : "$adults ${'adult'.tr()}",
               style: const TextStyle(fontWeight: FontWeight.w500),
             ),
             if (children > 0) ...[
               const Text(" • ", style: TextStyle(color: Colors.grey)),
               Text(
-                "$children Enfant${children > 1 ? 's' : ''}",
+                children > 1 ? "$children ${'children'.tr()}" : "$children ${'child'.tr()}",
                 style: const TextStyle(fontWeight: FontWeight.w500),
               ),
             ],
@@ -608,9 +607,9 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
-                          "Sélectionner les chambres",
-                          style: TextStyle(
+                        Text(
+                          "select_rooms".tr(),
+                          style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                             color: Colors.black87,
@@ -669,7 +668,7 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  "Chambre ${index + 1}",
+                  "${'room'.tr()} ${index + 1}",
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
@@ -689,7 +688,7 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
             const Divider(height: 16),
             _buildCounterRow(
               icon: Icons.person_outline,
-              label: "Adultes",
+              label: "adults".tr(),
               count: room["adults"] as int,
               onIncrement: () {
                 setModalState(() {
@@ -704,7 +703,7 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
             ),
             _buildCounterRow(
               icon: Icons.child_friendly,
-              label: "Enfants",
+              label: "children".tr(),
               count: room["children"] as int,
               onIncrement: () {
                 setModalState(() {
@@ -771,9 +770,9 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
             children: [
               Icon(Icons.cake, color: Colors.orange.shade600, size: 18),
               const SizedBox(width: 8),
-              const Text(
-                "Âge des enfants",
-                style: TextStyle(
+              Text(
+                "child_age".tr(),
+                style: const TextStyle(
                   fontWeight: FontWeight.w600,
                   fontSize: 14,
                   color: Colors.black87,
@@ -791,7 +790,7 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
                 child: Column(
                   children: [
                     Text(
-                      "Enfant ${childIndex + 1}",
+                      "${'child'.tr()} ${childIndex + 1}",
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.grey.shade600,
@@ -820,7 +819,7 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
                             return DropdownMenuItem<int>(
                               value: age,
                               child: Text(
-                                age == 0 ? "< 1 an" : "$age ans",
+                                age == 0 ? "< 1 ${'year'.tr()}" : "$age ${'years'.tr()}",
                                 style: const TextStyle(fontSize: 13),
                               ),
                             );
@@ -918,7 +917,7 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
               });
             },
             icon: const Icon(Icons.add_circle_outline, color: AppColorstatic.lightTextColor),
-            label: const Text("Chambre", style: TextStyle(color: AppColorstatic.lightTextColor)),
+            label: Text("room".tr(), style: const TextStyle(color: AppColorstatic.lightTextColor)),
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(
@@ -942,7 +941,7 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
-            child: const Text("Terminer"),
+            child: Text("done".tr()),
           ),
         ),
       ],

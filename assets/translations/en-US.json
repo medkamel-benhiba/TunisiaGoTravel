@@ -115,8 +115,8 @@
   "child_age_label": "Child Age",
   "child_label_with_number": "Child",
   "booking_button": "Book Now",
-  "adults": "{} adults",
-  "children": "{} children",
+  "adults": "adults",
+  "children": "children",
   "stars": "stars",
   "select_at_least_one_room": "Please select at least one room.",
   "select_exactly_rooms": "You must select exactly {} room(s). Currently: {1} selected.",
@@ -333,8 +333,29 @@
   "departure": "Departure",
   "selected_destinations": "Selected Destinations",
   "creating_circuit": "Creating the circuit...",
-  "create_circuit": "Create Circuit"
-
+  "create_circuit": "Create Circuit",
+  "images": "Images",
+  "assistant_chatbot": "Assistant Chatbot",
+  "welcome": "Welcome to Tunisia Go Travel",
+  "login_subtitle": "Log in to explore Tunisia",
+  "enter_email": "Please enter your email",
+  "password": "Password",
+  "enter_password": "Please enter your password",
+  "forgot_password": "Forgot password?",
+  "coming_soon": "Feature coming soon",
+  "login_button": "Log In",
+  "login_failed": "Login failed",
+  "no_account": "Don't have an account?",
+  "create_account": "Create an account",
+  "signup_title": "Create an Account",
+  "name": "Name",
+  "enter_name": "Please enter your name",
+  "enter_phone": "Please enter your phone number",
+  "enter_city": "Please enter your city",
+  "signup_button": "Sign Up",
+  "signup_success": "Registration successful! Please log in.",
+  "signup_failed": "Registration failed",
+  "already_account": "Already have an account?"
 
 
 }

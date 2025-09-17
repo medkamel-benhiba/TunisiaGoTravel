@@ -45,6 +45,7 @@ class ManualCircuitProvider extends ChangeNotifier {
   }
 
   //les destinations possibles
+  // Your corrected fetchDestinations method
   Future<bool> fetchDestinations({
     required String budget,
     required String start,
@@ -75,13 +76,9 @@ class ManualCircuitProvider extends ChangeNotifier {
       );
 
       if (result.destinations != null && result.destinations!.isNotEmpty) {
+        // Corrected line: Use the factory constructor to populate multilingual names
         _destinations = result.destinations!
-            .map((d) => DestinationSelection(
-          id: d.id,
-          name: d.name,
-          days: 0, // <-- 0 jour par défaut
-          isStart: false,
-        ))
+            .map((d) => DestinationSelection.fromDestination(d))
             .toList();
 
         // Marquer automatiquement la première destination comme ville de départ
@@ -108,7 +105,6 @@ class ManualCircuitProvider extends ChangeNotifier {
     }
   }
 
-  /// Mettre à jour le nombre de jours pour une destination
   /// Mettre à jour le nombre de jours pour une destination
   void updateDestinationDays(String destinationId, int days, int maxDuration) {
     final index = _destinations.indexWhere((d) => d.id == destinationId);

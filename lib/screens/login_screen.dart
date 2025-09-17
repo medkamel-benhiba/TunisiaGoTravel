@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:tunisiagotravel/screens/signup_screen.dart';
 import 'package:tunisiagotravel/theme/color.dart';
 import '../providers/auth_provider.dart';
@@ -40,7 +41,7 @@ class _LoginScreenState extends State<LoginScreen> {
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Échec de la connexion")),
+        SnackBar(content: Text('login_failed'.tr())),
       );
     }
   }
@@ -60,12 +61,12 @@ class _LoginScreenState extends State<LoginScreen> {
             children: [
               const SizedBox(height: 8),
               Image.asset(
-                  'assets/icon/img.png',
+                'assets/icon/img.png',
                 height: 90,
               ),
               const SizedBox(height: 16),
               Text(
-                "Bienvenue sur Tunisia Go Travel",
+                'welcome'.tr(),
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: AppColorstatic.buttonbg,
@@ -74,7 +75,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                "Connectez-vous pour explorer la Tunisie",
+                'login_subtitle'.tr(),
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: Colors.grey.shade600,
                 ),
@@ -95,26 +96,28 @@ class _LoginScreenState extends State<LoginScreen> {
                         TextFormField(
                           controller: _emailController,
                           decoration: InputDecoration(
-                            labelText: "Email",
+                            labelText: 'email'.tr(),
                             prefixIcon: Icon(Icons.email, color: AppColorstatic.buttonbg),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          validator: (val) => val!.isEmpty ? "Entrez votre email" : null,
+                          validator: (val) =>
+                          val!.isEmpty ? 'enter_email'.tr() : null,
                         ),
                         const SizedBox(height: 16),
                         TextFormField(
                           controller: _passwordController,
                           decoration: InputDecoration(
-                            labelText: "Mot de passe",
+                            labelText: 'password'.tr(),
                             prefixIcon: Icon(Icons.lock, color: AppColorstatic.buttonbg),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
                           obscureText: true,
-                          validator: (val) => val!.isEmpty ? "Entrez votre mot de passe" : null,
+                          validator: (val) =>
+                          val!.isEmpty ? 'enter_password'.tr() : null,
                         ),
                         const SizedBox(height: 8),
                         Align(
@@ -122,11 +125,11 @@ class _LoginScreenState extends State<LoginScreen> {
                           child: TextButton(
                             onPressed: () {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text("Fonctionnalité à venir")),
+                                SnackBar(content: Text('coming_soon'.tr())),
                               );
                             },
                             child: Text(
-                              "Mot de passe oublié ?",
+                              'forgot_password'.tr(),
                               style: TextStyle(color: AppColorstatic.buttonbg),
                             ),
                           ),
@@ -144,7 +147,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           child: isLoading
                               ? const CircularProgressIndicator(color: Colors.white)
-                              : const Text("Se connecter"),
+                              : Text('login_button'.tr()),
                         ),
                       ],
                     ),
@@ -156,7 +159,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    "Vous n'avez pas encore de compte?",
+                    'no_account'.tr(),
                     style: TextStyle(color: Colors.grey.shade600),
                   ),
                   TextButton(
@@ -164,7 +167,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       provider.setPage(AppPage.signup);
                     },
                     child: Text(
-                      "Créer un compte",
+                      'create_account'.tr(),
                       style: TextStyle(color: AppColorstatic.buttonbg),
                     ),
                   ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../providers/auth_provider.dart';
 import '../providers/global_provider.dart';
 import '../theme/color.dart';
@@ -44,11 +45,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
     if (success) {
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Inscription réussie, connectez-vous !")),
+        SnackBar(content: Text('signup_success'.tr())),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Échec de l'inscription")),
+        SnackBar(content: Text('signup_failed'.tr())),
       );
     }
   }
@@ -73,7 +74,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               ),
               const SizedBox(height: 10),
               Text(
-                "Créer un compte",
+                'signup_title'.tr(),
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: AppColorstatic.buttonbg,
@@ -94,53 +95,53 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       children: [
                         TextFormField(
                           controller: _nameController,
-                          decoration: const InputDecoration(
-                            labelText: "Nom",
-                            prefixIcon: Icon(Icons.person),
+                          decoration: InputDecoration(
+                            labelText: 'name'.tr(),
+                            prefixIcon: const Icon(Icons.person),
                           ),
                           validator: (val) =>
-                          val!.isEmpty ? "Entrez votre nom" : null,
+                          val!.isEmpty ? 'enter_name'.tr() : null,
                         ),
                         const SizedBox(height: 15),
                         TextFormField(
                           controller: _emailController,
-                          decoration: const InputDecoration(
-                            labelText: "Email",
-                            prefixIcon: Icon(Icons.email),
+                          decoration: InputDecoration(
+                            labelText: 'email'.tr(),
+                            prefixIcon: const Icon(Icons.email),
                           ),
                           validator: (val) =>
-                          val!.isEmpty ? "Entrez votre email" : null,
+                          val!.isEmpty ? 'enter_email'.tr() : null,
                         ),
                         const SizedBox(height: 15),
                         TextFormField(
                           controller: _passwordController,
-                          decoration: const InputDecoration(
-                            labelText: "Mot de passe",
-                            prefixIcon: Icon(Icons.lock),
+                          decoration: InputDecoration(
+                            labelText: 'password'.tr(),
+                            prefixIcon: const Icon(Icons.lock),
                           ),
                           obscureText: true,
                           validator: (val) =>
-                          val!.isEmpty ? "Entrez un mot de passe" : null,
+                          val!.isEmpty ? 'enter_password'.tr() : null,
                         ),
                         const SizedBox(height: 15),
                         TextFormField(
                           controller: _phoneController,
-                          decoration: const InputDecoration(
-                            labelText: "Téléphone",
-                            prefixIcon: Icon(Icons.phone),
+                          decoration: InputDecoration(
+                            labelText: 'phone'.tr(),
+                            prefixIcon: const Icon(Icons.phone),
                           ),
                           validator: (val) =>
-                          val!.isEmpty ? "Entrez votre téléphone" : null,
+                          val!.isEmpty ? 'enter_phone'.tr() : null,
                         ),
                         const SizedBox(height: 15),
                         TextFormField(
                           controller: _cityController,
-                          decoration: const InputDecoration(
-                            labelText: "Ville",
-                            prefixIcon: Icon(Icons.location_city),
+                          decoration: InputDecoration(
+                            labelText: 'city'.tr(),
+                            prefixIcon: const Icon(Icons.location_city),
                           ),
                           validator: (val) =>
-                          val!.isEmpty ? "Entrez votre ville" : null,
+                          val!.isEmpty ? 'enter_city'.tr() : null,
                         ),
                         const SizedBox(height: 20),
                         ElevatedButton(
@@ -156,7 +157,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           child: isLoading
                               ? const CircularProgressIndicator(
                               color: Colors.white)
-                              : const Text("S'inscrire"),
+                              : Text('signup_button'.tr()),
                         ),
                       ],
                     ),
@@ -168,7 +169,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    "Vous avez déjà un compte?",
+                    'already_account'.tr(),
                     style: TextStyle(color: Colors.grey.shade800),
                   ),
                   TextButton(
@@ -176,7 +177,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       provider.setPage(AppPage.login);
                     },
                     child: Text(
-                      "Se connecter",
+                      'login_button'.tr(),
                       style: TextStyle(color: AppColorstatic.buttonbg),
                     ),
                   ),

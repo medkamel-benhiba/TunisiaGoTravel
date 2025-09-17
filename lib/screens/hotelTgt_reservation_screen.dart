@@ -36,6 +36,11 @@ class _HotelTgtReservationScreenState extends State<HotelTgtReservationScreen> {
     for (var pension in widget.hotelTgt.disponibility.pensions) {
       selectedRoomsByPension[pension.id] = {};
     }
+
+    debugPrint('=== HotelTgt Data ===');
+    debugPrint('ID: ${widget.hotelTgt.id}');
+    debugPrint('Slug: ${widget.hotelTgt.slug}');
+    debugPrint('Name map: ${widget.hotelTgt.name}');
   }
 
   Hotel? getOriginalHotel() {
@@ -175,7 +180,7 @@ class _HotelTgtReservationScreenState extends State<HotelTgtReservationScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          widget.hotelTgt.getName(Localizations.localeOf(context)),
+          widget.hotelTgt.getName(context.locale),
           style: const TextStyle(
             color: AppColorstatic.lightTextColor,
             fontSize: 22,
@@ -189,11 +194,11 @@ class _HotelTgtReservationScreenState extends State<HotelTgtReservationScreen> {
         child: Column(
           children: [
             HotelHeaderTgt(
-              hotelName: widget.hotelTgt.getName(Localizations.localeOf(context)),
+              hotelName: widget.hotelTgt.getName(context.locale),
               slug: widget.hotelTgt.slug,
               cover: hotelCover,
               address: hotelAddress,
-              category: categoryCode.isNotEmpty ? '$categoryCode étoiles' : null,
+              category: null,
             ),
             const SizedBox(height: 16),
             SearchCriteriaCard(

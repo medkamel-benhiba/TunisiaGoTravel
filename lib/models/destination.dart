@@ -130,6 +130,12 @@ class Destination {
     return Destination(
       id: json["id"] ?? "",
       name: json["name"] ?? "",
+      nameAr: json["name_ar"],
+      nameEn: json["name_en"],
+      nameRu: json["name_ru"],
+      nameZh: json["name_zh"],
+      nameKo: json["name_ko"],
+      nameJa: json["name_ja"],
       idCityBbx: List<String>.from(json["id_city_bbx"] ?? []),
       lat: (json["lat"] as num?)?.toDouble() ?? 0.0,
       lng: (json["lng"] as num?)?.toDouble() ?? 0.0,
@@ -177,12 +183,6 @@ class Destination {
       gallery: List<String>.from(json["gallery"] ?? []),
       isSpecial: json["is_special"],
       destinationServices: List<String>.from(json["destinationservices"] ?? []),
-      nameAr: json["name_ar"],
-      nameEn: json["name_en"],
-      nameRu: json["name_ru"],
-      nameZh: json["name_zh"],
-      nameKo: json["name_ko"],
-      nameJa: json["name_ja"],
     );
   }
 

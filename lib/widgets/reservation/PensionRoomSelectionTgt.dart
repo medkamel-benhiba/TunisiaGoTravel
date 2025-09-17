@@ -240,7 +240,7 @@ class _PensionTab extends StatelessWidget {
         children: [
           const Icon(Icons.restaurant, size: 18),
           const SizedBox(width: 6),
-          Text(pension.name),
+          Text(pension.getName(Localizations.localeOf(context))),
           if (total > 0) ...[
             const SizedBox(width: 2),
             CircleAvatar(
@@ -338,7 +338,7 @@ class _RoomTgtCard extends StatelessWidget {
               _buildCounter(),
             ],
           ),
-          if (pension.description.isNotEmpty) _buildPensionDescription(),
+          if (pension.description.isNotEmpty) _buildPensionDescription(context),
         ],
       ),
     );
@@ -383,29 +383,34 @@ class _RoomTgtCard extends StatelessWidget {
     ],
   );
 
-  Widget _buildPensionDescription() => Container(
-    margin: const EdgeInsets.only(top: 12),
-    padding: const EdgeInsets.all(8),
-    decoration: BoxDecoration(
-      color: Colors.blue.withOpacity(0.1),
-      borderRadius: BorderRadius.circular(6),
-      border: Border.all(color: Colors.blue.withOpacity(0.3)),
-    ),
-    child: Row(
-      children: [
-        const Icon(Icons.info_outline, color: Colors.blue, size: 16),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            pension.description,
-            style: const TextStyle(
-              fontSize: 12,
-              color: Colors.blue,
-              fontWeight: FontWeight.w500,
+  Widget _buildPensionDescription(BuildContext context) {
+    final locale = context.locale;
+
+    return Container(
+      margin: const EdgeInsets.only(top: 12),
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: Colors.blue.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: Colors.blue.withOpacity(0.3)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.info_outline, color: Colors.blue, size: 16),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              pension.getDescription(locale), // <-- Use localized description
+              style: const TextStyle(
+                fontSize: 12,
+                color: Colors.blue,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
-        ),
-      ],
-    ),
-  );
+        ],
+      ),
+    );
+  }
+
 }

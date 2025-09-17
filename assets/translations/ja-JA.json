@@ -115,8 +115,8 @@
   "child_age_label": "子供の年齢",
   "child_label_with_number": "子供",
   "booking_button": "今すぐ予約",
-  "adults": "{}名の大人",
-  "children": "{}名の子供",
+  "adults": "名の大人",
+  "children": "名の子供",
   "stars": "星",
   "select_at_least_one_room": "少なくとも1部屋を選択してください。",
   "select_exactly_rooms": "ちょうど{}部屋を選択してください。現在：{}部屋選択済み。",
@@ -333,8 +333,29 @@
   "departure": "出発",
   "selected_destinations": "選択された目的地",
   "creating_circuit": "コースを作成中...",
-  "create_circuit": "コースを作成"
-
+  "create_circuit": "コースを作成",
+  "images": "画像",
+  "assistant_chatbot": "アシスタントチャットボット",
+  "welcome": "チュニジアゴートラベルへようこそ",
+  "login_subtitle": "チュニジアを探索するにはログインしてください",
+  "enter_email": "メールを入力してください",
+  "password": "パスワード",
+  "enter_password": "パスワードを入力してください",
+  "forgot_password": "パスワードをお忘れですか？",
+  "coming_soon": "近日提供予定の機能です",
+  "login_button": "ログイン",
+  "login_failed": "ログインに失敗しました",
+  "no_account": "まだアカウントをお持ちでないですか？",
+  "create_account": "アカウントを作成",
+  "signup_title": "アカウント作成",
+  "name": "名前",
+  "enter_name": "名前を入力してください",
+  "enter_phone": "電話番号を入力してください",
+  "enter_city": "都市を入力してください",
+  "signup_button": "登録",
+  "signup_success": "登録が完了しました！ログインしてください。",
+  "signup_failed": "登録に失敗しました",
+  "already_account": "すでにアカウントをお持ちですか？"
 
 
 }

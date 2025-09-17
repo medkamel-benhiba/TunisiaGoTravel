@@ -36,7 +36,8 @@ class CircuitBottomSection extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           CircuitSummaryCard(
-            summary: provider.getCircuitSummary(),
+            destinations: provider.destinations,
+            startCity: "",
             maxDuration: maxDuration,
           ),
           Container(

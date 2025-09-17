@@ -27,7 +27,7 @@ class LanguageSelector extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             const Icon(Icons.language, color: Colors.white, size: 20),
-            const SizedBox(width: 4),
+            const SizedBox(width:6),
             Text(
               context.locale.languageCode.toUpperCase(),
               style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
@@ -36,7 +36,7 @@ class LanguageSelector extends StatelessWidget {
         ),
         color: Colors.white,
         elevation: 8,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(0)),
         onSelected: (Locale locale) {
           context.setLocale(locale);
         },
@@ -69,7 +69,14 @@ class LanguageSelector extends StatelessWidget {
       tooltip: 'language'.tr(),
       color: Colors.white,
       elevation: 8,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(8),
+          topRight: Radius.circular(0),
+          bottomLeft: Radius.circular(8),
+          bottomRight: Radius.circular(0),
+        ),
+      ),
       onSelected: (Locale locale) {
         context.setLocale(locale);
       },

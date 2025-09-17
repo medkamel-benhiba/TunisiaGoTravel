@@ -32,6 +32,54 @@ class ItemCard extends StatelessWidget {
     );
   }
 
+  String _getLocalizedTitle(BuildContext context) {
+    final locale = Localizations.localeOf(context).languageCode;
+
+    // Debug: print all keys and their values
+    print('--- Item Keys & Values ---');
+    item.forEach((k, v) => print('$k: $v'));
+    print('--------------------------');
+
+    // Define possible key mappings per language
+    final Map<String, List<String>> keysByLocale = {
+      'ar': ['Name_ar', 'name_ar', 'title_ar'],
+      'en': ['Name_en', 'name_en', 'title_en'],
+      'ru': ['Name_ru', 'name_ru', 'title_ru'],
+      'ja': ['Name_ja', 'name_ja', 'title_ja'],
+      'ko': ['Name_ko', 'name_ko', 'title_ko'],
+      'zh': ['Name_zh', 'name_zh', 'title_zh'],
+      'fr': ['Name', 'name', 'title'],
+    };
+
+    final keys = keysByLocale[locale] ?? ['Name', 'name', 'title'];
+
+    for (final key in keys) {
+      if (item[key] != null && item[key].toString().trim().isNotEmpty) {
+        print('Using key: $key -> ${item[key]}'); // Debug which key was used
+        return item[key];
+      }
+    }
+
+    // Fallback text
+    switch (locale) {
+      case 'ar':
+        return 'الاسم غير متوفر';
+      case 'en':
+        return 'Name not available';
+      case 'ru':
+        return 'Имя не найдено';
+      case 'ja':
+        return '名前はありません';
+      case 'ko':
+        return '이름이 없습니다';
+      case 'zh':
+        return '名称不可用';
+      default:
+        return 'Nom introuvable';
+    }
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -42,7 +90,7 @@ class ItemCard extends StatelessWidget {
       ),
       child: ExpansionTile(
         leading: _buildItemImage(),
-        title: Text(item['Name'] ?? item['name'] ?? item['title'] ?? 'Nom introuvable'),
+        title: Text(_getLocalizedTitle(context)),
         children: [
           ItemDetail(
             item: item,

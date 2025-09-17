@@ -58,12 +58,24 @@ class HotelTgt {
     // Extract hotel info from hotelDetail parameter
     String hotelId = '';
     String hotelName = '';
+    String hotelNameAr = '';
+    String hotelNameEn = '';
+    String hotelNameRu = '';
+    String hotelNameJa = '';
+    String hotelNameKo = '';
+    String hotelNameZh = '';
     String hotelSlug = '';
 
     if (hotelDetail != null) {
       if (hotelDetail is Map<String, dynamic>) {
         hotelId = hotelDetail['id']?.toString() ?? '';
         hotelName = hotelDetail['name']?.toString() ?? '';
+        hotelNameAr = hotelDetail['name_ar']?.toString() ?? '';
+        hotelNameEn = hotelDetail['name_en']?.toString() ?? '';
+        hotelNameRu = hotelDetail['name_ru']?.toString() ?? '';
+        hotelNameJa = hotelDetail['name_ja']?.toString() ?? '';
+        hotelNameKo = hotelDetail['name_ko']?.toString() ?? '';
+        hotelNameZh = hotelDetail['name_zh']?.toString() ?? '';
 
         hotelSlug = hotelDetail['slug']?.toString() ?? '';
       } else if (hotelDetail.runtimeType.toString().contains('HotelDetail')) {
@@ -71,11 +83,23 @@ class HotelTgt {
         try {
           hotelId = hotelDetail.id?.toString() ?? '';
           hotelName = hotelDetail.name?.toString() ?? '';
+          hotelNameAr = hotelDetail.nameAr?.toString() ?? '';
+          hotelNameEn = hotelDetail.nameEn?.toString() ?? '';
+          hotelNameRu = hotelDetail.nameRu?.toString() ?? '';
+          hotelNameJa = hotelDetail.nameJa?.toString() ?? '';
+          hotelNameKo = hotelDetail.nameKo?.toString() ?? '';
+          hotelNameZh = hotelDetail.nameZh?.toString() ?? '';
           hotelSlug = hotelDetail.slug?.toString() ?? '';
         } catch (e) {
           // Fallback if properties don't exist
           hotelId = '';
           hotelName = '';
+          hotelNameAr = '';
+          hotelNameEn = '';
+          hotelNameRu = '';
+          hotelNameJa = '';
+          hotelNameKo = '';
+          hotelNameZh = '';
           hotelSlug = '';
         }
       }
@@ -92,6 +116,12 @@ class HotelTgt {
     return HotelTgt(
       id: hotelId,
       name: hotelName,
+      name_ar: hotelNameAr,
+      name_en: hotelNameEn,
+      name_ru: hotelNameRu,
+      name_ja: hotelNameJa,
+      name_ko: hotelNameKo,
+      name_zh: hotelNameZh,
       slug: hotelSlug,
       disponibility: disponibility,
     );
@@ -100,6 +130,12 @@ class HotelTgt {
   factory HotelTgt.empty() => HotelTgt(
     id: '',
     name: '',
+    name_ar: '',
+    name_en: '',
+    name_ru: '',
+    name_ja: '',
+    name_ko: '',
+    name_zh: '',
     slug: '',
     disponibility: DisponibilityTgt.empty(),
   );
@@ -107,6 +143,12 @@ class HotelTgt {
   Map<String, dynamic> toJson() => {
     "id": id,
     "name": name,
+    "name_ar": name_ar,
+    "name_en": name_en,
+    "name_ru": name_ru,
+    "name_ja": name_ja,
+    "name_ko": name_ko,
+    "name_zh": name_zh,
     "slug": slug,
     "id_city_bbx": idCityBbx,
     "id_hotel_bbx": idHotelBbx,

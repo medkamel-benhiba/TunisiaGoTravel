@@ -18,6 +18,7 @@ class CircuitProgressIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final locale = context.locale;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -99,8 +100,12 @@ class DestinationSelectionCard extends StatelessWidget {
     required this.remainingDays,
   });
 
+
   @override
   Widget build(BuildContext context) {
+    final locale = context.locale;
+    print(destination.nameEn);
+
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 2,
@@ -120,7 +125,7 @@ class DestinationSelectionCard extends StatelessWidget {
           children: [
             // Nom de la destination (multilingue)
             Text(
-              destination.getName(context.locale), // Use multilingual name
+              destination.getName(locale),
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
                 color: destination.days > 0 ? AppColorstatic.primary : null,
@@ -237,22 +242,24 @@ class DestinationSelectionCard extends StatelessWidget {
 }
 
 /// Widget pour afficher le résumé du circuit
+/// Widget pour afficher le résumé du circuit
 class CircuitSummaryCard extends StatelessWidget {
-  final Map<String, dynamic> summary;
+  final List<DestinationSelection> destinations;
+  final String startCity;
   final int maxDuration;
 
   const CircuitSummaryCard({
     super.key,
-    required this.summary,
+    required this.destinations,
+    required this.startCity,
     required this.maxDuration,
   });
 
   @override
   Widget build(BuildContext context) {
-    final totalDays = summary['totalDays'] as int;
-    final destinationsCount = summary['destinationsCount'] as int;
-    final startCity = summary['startCity'] as String;
-    final destinations = summary['destinations'] as List<dynamic>;
+    final locale = context.locale;
+    final totalDays = destinations.fold<int>(0, (sum, dest) => sum + dest.days);
+    final destinationsCount = destinations.length;
 
     return Container(
       margin: const EdgeInsets.all(16),
@@ -332,10 +339,12 @@ class CircuitSummaryCard extends StatelessWidget {
             Wrap(
               spacing: 8,
               runSpacing: 4,
-              children: destinations.map((dest) {
-                final name = dest['name'] as String;
-                final days = dest['days'] as int;
-                final isStart = dest['isStart'] as bool;
+              children: destinations
+                  .where((dest) => dest.days > 0) // <-- only destinations with days
+                  .map((dest) {
+                final name = dest.getName(context.locale);
+                final days = dest.days;
+                final isStart = dest.isStart;
 
                 return Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),

@@ -15,7 +15,7 @@ class BudgetInput extends StatelessWidget {
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
         ),
-        prefixIcon: const Icon(Icons.attach_money_rounded),
+        prefixIcon: const Icon(Icons.money_sharp),
       ),
       keyboardType: TextInputType.number,
       textInputAction: TextInputAction.done,

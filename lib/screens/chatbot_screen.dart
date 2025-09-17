@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import '../theme/color.dart';
@@ -664,8 +665,8 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
                 top: safeAreaPadding.top + (_isLandscape(context) ? 8.0 : 10.0),
                 bottom: _isLandscape(context) ? 8.0 : 10.0,
               ),
-              child: const ScreenTitle(
-                title: 'Assistant Chatbot',
+              child:  ScreenTitle(
+                title: 'assistant_chatbot'.tr(),
                 icon: Icons.chat_bubble_outline,
               ),
             ),

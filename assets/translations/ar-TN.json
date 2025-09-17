@@ -230,7 +230,7 @@
   "per_adult": "ل{} بالغ",
   "no_pension_available": "لا توجد خيارات متاحة",
   "auto_circuit": "مسار تلقائي",
-  "departure_city": "مدينة المغادرة",
+  "departure_city": "مدينة الانطلاق",
   "arrival_city": "مدينة الوصول",
   "trip_duration": "مدة الرحلة: {} يوم{}",
   "departure_arrival_same": "يجب أن تكون مدينة المغادرة مختلفة عن مدينة الوصول",
@@ -254,7 +254,7 @@
   "years": "سنوات",
   "select_rooms": "اختر الغرف",
   "done": "تم",
-  "manual_circuit": "جولة يدوية",
+  "manual_circuit": "مسار يدوي",
   "travel_duration": "مدة الرحلة",
   "please_select_dates": "يرجى اختيار تواريخ الرحلة",
   "please_select_departure_city": "يرجى اختيار مدينة المغادرة",
@@ -331,9 +331,29 @@
   "departure": "المغادرة",
   "selected_destinations": "الوجهات المختارة",
   "creating_circuit": "جاري إنشاء الرحلة...",
-  "create_circuit": "إنشاء الرحلة"
-
-
+  "create_circuit": "إنشاء الرحلة",
+  "images": "صور",
+  "assistant_chatbot": "روبوت الدردشة المساعد",
+  "welcome": "مرحبًا بك في تونس جو ترافيل",
+  "login_subtitle": "سجّل الدخول لاستكشاف تونس",
+  "enter_email": "يرجى إدخال البريد الإلكتروني",
+  "password": "كلمة المرور",
+  "enter_password": "يرجى إدخال كلمة المرور",
+  "forgot_password": "هل نسيت كلمة المرور؟",
+  "coming_soon": "الميزة قادمة قريبًا",
+  "login_button": "تسجيل الدخول",
+  "login_failed": "فشل تسجيل الدخول",
+  "no_account": "ليس لديك حساب بعد؟",
+  "create_account": "إنشاء حساب",
+  "signup_title": "إنشاء حساب",
+  "name": "الاسم",
+  "enter_name": "يرجى إدخال الاسم",
+  "enter_phone": "يرجى إدخال رقم الهاتف",
+  "enter_city": "يرجى إدخال المدينة",
+  "signup_button": "تسجيل",
+  "signup_success": "تم التسجيل بنجاح! يرجى تسجيل الدخول.",
+  "signup_failed": "فشل التسجيل",
+  "already_account": "هل لديك حساب بالفعل؟"
 
 }
 
