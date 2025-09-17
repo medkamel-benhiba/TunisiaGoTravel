@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import '../theme/color.dart';
 import '../theme/styletext.dart';
@@ -14,7 +15,7 @@ class ManualCircuitDayScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          "Votre Circuit Manuel",
+          "your_circuit".tr(),
           style: const TextStyle(
             color: AppColorstatic.lightTextColor,
             fontSize: 18,

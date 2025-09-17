@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
+
 import '../../models/voyage.dart';
 import '../../providers/voyage_provider.dart';
 import '../theme/color.dart';
@@ -14,7 +16,8 @@ class CircuitPreDetailsScreen extends StatefulWidget {
   const CircuitPreDetailsScreen({super.key, required this.voyageId});
 
   @override
-  State<CircuitPreDetailsScreen> createState() => _CircuitPreDetailsScreenState();
+  State<CircuitPreDetailsScreen> createState() =>
+      _CircuitPreDetailsScreenState();
 }
 
 class _CircuitPreDetailsScreenState extends State<CircuitPreDetailsScreen> {
@@ -29,6 +32,8 @@ class _CircuitPreDetailsScreenState extends State<CircuitPreDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final locale = Localizations.localeOf(context);
+
     return Consumer<VoyageProvider>(
       builder: (context, provider, child) {
         final voyage = provider.selectedVoyage;
@@ -38,7 +43,7 @@ class _CircuitPreDetailsScreenState extends State<CircuitPreDetailsScreen> {
             appBar: AppBar(
               titleSpacing: 0,
               title: Text(
-                voyage!.getName(Localizations.localeOf(context)),
+                tr("voyage.details"), // 🔑 translation key
                 style: const TextStyle(
                   color: AppColorstatic.lightTextColor,
                   fontSize: 18,
@@ -48,12 +53,12 @@ class _CircuitPreDetailsScreenState extends State<CircuitPreDetailsScreen> {
               backgroundColor: AppColorstatic.primary,
               iconTheme: const IconThemeData(color: Colors.white),
             ),
-
             body: Center(
               child: Padding(
                 padding: const EdgeInsets.all(15),
                 child: Text(
-                  provider.error ?? 'Aucune information disponible pour cet circuit prédifini.',
+                  provider.error ??
+                      tr("voyage.no_info"), // 🔑 translation key
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -65,7 +70,7 @@ class _CircuitPreDetailsScreenState extends State<CircuitPreDetailsScreen> {
           appBar: AppBar(
             titleSpacing: 0,
             title: Text(
-              voyage.name,
+              voyage.getName(locale), // ✅ multilingual name
               style: const TextStyle(
                 color: AppColorstatic.lightTextColor,
                 fontSize: 18,
@@ -82,10 +87,11 @@ class _CircuitPreDetailsScreenState extends State<CircuitPreDetailsScreen> {
               children: [
                 if (voyage.images.isNotEmpty)
                   ImageGridPreview(images: voyage.images),
-                if (voyage.description.isNotEmpty)
-                  DescriptionCard(description: voyage.description),
-                if (voyage.programe.isNotEmpty)
-                  _buildProgrammeSection(voyage.programe),
+                if (voyage.getDescription(locale).isNotEmpty)
+                  DescriptionCard(description: voyage.getDescription(locale)),
+                if (voyage.getPrograme(locale).isNotEmpty)
+                  _buildProgrammeSection(
+                      voyage, locale), // ✅ localized programme
                 _buildPriceContact(voyage),
 
                 const SizedBox(height: 16),
@@ -101,9 +107,9 @@ class _CircuitPreDetailsScreenState extends State<CircuitPreDetailsScreen> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: const Text(
-                      "Réserver maintenant",
-                      style: TextStyle(
+                    child: Text(
+                      tr("voyage.book_now"), // 🔑 translation key
+                      style: const TextStyle(
                         color: Colors.white,
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -120,25 +126,48 @@ class _CircuitPreDetailsScreenState extends State<CircuitPreDetailsScreen> {
     );
   }
 
-  Widget _buildProgrammeSection(List<Program> programe) {
+  Widget _buildProgrammeSection(Voyage voyage, Locale locale) {
+    List<Program> programs;
+
+    switch (locale.languageCode) {
+      case 'ar':
+        programs = voyage.programe_ar;
+        break;
+      case 'en':
+        programs = voyage.programe_en;
+        break;
+      case 'ru':
+        programs = voyage.programe_ru;
+        break;
+      case 'zh':
+        programs = voyage.programe_zh;
+        break;
+      case 'ko':
+        programs = voyage.programe_ko;
+        break;
+      case 'ja':
+        programs = voyage.programe_ja;
+        break;
+      default:
+        programs = voyage.programe;
+    }
+
     return CircuitInfoCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Programme du voyage',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          Text(
+            tr("voyage.program"), // 🔑 translation key
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 12),
-          ...programe.map((p) => ProgrammeItem(
+          ...programs.map((p) => ProgrammeItem(
             title: p.title,
             description: p.description,
           )),
-
         ],
       ),
     );
-
   }
 
   Widget _buildPriceContact(Voyage voyage) {
@@ -148,15 +177,15 @@ class _CircuitPreDetailsScreenState extends State<CircuitPreDetailsScreen> {
         children: [
           _buildInfoPill(
             icon: Icons.attach_money,
-            label: 'Prix',
+            label: tr("voyage.price"), // 🔑 translation key
             value: '\$${voyage.price.isNotEmpty ? voyage.price.first.price : 'N/A'}',
             color: Colors.green,
           ),
           const SizedBox(width: 10),
           _buildInfoPill(
             icon: Icons.phone,
-            label: 'Contact',
-            value: voyage.phone ?? 'N/A',
+            label: tr("voyage.contact"), // 🔑 translation key
+            value: voyage.phone,
             color: Colors.blue,
           ),
         ],
@@ -164,7 +193,12 @@ class _CircuitPreDetailsScreenState extends State<CircuitPreDetailsScreen> {
     );
   }
 
-  Widget _buildInfoPill({required IconData icon, required String label, required String value, required Color color}) {
+  Widget _buildInfoPill({
+    required IconData icon,
+    required String label,
+    required String value,
+    required Color color,
+  }) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -176,14 +210,12 @@ class _CircuitPreDetailsScreenState extends State<CircuitPreDetailsScreen> {
           children: [
             Icon(icon, color: color, size: 20),
             const SizedBox(height: 4),
-            Text(
-              label,
-              style: TextStyle(fontSize: 12, color: color),
-            ),
+            Text(label, style: TextStyle(fontSize: 12, color: color)),
             const SizedBox(height: 2),
             Text(
               value,
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: color),
+              style: TextStyle(
+                  fontSize: 14, fontWeight: FontWeight.bold, color: color),
               overflow: TextOverflow.ellipsis,
             ),
           ],

@@ -347,7 +347,7 @@ class _AutoCircuitScreenState extends State<AutoCircuitScreen> {
                                   Icon(Icons.calendar_today, color: Colors.blue.shade600),
                                   const SizedBox(width: 8),
                                   Text(
-                                    tr('trip_duration', args: [duration.toString(), duration > 1 ? 's' : '']),
+                                    tr('trip_duration', args: [duration.toString(), duration > 1 ? '' : '']),
                                     style: TextStyle(
                                       fontWeight: FontWeight.w600,
                                       color: Colors.blue.shade700,

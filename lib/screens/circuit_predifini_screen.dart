@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
+
 import '../providers/voyage_provider.dart';
 import '../widgets/circuits/circuitpre_card.dart';
 import '../widgets/screen_title.dart';
@@ -29,11 +31,11 @@ class _CircuitPreScreenState extends State<CircuitPreScreen> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
             child: ScreenTitle(
               icon: Icons.account_tree_rounded,
-              title: 'Circuit Prédéfini',
+              title: tr('circuit_predefini'),
             ),
           ),
           Expanded(
@@ -42,7 +44,7 @@ class _CircuitPreScreenState extends State<CircuitPreScreen> {
                 : provider.error != null
                 ? Center(child: Text(provider.error!))
                 : voyages.isEmpty
-                ? const Center(child: Text('Aucun voyage disponible'))
+                ? Center(child: Text(tr('no_voyage')))
                 : ListView.builder(
               padding: const EdgeInsets.all(12),
               itemCount: voyages.length,

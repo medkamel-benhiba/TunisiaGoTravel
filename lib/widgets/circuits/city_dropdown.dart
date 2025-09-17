@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tunisiagotravel/theme/color.dart';
@@ -27,9 +28,9 @@ class CityDropdown extends StatelessWidget {
           return _buildDropdownField(
             context,
             enabled: false,
-            child: const Row(
+            child: Row(
               children: [
-                SizedBox(
+                const SizedBox(
                   width: 16,
                   height: 16,
                   child: CircularProgressIndicator(
@@ -38,10 +39,10 @@ class CityDropdown extends StatelessWidget {
                     AlwaysStoppedAnimation<Color>(AppColorstatic.primary),
                   ),
                 ),
-                SizedBox(width: 12),
+                const SizedBox(width: 12),
                 Text(
-                  'Chargement des destinations...',
-                  style: TextStyle(color: Colors.grey),
+                  'loading_destinations'.tr(),
+                  style: const TextStyle(color: Colors.grey),
                 ),
               ],
             ),
@@ -56,16 +57,16 @@ class CityDropdown extends StatelessWidget {
               children: [
                 const Icon(Icons.error_outline, color: Colors.red, size: 16),
                 const SizedBox(width: 8),
-                const Expanded(
+                Expanded(
                   child: Text(
-                    'Erreur de chargement',
+                    'error_loading'.tr(),
                     style: TextStyle(color: Colors.red),
                   ),
                 ),
                 TextButton(
                   onPressed: () => provider.fetchDestinations(),
-                  child: const Text(
-                    'Réessayer',
+                  child: Text(
+                    'retry'.tr(),
                     style: TextStyle(
                       fontSize: 12,
                       color: AppColorstatic.primary,
@@ -81,12 +82,12 @@ class CityDropdown extends StatelessWidget {
           return _buildDropdownField(
             context,
             enabled: false,
-            child: const Row(
+            child: Row(
               children: [
                 Icon(Icons.location_off, color: Colors.grey, size: 16),
                 SizedBox(width: 8),
                 Text(
-                  'Aucune destination disponible',
+                  'no_destinations'.tr(),
                   style: TextStyle(color: Colors.grey),
                 ),
               ],
@@ -109,7 +110,7 @@ class CityDropdown extends StatelessWidget {
           child: SizedBox(
             width: double.infinity,
             child: DropdownButtonFormField<String>(
-              value: selectedId, // 🔑 utilisez l'ID unique ici
+              value: selectedId,
               decoration: InputDecoration(
                 labelText: label,
                 prefixIcon: const Icon(Icons.location_on, size: 20, color: AppColorstatic.primary),
@@ -120,7 +121,7 @@ class CityDropdown extends StatelessWidget {
               items: provider.destinations
                   .map((d) => DropdownMenuItem(
                 value: d.id, // unique ID
-                child: Text(d.getName(locale)), // nom traduit
+                child: Text(d.getName(locale)),
               ))
                   .toList(),
               onChanged: (id) {

@@ -45,6 +45,7 @@ class HotelTgt {
       name_ru: json["name_ru"] ?? '',
       name_ja: json["name_ja"] ?? '',
       name_ko: json["name_ko"] ?? '',
+      name_zh: json["name_zh"] ?? '',
       slug: json["slug"] ?? '',
       idCityBbx: json["id_city_bbx"]?.toString(),
       idHotelBbx: json["id_hotel_bbx"]?.toString(),
@@ -166,10 +167,20 @@ class PensionTgt {
   final String name;
   final String? nameAr;
   final String? nameEn;
+  final String? nameRu;
+  final String? nameJa;
+  final String? nameKo;
+  final String? nameZh;
+
   final String devise;
   final String description;
   final String? descriptionAr;
   final String? descriptionEn;
+  final String? descriptionRu;
+  final String? descriptionJa;
+  final String? descriptionKo;
+  final String? descriptionZh;
+
   final List<RoomTgt> rooms;
 
   PensionTgt({
@@ -177,24 +188,29 @@ class PensionTgt {
     required this.name,
     this.nameAr,
     this.nameEn,
+    this.nameRu,
+    this.nameJa,
+    this.nameKo,
+    this.nameZh,
     required this.devise,
     required this.description,
     this.descriptionAr,
     this.descriptionEn,
+    this.descriptionRu,
+    this.descriptionJa,
+    this.descriptionKo,
+    this.descriptionZh,
     required this.rooms,
   });
 
   factory PensionTgt.fromJson(Map<String, dynamic> json) {
     List<RoomTgt> roomsList = [];
     final roomsData = json["rooms"];
-
     if (roomsData is List) {
       roomsList = roomsData
           .where((r) => r is Map)
           .map((r) => RoomTgt.fromJson(Map<String, dynamic>.from(r)))
           .toList();
-    } else if (roomsData is Map) {
-      roomsList = [RoomTgt.fromJson(Map<String, dynamic>.from(roomsData))];
     }
 
     return PensionTgt(
@@ -202,10 +218,18 @@ class PensionTgt {
       name: json["name"] ?? '',
       nameAr: json["name_ar"],
       nameEn: json["name_en"],
+      nameRu: json["name_ru"],
+      nameJa: json["name_ja"],
+      nameKo: json["name_ko"],
+      nameZh: json["name_zh"],
       devise: json["devise"] ?? 'TND',
       description: json["description"] ?? '',
       descriptionAr: json["description_ar"],
       descriptionEn: json["description_en"],
+      descriptionRu: json["description_ru"],
+      descriptionJa: json["description_ja"],
+      descriptionKo: json["description_ko"],
+      descriptionZh: json["description_zh"],
       rooms: roomsList,
     );
   }
@@ -215,13 +239,47 @@ class PensionTgt {
     "name": name,
     "name_ar": nameAr,
     "name_en": nameEn,
+    "name_ru": nameRu,
+    "name_ja": nameJa,
+    "name_ko": nameKo,
+    "name_zh": nameZh,
     "devise": devise,
     "description": description,
     "description_ar": descriptionAr,
     "description_en": descriptionEn,
+    "description_ru": descriptionRu,
+    "description_ja": descriptionJa,
+    "description_ko": descriptionKo,
+    "description_zh": descriptionZh,
     "rooms": rooms.map((r) => r.toJson()).toList(),
   };
+
+  /// helper
+  String getName(Locale locale) {
+    switch (locale.languageCode) {
+      case 'ar': return nameAr?.isNotEmpty == true ? nameAr! : name;
+      case 'en': return nameEn?.isNotEmpty == true ? nameEn! : name;
+      case 'ru': return nameRu?.isNotEmpty == true ? nameRu! : name;
+      case 'ja': return nameJa?.isNotEmpty == true ? nameJa! : name;
+      case 'ko': return nameKo?.isNotEmpty == true ? nameKo! : name;
+      case 'zh': return nameZh?.isNotEmpty == true ? nameZh! : name;
+      default: return name;
+    }
+  }
+
+  String getDescription(Locale locale) {
+    switch (locale.languageCode) {
+      case 'ar': return descriptionAr?.isNotEmpty == true ? descriptionAr! : description;
+      case 'en': return descriptionEn?.isNotEmpty == true ? descriptionEn! : description;
+      case 'ru': return descriptionRu?.isNotEmpty == true ? descriptionRu! : description;
+      case 'ja': return descriptionJa?.isNotEmpty == true ? descriptionJa! : description;
+      case 'ko': return descriptionKo?.isNotEmpty == true ? descriptionKo! : description;
+      case 'zh': return descriptionZh?.isNotEmpty == true ? descriptionZh! : description;
+      default: return description;
+    }
+  }
 }
+
 
 class RoomTgt {
   final String id;

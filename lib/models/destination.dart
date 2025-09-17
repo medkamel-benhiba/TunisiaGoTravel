@@ -254,22 +254,74 @@ class Destination {
 class DestinationSelection {
   final String id;
   final String name;
+  final String? nameAr;
+  final String? nameEn;
+  final String? nameRu;
+  final String? nameZh;
+  final String? nameKo;
+  final String? nameJa;
   bool isStart;
   int days;
 
   DestinationSelection({
     required this.id,
     required this.name,
+    this.nameAr,
+    this.nameEn,
+    this.nameRu,
+    this.nameZh,
+    this.nameKo,
+    this.nameJa,
     this.isStart = false,
     this.days = 0,
   });
 
-  Map<String, dynamic> toJson() {
-    return {
-      "id": id,
-      "name": name,
-      "isStart": isStart,
-      "days": days,
-    };
+  factory DestinationSelection.fromDestination(Destination destination) {
+    return DestinationSelection(
+      id: destination.id,
+      name: destination.name,
+      nameAr: destination.nameAr,
+      nameEn: destination.nameEn,
+      nameRu: destination.nameRu,
+      nameZh: destination.nameZh,
+      nameKo: destination.nameKo,
+      nameJa: destination.nameJa,
+      isStart: false,
+      days: 0,
+    );
   }
+
+  String getName(Locale locale) {
+    switch (locale.languageCode) {
+      case 'en':
+        return nameEn ?? name;
+      case 'ar':
+        return nameAr ?? name;
+      case 'ru':
+        return nameRu ?? name;
+      case 'zh':
+        return nameZh ?? name;
+      case 'ko':
+        return nameKo ?? name;
+      case 'ja':
+        return nameJa ?? name;
+      default:
+        return name;
+    }
+  }
+
+  Map<String, dynamic> toJson() => {
+    "id": id,
+    "name": name,
+    "nameAr": nameAr,
+    "nameEn": nameEn,
+    "nameRu": nameRu,
+    "nameZh": nameZh,
+    "nameKo": nameKo,
+    "nameJa": nameJa,
+    "isStart": isStart,
+    "days": days,
+  };
+
+
 }

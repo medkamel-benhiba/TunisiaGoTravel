@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import '../../models/destination.dart';
 import '../../theme/color.dart';
@@ -117,9 +118,9 @@ class DestinationSelectionCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Nom de la destination
+            // Nom de la destination (multilingue)
             Text(
-              destination.name,
+              destination.getName(context.locale), // Use multilingual name
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
                 color: destination.days > 0 ? AppColorstatic.primary : null,
@@ -141,9 +142,9 @@ class DestinationSelectionCard extends StatelessWidget {
                         onChanged: (value) => onStartChanged(value ?? false),
                         activeColor: AppColorstatic.primary,
                       ),
-                      const Expanded(
+                      Expanded(
                         child: Text(
-                          "Ville de départ",
+                          "start_city".tr(),
                           style: TextStyle(fontSize: 13),
                         ),
                       ),
@@ -157,7 +158,7 @@ class DestinationSelectionCard extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      const Text("Jours: "),
+                      Text("days".tr()),
 
                       // Bouton diminuer
                       IconButton(
@@ -274,7 +275,7 @@ class CircuitSummaryCard extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                "Résumé de votre circuit",
+                "circuit_summary".tr(),
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: AppColorstatic.primary,
@@ -293,7 +294,7 @@ class CircuitSummaryCard extends StatelessWidget {
                   context,
                   Icons.location_on,
                   "$destinationsCount",
-                  "Destinations",
+                  "destinations.title".tr(),
                 ),
               ),
               Expanded(
@@ -301,7 +302,7 @@ class CircuitSummaryCard extends StatelessWidget {
                   context,
                   Icons.calendar_today,
                   "$totalDays/$maxDuration",
-                  "Jours",
+                  "days".tr(),
                 ),
               ),
               Expanded(
@@ -309,7 +310,7 @@ class CircuitSummaryCard extends StatelessWidget {
                   context,
                   Icons.flag,
                   startCity,
-                  "Départ",
+                  "start_city".tr(),
                 ),
               ),
             ],
@@ -320,7 +321,7 @@ class CircuitSummaryCard extends StatelessWidget {
           // Liste des destinations sélectionnées
           if (destinations.isNotEmpty) ...[
             Text(
-              "Destinations sélectionnées:",
+              "selected_destinations".tr(),
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
@@ -343,7 +344,7 @@ class CircuitSummaryCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    "$name ($days j${days > 1 ? 's' : ''})${isStart ? ' 🚩' : ''}",
+                    "$name ($days)${isStart ? ' 🚩' : ''}",
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 11,

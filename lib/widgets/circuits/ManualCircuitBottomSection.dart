@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import '../../providers/manual_circuit_provider.dart';
 import '../../theme/color.dart';
@@ -53,7 +54,7 @@ class CircuitBottomSection extends StatelessWidget {
                 elevation: 2,
               ),
               child: provider.isCreatingCircuit
-                  ? const Row(
+                  ?  Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   SizedBox(
@@ -65,11 +66,11 @@ class CircuitBottomSection extends StatelessWidget {
                     ),
                   ),
                   SizedBox(width: 12),
-                  Text("Création du circuit..."),
+                  Text("creating_circuit".tr()),
                 ],
               )
-                  : const Text(
-                "Créer le Circuit",
+                  : Text(
+                "create_circuit".tr(),
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ),

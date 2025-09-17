@@ -56,6 +56,12 @@ class HotelAvailabilityResponse {
 class HotelData {
   final String id;
   final String name;
+  final String? nameAr;
+  final String? nameEn;
+  final String? nameJa;
+  final String? nameRu;
+  final String? nameZh;
+  final String? nameKo;
   final String slug;
   final String? idCityBbx;
   final String? idHotelBbx;
@@ -68,6 +74,12 @@ class HotelData {
     this.idCityBbx,
     this.idHotelBbx,
     required this.disponibility,
+    this.nameAr,
+    this.nameEn,
+    this.nameJa,
+    this.nameRu,
+    this.nameZh,
+    this.nameKo,
   });
 
   factory HotelData.fromJson(Map<String, dynamic> json) {
@@ -82,6 +94,12 @@ class HotelData {
     return HotelData(
       id: json["id"]?.toString() ?? '',
       name: json["name"] ?? '',
+      nameAr: json["name_ar"],
+      nameEn: json["name_en"],
+      nameJa: json["name_ja"],
+      nameRu: json["name_ru"],
+      nameZh: json["name_zh"],
+      nameKo: json["name_ko"],
       slug: json["slug"] ?? '',
       idCityBbx: json["id_city_bbx"]?.toString(),
       idHotelBbx: json["id_hotel_bbx"]?.toString(),
@@ -103,6 +121,12 @@ class HotelData {
     "id_city_bbx": idCityBbx,
     "id_hotel_bbx": idHotelBbx,
     "disponibility": disponibility.toJson(),
+    "name_ar": nameAr,
+    "name_en": nameEn,
+    "name_ja": nameJa,
+    "name_ru": nameRu,
+    "name_zh": nameZh,
+    "name_ko": nameKo,
   };
 }
 

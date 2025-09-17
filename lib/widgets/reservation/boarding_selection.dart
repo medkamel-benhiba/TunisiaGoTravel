@@ -6,7 +6,7 @@ import 'CounterButton.dart';
 
 class BoardingRoomSelection extends StatefulWidget {
   final List<BoardingOption> boardings;
-  final Map<int, Map<String, int>> selectedRoomsByBoarding; // Key: '${pax.adults}_${room.id}'
+  final Map<int, Map<String, int>> selectedRoomsByBoarding;
   final int maxRooms;
   final int totalSelected;
   final Function(int boardingId, int paxAdults, int roomId, int qty) onUpdate;

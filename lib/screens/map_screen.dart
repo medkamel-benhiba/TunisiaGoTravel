@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'dart:ui' as ui;
 import 'package:flutter/services.dart';
@@ -126,8 +127,8 @@ class _MapScreenState extends State<MapScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text(
-            'Carte détaillée de la zone',
+          title: Text(
+            'detailed_map'.tr(),
             style: const TextStyle(
               color: AppColorstatic.lightTextColor,
               fontSize: 18,
@@ -150,11 +151,11 @@ class _MapScreenState extends State<MapScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
                       child: DropdownButton<String>(
                         value: selectedDestination1,
-                        hint: const Text("Choisissez votre destination"),
+                        hint: Text('chooseDestination'.tr()),
                         items: destination.map((d) {
                           return DropdownMenuItem<String>(
                             value: d.id,
-                            child: Text(d.name ?? ""),
+                            child: Text(d.getName(Localizations.localeOf(context)) ?? ""),
                           );
                         }).toList(),
                         onChanged: (String? dist) {

@@ -175,7 +175,7 @@ class _HotelTgtReservationScreenState extends State<HotelTgtReservationScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          widget.hotelTgt.name,
+          widget.hotelTgt.getName(Localizations.localeOf(context)),
           style: const TextStyle(
             color: AppColorstatic.lightTextColor,
             fontSize: 22,
@@ -189,7 +189,7 @@ class _HotelTgtReservationScreenState extends State<HotelTgtReservationScreen> {
         child: Column(
           children: [
             HotelHeaderTgt(
-              hotelName: widget.hotelTgt.name,
+              hotelName: widget.hotelTgt.getName(Localizations.localeOf(context)),
               slug: widget.hotelTgt.slug,
               cover: hotelCover,
               address: hotelAddress,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:tunisiagotravel/screens/payment_screen.dart';
 import '../theme/color.dart';
 import '../services/api_service.dart';
@@ -66,18 +67,14 @@ class _HotelReservationFormScreenState extends State<HotelReservationFormScreen>
       final adults = int.tryParse(room['adults']?.toString() ?? '0') ?? 0;
       final children = int.tryParse(room['children']?.toString() ?? '0') ?? 0;
 
-      // Champs nécessaires pour le backend BHR
       room['infant'] = room['infants'] ?? 0;
       room['offer_id'] = room['offer_id'] ?? '';
 
-      // Extract room title from selectedRoomsSummary
-      String roomTitle = "Chambre";
-      String boardingTitle = "Logement Seul";
+      String roomTitle = 'room_default_title'.tr();
+      String boardingTitle = 'boarding_default_title'.tr();
 
       final selectedRoomsSummary = widget.selectedRoomsData['selectedRoomsSummary'] as String? ?? '';
       if (selectedRoomsSummary.isNotEmpty) {
-        // Parse the summary to extract room title and boarding info
-        // Example: "Chambre Triple Non Remboursable  (Soft All inclusive) x1"
         final parts = selectedRoomsSummary.split(' (');
         if (parts.length >= 2) {
           roomTitle = parts[0].trim();
@@ -164,7 +161,9 @@ class _HotelReservationFormScreenState extends State<HotelReservationFormScreen>
     final rooms = widget.searchCriteria['rooms'] as List<Map<String, dynamic>>? ?? [];
     final totalAdults = rooms.fold<int>(0, (s, r) => s + int.tryParse(r['adults']?.toString() ?? '0')!);
     final totalChildren = rooms.fold<int>(0, (s, r) => s + int.tryParse(r['children']?.toString() ?? '0')!);
-    return "$totalAdults adultes, $totalChildren enfants";
+
+    // Use the translation keys with args
+    return 'traveler_summary'.tr(namedArgs: {'adults': totalAdults.toString(), 'children': totalChildren.toString()});
   }
 
   List<Map<String, dynamic>> _generatePaxList() {
@@ -183,7 +182,6 @@ class _HotelReservationFormScreenState extends State<HotelReservationFormScreen>
         final key = 'room_${roomIndex + 1}_${traveler['type']}_${traveler['index']}';
         final gender = _selectedGenders[key] ?? '';
 
-        // Convert gender format
         String civility = '';
         if (gender == 'M.') {
           civility = 'Mr';
@@ -195,7 +193,7 @@ class _HotelReservationFormScreenState extends State<HotelReservationFormScreen>
           'Civility': civility,
           'Name': controllers['name']?.text ?? '',
           'Surname': controllers['firstname']?.text ?? '',
-          'Holder': traveler['type'] == 'adult' && traveler['index'] == 1, // First adult is holder
+          'Holder': traveler['type'] == 'adult' && traveler['index'] == 1,
         };
 
         if (traveler['type'] == 'adult') {
@@ -205,7 +203,6 @@ class _HotelReservationFormScreenState extends State<HotelReservationFormScreen>
         }
       }
 
-      // Create the room pax structure
       paxList.add({
         'Id': roomData['room_id'] ?? '',
         'Boarding': roomData['boarding_id'] ?? '',
@@ -227,7 +224,7 @@ class _HotelReservationFormScreenState extends State<HotelReservationFormScreen>
 
     for (var key in _selectedGenders.keys) {
       if (_selectedGenders[key] == null) {
-        _showErrorDialog('Veuillez sélectionner le genre pour tous les voyageurs.');
+        _showErrorDialog('gender_required_message'.tr());
         return;
       }
     }
@@ -266,7 +263,6 @@ class _HotelReservationFormScreenState extends State<HotelReservationFormScreen>
         print("✅ Mouradi API Response: $response");
 
       } else if (widget.hotelType.toLowerCase() == "tgt") {
-        // 🔹 reservation TGT
         final List<Map<String, dynamic>> paxList = [];
 
         int totalAdults = 0;
@@ -343,7 +339,6 @@ class _HotelReservationFormScreenState extends State<HotelReservationFormScreen>
         print("✅ TGT API Response: $response");
 
       } else {
-        // 🔹 reservation BHR
         final List<Map<String, dynamic>> selectedRooms = [];
 
         for (int roomIndex = 0; roomIndex < roomsWithTravelers.length; roomIndex++) {
@@ -409,7 +404,6 @@ class _HotelReservationFormScreenState extends State<HotelReservationFormScreen>
         print("✅ BHR API Response: $response");
       }
 
-      // ✅ Check response
       print("📌 Final API Response: $response");
 
       if (response != null && response['formUrl'] != null && mounted) {
@@ -424,11 +418,11 @@ class _HotelReservationFormScreenState extends State<HotelReservationFormScreen>
           _showSuccessDialog();
         }
       } else {
-        if (mounted) _showErrorDialog("Erreur lors de la réservation.\n$response");
+        if (mounted) _showErrorDialog("error_during_reservation".tr(args: [response.toString()]));
       }
     } catch (e) {
       print("❌ Exception during reservation: $e");
-      if (mounted) _showErrorDialog(e.toString());
+      if (mounted) _showErrorDialog('exception_during_reservation'.tr(args: [e.toString()]));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -447,25 +441,25 @@ class _HotelReservationFormScreenState extends State<HotelReservationFormScreen>
   List<String> _getAccommodationIds() => List<String>.from(widget.selectedRoomsData['boardingIds'] ?? []);
   List<String> _getRoomIds() => List<String>.from(widget.selectedRoomsData['roomIds'] ?? []);
   List<int> _getQuantities() => List<int>.from(widget.selectedRoomsData['quantities'] ?? []);
-  String _getSelectedRoomsSummary() => widget.selectedRoomsData['selectedRoomsSummary'] as String? ?? 'Chambres sélectionnées';
+  String _getSelectedRoomsSummary() => widget.selectedRoomsData['selectedRoomsSummary'] as String? ?? 'selected_rooms_default'.tr();
 
   void _showSuccessDialog() => showDialog(
     context: context,
     barrierDismissible: false,
     builder: (_) => AlertDialog(
-      title: const Text('Réservation confirmée'),
+      title: Text('reservation_confirmed_title'.tr()),
       content: Column(
         mainAxisSize: MainAxisSize.min,
-        children: const [
-          Icon(Icons.check_circle, color: Colors.green, size: 60),
-          SizedBox(height: 16),
-          Text('Votre réservation a été confirmée avec succès!', textAlign: TextAlign.center),
+        children: [
+          const Icon(Icons.check_circle, color: Colors.green, size: 60),
+          const SizedBox(height: 16),
+          Text('reservation_confirmed_message'.tr(), textAlign: TextAlign.center),
         ],
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).popUntil((route) => route.isFirst),
-          child: const Text("Retour à l'accueil"),
+          child: Text("back_to_home".tr()),
         ),
       ],
     ),
@@ -474,7 +468,7 @@ class _HotelReservationFormScreenState extends State<HotelReservationFormScreen>
   void _showErrorDialog(String error) => showDialog(
     context: context,
     builder: (_) => AlertDialog(
-      title: const Text('Erreur'),
+      title: Text('error_title'.tr()),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -484,7 +478,7 @@ class _HotelReservationFormScreenState extends State<HotelReservationFormScreen>
         ],
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text("OK")),
+        TextButton(onPressed: () => Navigator.pop(context), child: Text("ok".tr())),
       ],
     ),
   );
@@ -525,26 +519,26 @@ class _HotelReservationFormScreenState extends State<HotelReservationFormScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Informations de contact', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColorstatic.primary)),
+          Text('contact_info_title'.tr(), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColorstatic.primary)),
           const SizedBox(height: 16),
-          _buildTextField(_mainNameController, label: 'Nom*', icon: Icons.person, validator: (v) => v!.isEmpty ? 'Le nom est requis' : null),
+          _buildTextField(_mainNameController, label: 'name_label'.tr(), icon: Icons.person, validator: (v) => v!.isEmpty ? 'name_required_error'.tr() : null),
           const SizedBox(height: 12),
-          _buildTextField(_mainFirstNameController, label: 'Prénom*', icon: Icons.person, validator: (v) => v!.isEmpty ? 'Le prénom est requis' : null),
+          _buildTextField(_mainFirstNameController, label: 'first_name_label'.tr(), icon: Icons.person, validator: (v) => v!.isEmpty ? 'first_name_required_error'.tr() : null),
           const SizedBox(height: 12),
-          _buildTextField(_mainCinOrPassportController, label: 'CIN ou Passeport*', icon: Icons.credit_card, validator: (v) => v!.isEmpty ? 'Le CIN ou Passeport est requis' : null),
+          _buildTextField(_mainCinOrPassportController, label: 'cin_passport_label'.tr(), icon: Icons.credit_card, validator: (v) => v!.isEmpty ? 'cin_passport_required_error'.tr() : null),
           const SizedBox(height: 12),
           _buildTextField(_mainEmailController,
-              label: 'Email*', icon: Icons.email, keyboardType: TextInputType.emailAddress, validator: (v) {
-                if (v!.isEmpty) return 'L\'email est requis';
-                if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(v)) return 'Entrez un email valide';
+              label: 'email_label'.tr(), icon: Icons.email, keyboardType: TextInputType.emailAddress, validator: (v) {
+                if (v!.isEmpty) return 'email_required_error'.tr();
+                if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(v)) return 'invalid_email_error'.tr();
                 return null;
               }),
           const SizedBox(height: 12),
-          _buildTextField(_mainPhoneController, label: 'Téléphone*', icon: Icons.phone, keyboardType: TextInputType.phone, validator: (v) => v!.isEmpty ? 'Le téléphone est requis' : null),
+          _buildTextField(_mainPhoneController, label: 'phone_label'.tr(), icon: Icons.phone, keyboardType: TextInputType.phone, validator: (v) => v!.isEmpty ? 'phone_required_error'.tr() : null),
           const SizedBox(height: 12),
-          _buildTextField(_mainCountryController, label: 'Pays*', icon: Icons.flag, validator: (v) => v!.isEmpty ? 'Le pays est requis' : null),
+          _buildTextField(_mainCountryController, label: 'country_label'.tr(), icon: Icons.flag, validator: (v) => v!.isEmpty ? 'country_required_error'.tr() : null),
           const SizedBox(height: 12),
-          _buildTextField(_mainCityController, label: 'Ville*', icon: Icons.location_city, validator: (v) => v!.isEmpty ? 'La ville est requise' : null),
+          _buildTextField(_mainCityController, label: 'city_label'.tr(), icon: Icons.location_city, validator: (v) => v!.isEmpty ? 'city_required_error'.tr() : null),
         ],
       ),
     );
@@ -552,7 +546,7 @@ class _HotelReservationFormScreenState extends State<HotelReservationFormScreen>
 
   Widget _buildTravelerForm(Map<String, TextEditingController> controllers, String travelerType, int travelerIndex, int roomNumber) {
     final isAdult = travelerType == 'adult';
-    final title = isAdult ? 'Adulte $travelerIndex' : 'Enfant $travelerIndex';
+    final title = isAdult ? 'adult_title'.tr(args: [travelerIndex.toString()]) : 'child_title'.tr(args: [travelerIndex.toString()]);
     final uniqueKey = 'room_${roomNumber}_${travelerType}_$travelerIndex';
 
     return Container(
@@ -562,14 +556,14 @@ class _HotelReservationFormScreenState extends State<HotelReservationFormScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColorstatic.primary)),
+          Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColorstatic.primary)),
           const SizedBox(height: 16),
-          const Text('Genre*'),
+          Text('gender_label'.tr()),
           Row(
             children: [
               Expanded(
                 child: RadioListTile<String>(
-                  title: const Text('M.'),
+                  title: Text('gender_male_short'.tr()),
                   value: 'M.',
                   groupValue: _selectedGenders[uniqueKey],
                   activeColor: AppColorstatic.primary2,
@@ -578,7 +572,7 @@ class _HotelReservationFormScreenState extends State<HotelReservationFormScreen>
               ),
               Expanded(
                 child: RadioListTile<String>(
-                  title: const Text('Mme'),
+                  title: Text('gender_female_short'.tr()),
                   value: 'Mme',
                   groupValue: _selectedGenders[uniqueKey],
                   onChanged: (value) => setState(() => _selectedGenders[uniqueKey] = value),
@@ -587,9 +581,9 @@ class _HotelReservationFormScreenState extends State<HotelReservationFormScreen>
             ],
           ),
           const SizedBox(height: 12),
-          _buildTextField(controllers['name']!, label: 'Nom*', icon: Icons.person, validator: (v) => v!.isEmpty ? 'Le nom est requis' : null),
+          _buildTextField(controllers['name']!, label: 'name_label'.tr(), icon: Icons.person, validator: (v) => v!.isEmpty ? 'name_required_error'.tr() : null),
           const SizedBox(height: 12),
-          _buildTextField(controllers['firstname']!, label: 'Prénom*', icon: Icons.person, validator: (v) => v!.isEmpty ? 'Le prénom est requis' : null),
+          _buildTextField(controllers['firstname']!, label: 'first_name_label'.tr(), icon: Icons.person, validator: (v) => v!.isEmpty ? 'first_name_required_error'.tr() : null),
         ],
       ),
     );
@@ -599,9 +593,9 @@ class _HotelReservationFormScreenState extends State<HotelReservationFormScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Finaliser la réservation',
-          style: TextStyle(
+        title: Text(
+          'finalize_reservation_title'.tr(),
+          style: const TextStyle(
             color: AppColorstatic.lightTextColor,
             fontSize: 22,
             fontWeight: FontWeight.bold,
@@ -679,9 +673,9 @@ class _HotelReservationFormScreenState extends State<HotelReservationFormScreen>
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        'Prix total:',
-                        style: TextStyle(
+                      Text(
+                        'total_price_label'.tr(),
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
@@ -708,7 +702,6 @@ class _HotelReservationFormScreenState extends State<HotelReservationFormScreen>
               key: _formKey,
               child: Column(
                 children: [
-                  // Generate forms for each room
                   for (int roomIndex = 0; roomIndex < roomsWithTravelers.length; roomIndex++)
                     Container(
                       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -728,7 +721,11 @@ class _HotelReservationFormScreenState extends State<HotelReservationFormScreen>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Chambre ${roomIndex + 1} - ${roomsWithTravelers[roomIndex]['adults']} adulte(s), ${roomsWithTravelers[roomIndex]['children']} enfant(s)',
+                            'room_summary_title'.tr(namedArgs: {
+                              'room_number': (roomIndex + 1).toString(),
+                              'adults': roomsWithTravelers[roomIndex]['adults'].toString(),
+                              'children': roomsWithTravelers[roomIndex]['children'].toString(),
+                            }),
                             style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -736,8 +733,6 @@ class _HotelReservationFormScreenState extends State<HotelReservationFormScreen>
                             ),
                           ),
                           const SizedBox(height: 16),
-
-                          // Generate forms for each traveler in this room
                           for (var traveler in roomsWithTravelers[roomIndex]['travelers'])
                             _buildTravelerForm(
                               travelerControllers[traveler['controllerIndex']],
@@ -756,7 +751,7 @@ class _HotelReservationFormScreenState extends State<HotelReservationFormScreen>
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
-                '* Champs obligatoires',
+                'required_fields_note'.tr(),
                 style: TextStyle(
                   fontSize: 12,
                   color: Colors.grey[600],
@@ -802,7 +797,7 @@ class _HotelReservationFormScreenState extends State<HotelReservationFormScreen>
                 ),
               )
                   : Text(
-                'Confirmer la réservation • ${widget.totalPrice.toStringAsFixed(2)} ${widget.currency}',
+                'confirm_reservation_button'.tr(namedArgs: {'price': widget.totalPrice.toStringAsFixed(2), 'currency': widget.currency}),
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 16,

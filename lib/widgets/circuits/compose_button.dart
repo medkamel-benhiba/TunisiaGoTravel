@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 class ComposeButton extends StatelessWidget {
@@ -18,8 +19,8 @@ class ComposeButton extends StatelessWidget {
           ),
         ),
         onPressed: onPressed,
-        child: const Text(
-          "Composer",
+        child: Text(
+          tr("compose"),
           style: TextStyle(fontSize: 16, color: Colors.white),
         ),
       ),

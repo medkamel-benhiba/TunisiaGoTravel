@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/manual_circuit_provider.dart';
@@ -77,7 +78,6 @@ class _ManualDestinationSelectionScreenState
         ),
       );
     }
-
   }
 
   void _showErrorSnackBar(String message) {
@@ -95,7 +95,8 @@ class _ManualDestinationSelectionScreenState
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Sélectionner vos destinations",
+        title: Text(
+          "select_destinations".tr(),
           style: const TextStyle(
             color: AppColorstatic.lightTextColor,
             fontSize: 18,
@@ -113,7 +114,7 @@ class _ManualDestinationSelectionScreenState
               CircuitProgressIndicator(
                 currentStep: 2,
                 totalSteps: 3,
-                labels: const ['Formulaire', 'Destinations', 'Circuit'],
+                labels: ['form'.tr(), 'destinations.title'.tr(), 'circuit'.tr()],
               ),
               Expanded(child: _buildMainContent(provider)),
               if (provider.destinations.isNotEmpty && !provider.isLoading)
@@ -121,7 +122,8 @@ class _ManualDestinationSelectionScreenState
                   provider: provider,
                   maxDuration: widget.duration,
                   onConfirm: _confirmSelection,
-                ),            ],
+                ),
+            ],
           );
         },
       ),
@@ -130,13 +132,13 @@ class _ManualDestinationSelectionScreenState
 
   Widget _buildMainContent(ManualCircuitProvider provider) {
     if (provider.isFetchingDestinations) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             CircularProgressIndicator(),
             SizedBox(height: 16),
-            Text("Recherche des destinations disponibles..."),
+            Text("searching_destinations".tr()),
           ],
         ),
       );
@@ -158,7 +160,7 @@ class _ManualDestinationSelectionScreenState
             ElevatedButton.icon(
               onPressed: _fetchDestinations,
               icon: const Icon(Icons.refresh),
-              label: const Text("Réessayer"),
+              label: Text("retry".tr()),
             ),
           ],
         ),
@@ -166,13 +168,13 @@ class _ManualDestinationSelectionScreenState
     }
 
     if (provider.destinations.isEmpty) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(Icons.location_off, size: 64, color: Colors.grey),
             SizedBox(height: 16),
-            Text("Aucune destination disponible"),
+            Text("no_destinations".tr()),
           ],
         ),
       );
@@ -197,7 +199,7 @@ class _ManualDestinationSelectionScreenState
                   Icon(Icons.info_outline, color: Colors.blue.shade700),
                   const SizedBox(width: 8),
                   Text(
-                    "Instructions",
+                    "instructions_title".tr(),
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       color: Colors.blue.shade700,
@@ -207,9 +209,7 @@ class _ManualDestinationSelectionScreenState
               ),
               const SizedBox(height: 8),
               Text(
-                "• Sélectionnez le nombre de jours pour chaque destination\n"
-                    "• Choisissez une ville de départ\n"
-                    "• Total maximum: ${widget.duration} jours",
+                "instructions_text".tr(args: [widget.duration.toString()]),
                 style: TextStyle(color: Colors.blue.shade600),
               ),
             ],
@@ -222,7 +222,7 @@ class _ManualDestinationSelectionScreenState
             itemBuilder: (context, index) {
               final destination = provider.destinations[index];
               return DestinationSelectionCard(
-                destination: destination,
+                destination: destination, // Pass full Destination object
                 onDaysChanged: (days) => provider.updateDestinationDays(destination.id, days, widget.duration),
                 onStartChanged: (isStart) {
                   if (isStart) provider.setStartDestination(destination.id);
@@ -233,9 +233,7 @@ class _ManualDestinationSelectionScreenState
             },
           ),
         ),
-
       ],
     );
   }
-
 }
