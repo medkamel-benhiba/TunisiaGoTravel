@@ -14,6 +14,7 @@ import 'package:tunisiagotravel/providers/monument_provider.dart';
 import 'package:tunisiagotravel/providers/musee_provider.dart';
 import 'package:tunisiagotravel/providers/restaurant_provider.dart';
 import 'package:tunisiagotravel/providers/voyage_provider.dart';
+import 'package:tunisiagotravel/screens/CircuitReservationSuccess_screen.dart';
 import 'package:tunisiagotravel/screens/circuit_predifini_screen.dart';
 import 'package:tunisiagotravel/screens/splash_screen.dart';
 import 'package:tunisiagotravel/services/api_service.dart';
@@ -39,7 +40,7 @@ void main() async {
       ],
       path: 'assets/translations',
       fallbackLocale: const Locale('fr', 'FR'),
-      startLocale: const Locale('fr', 'FR'),
+      startLocale: null,
       child: MultiProvider(
         providers: [
           ChangeNotifierProvider(create: (_) => GlobalProvider()),
@@ -77,7 +78,7 @@ class MyApp extends StatelessWidget {
       supportedLocales: context.supportedLocales,
       locale: context.locale,
 
-      home: const SplashScreen(),
+      home: const CircuitReservationSuccessScreen(),
       debugShowCheckedModeBanner: false,
     );
   }

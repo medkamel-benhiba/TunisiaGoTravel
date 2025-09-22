@@ -83,6 +83,8 @@ class _AutoCircuitScreenState extends State<AutoCircuitScreen> {
     });
   }
 
+
+
   @override
   void initState() {
     super.initState();
@@ -134,11 +136,33 @@ class _AutoCircuitScreenState extends State<AutoCircuitScreen> {
     );
 
     if (provider.error == null && provider.circuit != null) {
+      // CREATE THE FORM DATA HERE WITH alldestination
+      final Map<String, dynamic> formData = {
+        'startDate': _startDate!.toIso8601String().split('T')[0],
+        'endDate': _endDate!.toIso8601String().split('T')[0],
+        'departCityId': _startCityId!,
+        'arriveCityId': _endCityId!,
+        'startCity': _startCity,
+        'endCity': _endCity,
+        'adults': adultsCount,
+        'children': children,
+        'rooms': roomsCount,
+        'duration': duration,
+        'budget': budgetValue,
+        'roomsData': _roomsData,
+        'alldestination': provider.circuit?.alldestination,
+      };
+
+      print("FormData with alldestination: $formData");
+
+      // PASS THE FORM DATA TO AutoCircuitDayScreen
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (_) => CircuitDayScreen(
+          builder: (_) => AutoCircuitDayScreen(
             listparjours: provider.circuit!.listparjours,
+            circuitData: provider.circuit!.listparjours,
+            formData: formData,
           ),
         ),
       );
@@ -296,7 +320,7 @@ class _AutoCircuitScreenState extends State<AutoCircuitScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final locale=context.locale;
+    final locale = context.locale;
 
     return ChangeNotifierProvider(
       create: (_) => AutoCircuitProvider(),

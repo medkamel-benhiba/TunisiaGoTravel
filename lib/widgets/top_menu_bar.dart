@@ -118,8 +118,6 @@ class _TopMenuBar1State extends State<TopMenuBar1> {
                   // Right buttons
                   Row(
                     children: [
-                      // Add Language Selector here
-                      SizedBox(width: spacing),
 
                       Container(
                         height: iconButtonHeight,
@@ -218,8 +216,7 @@ class TopMenuBar2 extends StatelessWidget {
           padding: EdgeInsets.symmetric(vertical: spacing, horizontal: spacing),
           child: Row(
             children: [
-              const LanguageSelector(showInTopMenu: true),
-
+              LanguageSelector(showInTopMenu: true, height: boxHeight),      //////////////////////////////tunisie button
               /*Container(
                 height: boxHeight,
                 padding: EdgeInsets.symmetric(horizontal: 12),
@@ -235,7 +232,7 @@ class TopMenuBar2 extends StatelessWidget {
                     const Icon(Icons.location_on, color: Colors.white, size: 24),
                     const SizedBox(width: 6),
                     Text(
-                      'tunisia'.tr(), // Changed from hardcoded "Tunisie"
+                      'tunisia'.tr(),
                       style: const TextStyle(
                           color: Colors.white,
                           fontSize: 16,

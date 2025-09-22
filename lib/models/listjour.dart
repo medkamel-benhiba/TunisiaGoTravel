@@ -7,6 +7,7 @@ class Listjour {
   final String room;
   final String children;
   final String adults;
+  final List<Map<String, dynamic>>? alldestination;
 
   Listjour({
     required this.listparjours,
@@ -17,6 +18,7 @@ class Listjour {
     required this.room,
     required this.children,
     required this.adults,
+    this.alldestination,
   });
 
   factory Listjour.fromJson(Map<String, dynamic> json) {
@@ -29,6 +31,9 @@ class Listjour {
       room: json['room'] ?? '',
       children: json['children'] ?? '',
       adults: json['adults'] ?? '',
+      alldestination: (json['alldestination'] as List<dynamic>?)
+          ?.map((e) => Map<String, dynamic>.from(e as Map<String, dynamic>))
+          .toList(),
     );
   }
 }

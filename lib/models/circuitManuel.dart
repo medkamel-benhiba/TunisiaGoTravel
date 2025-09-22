@@ -30,9 +30,7 @@ class CircuitManuel {
     this.destinations,
   });
 
-  // The factory constructor is essential for converting the JSON map
-  // into a Dart object. You must replace the keys ('_id', 'Vile_depart', etc.)
-  // with the actual keys from your API response.
+
   factory CircuitManuel.fromJson(Map<String, dynamic> json) {
     return CircuitManuel(
       destinations: (json['alldestinationnew'] as List?)
@@ -40,5 +38,6 @@ class CircuitManuel {
           .toList() ?? [],
     );
   }
+
 
 }

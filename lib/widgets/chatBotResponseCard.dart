@@ -179,7 +179,7 @@ class ChatbotResponseCard extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => CircuitDayScreen(
+            builder: (context) => AutoCircuitDayScreen(
               listparjours: formattedCircuitData,
             ),
           ),

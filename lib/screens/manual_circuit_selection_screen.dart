@@ -69,11 +69,30 @@ class _ManualDestinationSelectionScreenState
     );
 
     if (success && provider.circuit != null) {
+      // Get selected destinations BEFORE navigating
+      final selectedDestinations = provider.destinations
+          .where((dest) => dest.days > 0)
+          .map((dest) => {
+        'id': dest.id,
+        'name': dest.name,
+        'days': dest.days,
+        'isStart': dest.isStart,
+      })
+          .toList();
+
+      print("Destinations before navigation: $selectedDestinations");
+
+      // Create updated formData with selected destinations
+      final updatedFormData = Map<String, dynamic>.from(widget.formData);
+      updatedFormData['alldestination'] = selectedDestinations;
+
       Navigator.push(
         context,
         MaterialPageRoute(
           builder: (_) => ManualCircuitDayScreen(
             listparjours: provider.circuit!.listparjours,
+            formData: updatedFormData,
+            selectedDestinations: selectedDestinations,
           ),
         ),
       );
@@ -222,7 +241,7 @@ class _ManualDestinationSelectionScreenState
             itemBuilder: (context, index) {
               final destination = provider.destinations[index];
               return DestinationSelectionCard(
-                destination: destination, // Pass full Destination object
+                destination: destination,
                 onDaysChanged: (days) => provider.updateDestinationDays(destination.id, days, widget.duration),
                 onStartChanged: (isStart) {
                   if (isStart) provider.setStartDestination(destination.id);

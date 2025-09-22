@@ -32,6 +32,7 @@ class _ActivitiesScreenState extends State<ActivitiesScreenContent> {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<ActivityProvider>(context);
+    final locale = context.locale;
 
     // Filtrer les activités selon la destination sélectionnée
     final displayedActivities = selectedDestinationId == null

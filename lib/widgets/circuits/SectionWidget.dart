@@ -9,20 +9,59 @@ class SectionWidget extends StatelessWidget {
 
   Color _getCategoryColor(String category) {
     switch (category.toLowerCase()) {
-      case 'hôtels':
+    // Hôtels
+      case 'hôtels': // fr
+      case 'hotels': // en
+      case 'الفنادق': // ar
+      case 'ホテル': // ja
+      case '호텔': // ko
+      case '酒店': // zh
+      case 'отели': // ru
         return AppColorstatic.primary85;
-      case 'restaurants':
+
+    // Restaurants
+      case 'restaurants': // fr / en
+      case 'المطاعم': // ar
+      case 'レストラン': // ja
+      case '레스토랑': // ko
+      case '餐厅': // zh
+      case 'рестораны': // ru
         return AppColorstatic.primary2.withOpacity(0.6);
-      case 'activités':
+
+    // Activités
+      case 'activités': // fr
+      case 'activities': // en
+      case 'الأنشطة': // ar
+      case 'アクティビティ': // ja
+      case '액티비티': // ko
+      case '活动': // zh
+      case 'мероприятия': // ru
         return AppColorstatic.secondary;
-      case 'musées':
+
+    // Musées
+      case 'musées': // fr
+      case 'museums': // en
+      case 'المتاحف': // ar
+      case '博物館': // ja / zh
+      case '박물관': // ko
+      case 'музеи': // ru
         return AppColorstatic.buttonbg;
+
+    // Monuments
       case 'monuments':
+      case 'المعالم':
+      case '記念碑':
+      case '기념물':
+      case '纪念碑':
+      case 'памятники':
         return AppColorstatic.appBgColor;
+
+    // Default
       default:
         return AppColorstatic.primary;
     }
   }
+
 
   IconData _getCategoryIcon(String category) {
     switch (category.toLowerCase()) {

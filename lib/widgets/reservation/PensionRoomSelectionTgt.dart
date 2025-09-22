@@ -400,7 +400,7 @@ class _RoomTgtCard extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              pension.getDescription(locale), // <-- Use localized description
+              pension.getDescription(locale),
               style: const TextStyle(
                 fontSize: 12,
                 color: Colors.blue,

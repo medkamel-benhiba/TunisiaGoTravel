@@ -1224,6 +1224,7 @@ class ApiService {
     }
   }
 
+  /*
   Future<bool> createCircuitReservation({
     required Map<String, dynamic> planing,
     required List<Map<String, dynamic>> hotelsReservation,
@@ -1262,6 +1263,44 @@ class ApiService {
       return false;
     }
   }
+
+   */
+
+  Future<Map<String, dynamic>> createCircuitReservation(Map<String, dynamic> reservationData) async {
+    const String Url = 'https://backend.tunisiagotravel.com/utilisateur/newreservationcircuit';
+
+    try {
+      final response = await http.post(
+        Uri.parse(Url),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode(reservationData),
+      );
+
+      debugPrint('Reservation response status: ${response.statusCode}');
+      debugPrint('Reservation response body: ${response.body}');
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        if (response.body.isEmpty) {
+          return {'success': true};
+        }
+
+        final Map<String, dynamic> responseData = jsonDecode(response.body);
+        return responseData;
+      } else {
+        throw Exception(
+            'Failed to create circuit reservation: ${response.statusCode} - ${response.body}');
+      }
+    } catch (e) {
+      throw Exception('Network error during circuit reservation: $e');
+    }
+  }
+
+
+
+
 }
 
 

@@ -56,7 +56,7 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
               _buildSectionTitle("destination".tr(), Icons.location_on_outlined),
               const SizedBox(height: 8),
               CityDropdown(
-                label: "select_destinations".tr(),
+                label: "choose_destination".tr(),
                 onChanged: (name, id) {
                   setState(() {
                     _selectedCityName = name;
@@ -771,7 +771,7 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
               Icon(Icons.cake, color: Colors.orange.shade600, size: 18),
               const SizedBox(width: 8),
               Text(
-                "child_age".tr(),
+                "child_age_label".tr(),
                 style: const TextStyle(
                   fontWeight: FontWeight.w600,
                   fontSize: 14,
@@ -782,7 +782,7 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
           ),
           const SizedBox(height: 12),
           Wrap(
-            spacing: 12,
+            spacing: 10,
             runSpacing: 8,
             children: List.generate(childrenCount, (childIndex) {
               return Container(
@@ -799,7 +799,7 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
                     ),
                     const SizedBox(height: 4),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
                         border: Border.all(color: Colors.grey.shade300),
                         borderRadius: BorderRadius.circular(8),
@@ -815,11 +815,12 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
                           ),
-                          items: List.generate(13, (age) {
+                          items: List.generate(12, (index) {
+                            final age = index + 1; // 1 to 12
                             return DropdownMenuItem<int>(
                               value: age,
                               child: Text(
-                                age == 0 ? "< 1 ${'year'.tr()}" : "$age ${'years'.tr()}",
+                                 "$age",
                                 style: const TextStyle(fontSize: 13),
                               ),
                             );

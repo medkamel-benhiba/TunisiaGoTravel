@@ -104,7 +104,6 @@ class DestinationSelectionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final locale = context.locale;
-    print(destination.nameEn);
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -242,7 +241,6 @@ class DestinationSelectionCard extends StatelessWidget {
 }
 
 /// Widget pour afficher le résumé du circuit
-/// Widget pour afficher le résumé du circuit
 class CircuitSummaryCard extends StatelessWidget {
   final List<DestinationSelection> destinations;
   final String startCity;
@@ -260,8 +258,9 @@ class CircuitSummaryCard extends StatelessWidget {
     final locale = context.locale;
     final totalDays = destinations.fold<int>(0, (sum, dest) => sum + dest.days);
     final destinationsCount = destinations.length;
-
+    final start= destinations.firstWhere((dest) => dest.isStart);
     return Container(
+
       margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -316,7 +315,7 @@ class CircuitSummaryCard extends StatelessWidget {
                 child: _buildStat(
                   context,
                   Icons.flag,
-                  startCity,
+                  start.getName(locale),
                   "start_city".tr(),
                 ),
               ),

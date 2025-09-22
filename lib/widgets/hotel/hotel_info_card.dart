@@ -104,7 +104,7 @@ class HotelInfoCard extends StatelessWidget {
                     );
                   },
                   icon: const Icon(Icons.directions, size: 18),
-                  label: Text('itinerary'.tr()), // multilingual
+                  label: Text('itinerary'.tr()),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColorstatic.primary,
                     foregroundColor: Colors.white,

@@ -36,6 +36,9 @@ dependencies:
   video_player: ^2.6.1
   webview_flutter: ^4.8.0
   connectivity_plus: ^6.0.3
+  flutter_animate: ^4.5.2
+  google_fonts: ^6.1.0
+
 
 
 

@@ -43,7 +43,8 @@ class _ManualCircuitScreenState extends State<ManualCircuitScreen> {
       : 0;
 
   // ---- SAVE & LOAD DATES + ROOMS ----
-  Future<void> _saveDatesAndRooms(DateTime start, DateTime end, List<Map<String, dynamic>> rooms) async {
+  Future<void> _saveDatesAndRooms(
+      DateTime start, DateTime end, List<Map<String, dynamic>> rooms) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('manual_start_date', start.toIso8601String());
     await prefs.setString('manual_end_date', end.toIso8601String());
@@ -52,13 +53,14 @@ class _ManualCircuitScreenState extends State<ManualCircuitScreen> {
 
   Future<void> _loadDatesAndRooms() async {
     final prefs = await SharedPreferences.getInstance();
-    final start = prefs.getString('manual_start_date');
-    final end = prefs.getString('manual_end_date');
     final roomsJson = prefs.getString('manual_rooms_data');
 
     setState(() {
-      _startDate = start != null ? DateTime.tryParse(start) : null;
-      _endDate = end != null ? DateTime.tryParse(end) : null;
+      // ✅ Dates are reset each time, so duration container will not show
+      _startDate = null;
+      _endDate = null;
+
+      // ✅ Keep rooms data if saved, otherwise default
       _roomsData = roomsJson != null
           ? (jsonDecode(roomsJson) as List<dynamic>)
           .map((e) => Map<String, dynamic>.from(e))
@@ -113,10 +115,14 @@ class _ManualCircuitScreenState extends State<ManualCircuitScreen> {
 
   /// Valider les données du formulaire
   String? _validateForm() {
-    if (_startDate == null || _endDate == null) return 'please_select_dates'.tr();
+    if (_startDate == null || _endDate == null) {
+      return 'please_select_dates'.tr();
+    }
     if (_startCityId == null) return 'please_select_departure_city'.tr();
     if (_endCityId == null) return 'please_select_arrival_city'.tr();
-    if (_roomsData.fold(0, (sum, room) => sum + (room["adults"] as int)) < 1) return 'at_least_one_adult_required'.tr();
+    if (_roomsData.fold(0, (sum, room) => sum + (room["adults"] as int)) < 1) {
+      return 'at_least_one_adult_required'.tr();
+    }
     if (duration < 1) return 'minimum_duration'.tr();
     if (_budgetController.text.isEmpty) return 'please_enter_budget'.tr();
     final budget = double.tryParse(_budgetController.text);
@@ -128,8 +134,10 @@ class _ManualCircuitScreenState extends State<ManualCircuitScreen> {
   /// Préparer les données du formulaire pour l'étape suivante
   Map<String, dynamic> _prepareFormData() {
     final budget = double.tryParse(_budgetController.text) ?? 1000;
-    int totalAdults = _roomsData.fold(0, (sum, room) => sum + (room["adults"] as int));
-    int totalChildren = _roomsData.fold(0, (sum, room) => sum + (room["children"] as int));
+    int totalAdults =
+    _roomsData.fold(0, (sum, room) => sum + (room["adults"] as int));
+    int totalChildren =
+    _roomsData.fold(0, (sum, room) => sum + (room["children"] as int));
     int totalRooms = _roomsData.length;
 
     return {
@@ -158,7 +166,7 @@ class _ManualCircuitScreenState extends State<ManualCircuitScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final locale=context.locale;
+    final locale = context.locale;
     return Scaffold(
       body: Form(
         key: _formKey,
@@ -166,7 +174,8 @@ class _ManualCircuitScreenState extends State<ManualCircuitScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
+              padding:
+              const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
               child: ScreenTitle(
                 title: 'manual_circuit'.tr(),
                 icon: Icons.edit_location_alt_outlined,
@@ -185,12 +194,13 @@ class _ManualCircuitScreenState extends State<ManualCircuitScreen> {
                           _endDate = end;
                         });
                         if (start != null && end != null) {
-                          _saveDatesAndRooms(_startDate!, _endDate!, _roomsData);
+                          _saveDatesAndRooms(
+                              _startDate!, _endDate!, _roomsData);
                         }
                       },
                     ),
                     const SizedBox(height: 16),
-                    if (_startDate != null && _endDate != null)
+                    if (_startDate != null && _endDate != null && duration > 0)
                       Container(
                         padding: const EdgeInsets.all(12),
                         margin: const EdgeInsets.only(bottom: 16),
@@ -201,7 +211,8 @@ class _ManualCircuitScreenState extends State<ManualCircuitScreen> {
                         ),
                         child: Row(
                           children: [
-                            Icon(Icons.calendar_today, color: Colors.blue.shade600),
+                            Icon(Icons.calendar_today,
+                                color: Colors.blue.shade600),
                             const SizedBox(width: 8),
                             Text(
                               '${"travel_duration".tr()}: $duration ${duration > 1 ? "days".tr() : "day".tr()}',
@@ -249,7 +260,8 @@ class _ManualCircuitScreenState extends State<ManualCircuitScreen> {
                             setState(() {
                               _roomsData = updatedRooms;
                               if (_startDate != null && _endDate != null) {
-                                _saveDatesAndRooms(_startDate!, _endDate!, _roomsData);
+                                _saveDatesAndRooms(
+                                    _startDate!, _endDate!, _roomsData);
                               }
                             });
                           },

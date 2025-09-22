@@ -4,8 +4,9 @@ import 'package:tunisiagotravel/theme/color.dart';
 
 class LanguageSelector extends StatelessWidget {
   final bool showInTopMenu;
+  final double height;
 
-  const LanguageSelector({Key? key, this.showInTopMenu = false}) : super(key: key);
+  const LanguageSelector({Key? key, this.showInTopMenu = false, this.height = 40}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -17,10 +18,15 @@ class LanguageSelector extends StatelessWidget {
 
   Widget _buildTopMenuLanguageSelector(BuildContext context) {
     return Container(
-      height: 40,
+      height: height,
       decoration: BoxDecoration(
         color: AppColorstatic.secondary,
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(8),
+          topRight: Radius.circular(0),
+          bottomLeft: Radius.circular(8),
+          bottomRight: Radius.circular(0),
+        ),
       ),
       child: PopupMenuButton<Locale>(
         icon: Row(

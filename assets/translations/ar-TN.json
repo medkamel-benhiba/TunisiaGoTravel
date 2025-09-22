@@ -281,7 +281,7 @@
   "room_default_title": "غرفة",
   "boarding_default_title": "إقامة فقط",
   "selected_rooms_default": "الغرف المختارة",
-  "traveler_summary": "{adults} بالغون، {children} أطفال",
+  "traveler_summary": "{adults_number} بالغين، {children_number} أطفال",
   "contact_info_title": "معلومات الاتصال",
   "name_label": "الاسم*",
   "name_required_error": "الاسم مطلوب",
@@ -306,12 +306,12 @@
   "room_summary_title": "غرفة {room_number} - {adults} بالغ، {children} طفل",
   "required_fields_note": "* حقول إلزامية",
   "total_price_label": "السعر الإجمالي:",
-  "confirm_reservation_button": "تأكيد الحجز • {price} {currency}",
+  "confirm_reservation_button": "تأكيد الحجز •  {}",
   "gender_required_message": "الرجاء تحديد النوع لجميع المسافرين.",
   "error_during_reservation": "حدث خطأ أثناء الحجز.\n{args[]}",
   "exception_during_reservation": "استثناء أثناء الحجز: {args[0]}",
   "reservation_confirmed_title": "تم تأكيد الحجز",
-  "reservation_confirmed_message": "تم تأكيد حجزك بنجاح!",
+  "reservation_confirmed_message": "تم تأكيد الحجز بنجاح!",
   "back_to_home": "العودة إلى الصفحة الرئيسية",
   "error_title": "خطأ",
   "ok": "موافق",
@@ -353,7 +353,48 @@
   "signup_button": "تسجيل",
   "signup_success": "تم التسجيل بنجاح! يرجى تسجيل الدخول.",
   "signup_failed": "فشل التسجيل",
-  "already_account": "هل لديك حساب بالفعل؟"
+  "already_account": "هل لديك حساب بالفعل؟",
+  "edit_select_rooms": "{} غرف مختارة للتعديل",
+  "select_rooms_default": "اختر الغرف والإقامة",
+  "selection_confirmed": "تم تأكيد الاختيار",
+  "selected_rooms": "الغرف المختارة",
+  "room_count": "{} غرفة/غرف",
+  "total_price_value": "{} د.ت",
+  "selection_updated": "تم تحديث الاختيار: {} غرفة/غرف - {} د.ت",
+  "confirmed": "تم التأكيد",
+  "confirm": "تأكيد",
+  "non_refundable": "غير قابل للاسترداد",
+  "cancellation_fee": "رسوم الإلغاء: {} د.ت",
+  "reserve_circuit": "احجز الجولة",
+  "circuit_reservation": "حجز الجولة",
+  "travelers_information": "معلومات المسافرين",
+  "reservation_summary": "ملخص الحجز",
+  "first_name": "الاسم الأول",
+  "last_name": "اسم العائلة",
+  "zip_code": "الرمز البريدي",
+  "address": "العنوان",
+  "title": "اللقب",
+  "birthday": "تاريخ الميلاد",
+  "circuit_type": "نوع الجولة",
+  "departure_date": "تاريخ المغادرة",
+  "arrival_date": "تاريخ الوصول",
+  "reservation_error": "خطأ في الحجز",
+  "reservation_thank_you": "شكرًا على حجزك!",
+  "reservation_success_message": "تم تسجيل حجزك بنجاح وهو في انتظار تأكيد تونسيا جو ترافل. ستتلقى بريدًا إلكترونيًا بمجرد تأكيد حجزك أو رفضه. ندعوك لانتظار رد تونسيا جو ترافل.\n\nلإلغاء الحجز، يرجى الاتصال بنا على: +216 71 168 600 / +216 71 168 604. نحن في خدمتك لأي مساعدة.",
+  "contact_us": "اتصل بنا",
+  "email_notification_info": "ستتلقى إشعارًا بالبريد الإلكتروني بمجرد تحديث حالة حجزك.",
+  "contact_support": "اتصل بالدعم",
+  "phone_numbers": "أرقام الهاتف",
+  "close": "إغلاق",
+  "circuit_summary_title": "ملخص الجولة",
+  "choose_destination": "اختر الوجهة"
+
+
+
+
+
+
+
 
 }
 

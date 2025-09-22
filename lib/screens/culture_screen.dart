@@ -146,6 +146,7 @@ class _CulturesScreenState extends State<CulturesScreen> {
   Widget _buildCategoryContent(CulturesCategory category) {
     switch (category) {
       case CulturesCategory.musee:
+        final locale = context.locale;
         return Consumer<MuseeProvider>(
           builder: (context, provider, child) {
             if (provider.isLoading && provider.musees.isEmpty) {
@@ -190,11 +191,14 @@ class _CulturesScreenState extends State<CulturesScreen> {
         );
 
       case CulturesCategory.monument:
+        final locale = context.locale;
+
         return Consumer<MonumentProvider>(
           builder: (context, provider, child) {
             if (provider.monuments.isEmpty) {
               return Center(child: Text(tr("no_monument_available")));
             }
+
             return ListView.builder(
               itemCount: provider.monuments.length,
               itemBuilder: (context, index) {
@@ -222,6 +226,8 @@ class _CulturesScreenState extends State<CulturesScreen> {
         );
 
       case CulturesCategory.festival:
+        final locale = context.locale;
+
         return Consumer<FestivalProvider>(
           builder: (context, provider, child) {
             if (provider.isLoading && provider.festivals.isEmpty) {
@@ -276,6 +282,8 @@ class _CulturesScreenState extends State<CulturesScreen> {
         );
 
       case CulturesCategory.artisanat:
+        final locale = context.locale;
+
         return Consumer<ArtisanatProvider>(
           builder: (context, provider, child) {
             if (provider.isLoading) {
@@ -287,6 +295,7 @@ class _CulturesScreenState extends State<CulturesScreen> {
             if (provider.artisanats.isEmpty) {
               return Center(child: Text(tr("no_craft_available")));
             }
+
 
             return ListView.builder(
               padding: const EdgeInsets.all(8.0),
