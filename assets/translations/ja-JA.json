@@ -308,7 +308,7 @@
   "room_summary_title": "部屋 {room_number} - 大人{adults}名、子供{children}名",
   "required_fields_note": "* 必須項目",
   "total_price_label": "合計金額:",
-  "confirm_reservation_button": "予約を確定する • {} ",
+  "confirm_reservation_button": "予約を確認 • {price} {currency}",
   "gender_required_message": "すべての旅行者の性別を選択してください。",
   "error_during_reservation": "予約中にエラーが発生しました。\n{args[0]}",
   "exception_during_reservation": "予約中に例外が発生しました: {args[0]}",
@@ -389,7 +389,21 @@
   "phone_numbers": "電話番号",
   "close": "閉じる",
   "circuit_summary_title": "ツアー概要",
-  "choose_destination": "目的地を選択"
+  "choose_destination": "目的地を選択",
+  "prenom": "名",
+  "enter_prenom": "名を入力してください",
+  "age_label": "年齢",
+  "age_required_error": "年齢は必須です",
+  "invalid_child_age_error": "年齢は0から12の間でなければなりません",
+  "birthday_label": "生年月日",
+  "birthday_required_error": "生年月日は必須です",
+  "adults_section_title": "大人の情報",
+  "children_section_title": "子供の情報",
+  "search_country": "国を検索",
+  "showing_results": "{count} 件の結果を表示",
+  "no_countries_found": "国が見つかりません",
+  "page_info": "{current} / {total} ページ"
+
 
 
 

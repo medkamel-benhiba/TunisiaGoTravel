@@ -16,6 +16,7 @@ class SignUpScreen extends StatefulWidget {
 class _SignUpScreenState extends State<SignUpScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
+  final _prenomController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _phoneController = TextEditingController();
@@ -24,6 +25,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   @override
   void dispose() {
     _nameController.dispose();
+    _prenomController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _phoneController.dispose();
@@ -36,6 +38,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
     final success = await context.read<AuthProvider>().signUp(
       _nameController.text.trim(),
+      _prenomController.text.trim(),
       _emailController.text.trim(),
       _passwordController.text.trim(),
       _phoneController.text.trim(),
@@ -43,16 +46,30 @@ class _SignUpScreenState extends State<SignUpScreen> {
     );
 
     if (success) {
-      Navigator.pop(context);
+      // Show success snackbar
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('signup_success'.tr())),
+        SnackBar(
+          content: Text('signup_success'.tr()),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const MainWrapperScreen()),
+            (route) => false,
       );
     } else {
+      // Show failure snackbar
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('signup_failed'.tr())),
+        SnackBar(
+          content: Text('signup_failed'.tr()),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -101,6 +118,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           ),
                           validator: (val) =>
                           val!.isEmpty ? 'enter_name'.tr() : null,
+                        ),
+                        const SizedBox(height: 15),
+                        TextFormField(
+                          controller: _prenomController,
+                          decoration: InputDecoration(
+                            labelText: 'prenom'.tr(),
+                            prefixIcon: const Icon(Icons.person),
+                          ),
+                          validator: (val) =>
+                          val!.isEmpty ? 'enter_prenom'.tr() : null,
                         ),
                         const SizedBox(height: 15),
                         TextFormField(

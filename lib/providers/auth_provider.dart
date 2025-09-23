@@ -25,13 +25,14 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> signUp(String name, String email, String password, String phone, String city) async {
+  Future<bool> signUp(String name,String prenom, String email, String password, String phone, String city) async {
     try {
       isLoading = true;
       notifyListeners();
 
       final success = await ApiService().registerUser(
         name: name,
+        prenom: prenom,
         email: email,
         password: password,
         phone: phone,

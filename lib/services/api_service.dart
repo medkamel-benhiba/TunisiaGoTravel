@@ -664,15 +664,30 @@ class ApiService {
 
   Future<bool> registerUser({
     required String name,
+    required String prenom,
     required String email,
     required String password,
     required String phone,
     required String city,
   }) async {
+    final body = {
+      'name': name,
+      'prenom': prenom,
+      'email': email,
+      'password': password,
+      'tel': phone,
+      'ville': city,
+      'privacy': "true",
+    };
+
+    // DEBUG: print request body
+    print('Register request body: $body');
+
     final response = await http.post(
       Uri.parse('$_baseUrl/utilisateur/registeruser'),
       body: {
         'name': name,
+        'prenom': prenom,
         'email': email,
         'password': password,
         'tel': phone,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:tunisiagotravel/screens/payment_screen.dart';
+import 'package:tunisiagotravel/widgets/CountryPicker.dart';
 import '../theme/color.dart';
 import '../services/api_service.dart';
 
@@ -46,6 +47,7 @@ class _HotelReservationFormScreenState extends State<HotelReservationFormScreen>
   // Voyageurs
   Map<String, String?> _selectedGenders = {};
   List<Map<String, TextEditingController>> travelerControllers = [];
+  List<Map<String, TextEditingController>> travelerCountryControllers = [];
   List<Map<String, dynamic>> roomsWithTravelers = [];
 
   bool _isLoading = false;
@@ -91,22 +93,28 @@ class _HotelReservationFormScreenState extends State<HotelReservationFormScreen>
 
       for (int i = 0; i < adults; i++) {
         final controllers = _createTravelerControllers();
+        final countryController = _createCountryController();
         travelerControllers.add(controllers);
+        travelerCountryControllers.add(countryController);
         travelers.add({
           'type': 'adult',
           'index': i + 1,
           'controllerIndex': travelerControllers.length - 1,
+          'countryControllerIndex': travelerCountryControllers.length - 1,
         });
         _selectedGenders['room_${roomIndex + 1}_adult_${i + 1}'] = null;
       }
 
       for (int i = 0; i < children; i++) {
         final controllers = _createTravelerControllers();
+        final countryController = _createCountryController();
         travelerControllers.add(controllers);
+        travelerCountryControllers.add(countryController);
         travelers.add({
           'type': 'child',
           'index': i + 1,
           'controllerIndex': travelerControllers.length - 1,
+          'countryControllerIndex': travelerCountryControllers.length - 1,
         });
         _selectedGenders['room_${roomIndex + 1}_child_${i + 1}'] = null;
       }
@@ -139,6 +147,12 @@ class _HotelReservationFormScreenState extends State<HotelReservationFormScreen>
     };
   }
 
+  Map<String, TextEditingController> _createCountryController() {
+    return {
+      'country': TextEditingController(),
+    };
+  }
+
   @override
   void dispose() {
     _mainNameController.dispose();
@@ -153,6 +167,10 @@ class _HotelReservationFormScreenState extends State<HotelReservationFormScreen>
       controllers.values.forEach((c) => c.dispose());
     }
 
+    for (var countryControllers in travelerCountryControllers) {
+      countryControllers.values.forEach((c) => c.dispose());
+    }
+
     _scrollController.dispose();
     super.dispose();
   }
@@ -163,7 +181,7 @@ class _HotelReservationFormScreenState extends State<HotelReservationFormScreen>
     final totalChildren = rooms.fold<int>(0, (s, r) => s + int.tryParse(r['children']?.toString() ?? '0')!);
 
     // Use the translation keys with args
-    return 'traveler_summary'.tr(namedArgs: {'adults': totalAdults.toString(), 'children': totalChildren.toString()});
+    return 'traveler_summary'.tr(namedArgs: {'adults_number': totalAdults.toString(), 'children_number': totalChildren.toString()});
   }
 
   List<Map<String, dynamic>> _generatePaxList() {
@@ -428,7 +446,6 @@ class _HotelReservationFormScreenState extends State<HotelReservationFormScreen>
     }
   }
 
-
   String _mapCountryToCode(String country) {
     switch (country.toLowerCase()) {
       case 'tunisia':
@@ -489,6 +506,8 @@ class _HotelReservationFormScreenState extends State<HotelReservationFormScreen>
         required String? Function(String?) validator,
         IconData? icon,
         TextInputType? keyboardType,
+        bool isCountryField = false,
+        int? countryControllerIndex,
       }) {
     return TextFormField(
       controller: controller,
@@ -504,6 +523,20 @@ class _HotelReservationFormScreenState extends State<HotelReservationFormScreen>
         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       ),
       validator: validator,
+      readOnly: isCountryField,
+      onTap: isCountryField && countryControllerIndex != null
+          ? () async {
+        final selectedCountry = await showCountryPicker(
+          context: context,
+          selectedCountry: controller.text,
+        );
+        if (selectedCountry != null) {
+          setState(() {
+            controller.text = selectedCountry.name;
+          });
+        }
+      }
+          : null,
     );
   }
 
@@ -536,15 +569,30 @@ class _HotelReservationFormScreenState extends State<HotelReservationFormScreen>
           const SizedBox(height: 12),
           _buildTextField(_mainPhoneController, label: 'phone_label'.tr(), icon: Icons.phone, keyboardType: TextInputType.phone, validator: (v) => v!.isEmpty ? 'phone_required_error'.tr() : null),
           const SizedBox(height: 12),
-          _buildTextField(_mainCountryController, label: 'country_label'.tr(), icon: Icons.flag, validator: (v) => v!.isEmpty ? 'country_required_error'.tr() : null),
-          const SizedBox(height: 12),
-          _buildTextField(_mainCityController, label: 'city_label'.tr(), icon: Icons.location_city, validator: (v) => v!.isEmpty ? 'city_required_error'.tr() : null),
+          Row(
+            children: [
+              Expanded(
+                child: _buildTextField(_mainCityController, label: 'city_label'.tr(), icon: Icons.location_city, validator: (v) => v!.isEmpty ? 'city_required_error'.tr() : null),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildTextField(
+                  _mainCountryController,
+                  label: 'country_label'.tr(),
+                  icon: Icons.flag,
+                  validator: (v) => v!.isEmpty ? 'country_required_error'.tr() : null,
+                  isCountryField: true,
+                  countryControllerIndex: -1, // Main contact country
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildTravelerForm(Map<String, TextEditingController> controllers, String travelerType, int travelerIndex, int roomNumber) {
+  Widget _buildTravelerForm(Map<String, TextEditingController> controllers, Map<String, TextEditingController> countryControllers, String travelerType, int travelerIndex, int roomNumber) {
     final isAdult = travelerType == 'adult';
     final title = isAdult ? 'adult_title'.tr(args: [travelerIndex.toString()]) : 'child_title'.tr(args: [travelerIndex.toString()]);
     final uniqueKey = 'room_${roomNumber}_${travelerType}_$travelerIndex';
@@ -584,6 +632,7 @@ class _HotelReservationFormScreenState extends State<HotelReservationFormScreen>
           _buildTextField(controllers['name']!, label: 'name_label'.tr(), icon: Icons.person, validator: (v) => v!.isEmpty ? 'name_required_error'.tr() : null),
           const SizedBox(height: 12),
           _buildTextField(controllers['firstname']!, label: 'first_name_label'.tr(), icon: Icons.person, validator: (v) => v!.isEmpty ? 'first_name_required_error'.tr() : null),
+          const SizedBox(height: 12),
         ],
       ),
     );
@@ -736,6 +785,7 @@ class _HotelReservationFormScreenState extends State<HotelReservationFormScreen>
                           for (var traveler in roomsWithTravelers[roomIndex]['travelers'])
                             _buildTravelerForm(
                               travelerControllers[traveler['controllerIndex']],
+                              travelerCountryControllers[traveler['countryControllerIndex']],
                               traveler['type'],
                               traveler['index'],
                               roomIndex + 1,

@@ -308,7 +308,7 @@
   "room_summary_title": "Room {} - {} adult(s), {} child(s)",
   "required_fields_note": "* Required fields",
   "total_price_label": "Total Price:",
-  "confirm_reservation_button": "Confirm Reservation • {} TND",
+  "confirm_reservation_button": "Confirm reservation • {price} {currency}",
   "gender_required_message": "Please select a gender for all travelers.",
   "error_during_reservation": "Error during reservation.\n{args[0]}",
   "exception_during_reservation": "Exception during reservation: {args[0]}",
@@ -389,7 +389,6 @@
   "contact_support": "Contact Support",
   "phone_numbers": "Phone Numbers",
   "close": "Close",
-
   "age_label": "Age",
   "age_required_error": "Age is required",
   "invalid_child_age_error": "Age must be between 0 and 12",
@@ -398,7 +397,15 @@
   "adults_section_title": "Adults Information",
   "children_section_title": "Children Information",
   "circuit_summary_title": "Circuit Summary",
-  "choose_destination": "Choose destination"
+  "choose_destination": "Choose destination",
+  "prenom": "First Name",
+  "enter_prenom": "Enter first name",
+  "search_country": "Search country",
+  "showing_results": "Showing {count} results",
+  "no_countries_found": "No countries found",
+  "page_info": "Page {current} of {total}"
+
+
 
 }
 

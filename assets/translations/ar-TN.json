@@ -306,7 +306,7 @@
   "room_summary_title": "غرفة {room_number} - {adults} بالغ، {children} طفل",
   "required_fields_note": "* حقول إلزامية",
   "total_price_label": "السعر الإجمالي:",
-  "confirm_reservation_button": "تأكيد الحجز •  {}",
+  "confirm_reservation_button": "تأكيد الحجز • {price} {currency}",
   "gender_required_message": "الرجاء تحديد النوع لجميع المسافرين.",
   "error_during_reservation": "حدث خطأ أثناء الحجز.\n{args[]}",
   "exception_during_reservation": "استثناء أثناء الحجز: {args[0]}",
@@ -346,8 +346,8 @@
   "no_account": "ليس لديك حساب بعد؟",
   "create_account": "إنشاء حساب",
   "signup_title": "إنشاء حساب",
-  "name": "الاسم",
-  "enter_name": "يرجى إدخال الاسم",
+  "name": "اللقب",
+  "enter_name": "يرجى إدخال اللقب",
   "enter_phone": "يرجى إدخال رقم الهاتف",
   "enter_city": "يرجى إدخال المدينة",
   "signup_button": "تسجيل",
@@ -387,7 +387,22 @@
   "phone_numbers": "أرقام الهاتف",
   "close": "إغلاق",
   "circuit_summary_title": "ملخص الجولة",
-  "choose_destination": "اختر الوجهة"
+  "choose_destination": "اختر الوجهة",
+  "prenom": "الاسم",
+  "enter_prenom": "أدخل الاسم",
+  "age_label": "العمر",
+  "age_required_error": "العمر مطلوب",
+  "invalid_child_age_error": "يجب أن يكون العمر بين 0 و 12",
+  "birthday_label": "تاريخ الميلاد",
+  "birthday_required_error": "تاريخ الميلاد مطلوب",
+  "adults_section_title": "معلومات البالغين",
+  "children_section_title": "معلومات الأطفال",
+  "search_country": "ابحث عن الدولة",
+  "showing_results": "عرض {count} نتيجة",
+  "no_countries_found": "لم يتم العثور على دول",
+  "page_info": "الصفحة {current} من {total}"
+
+
 
 
 

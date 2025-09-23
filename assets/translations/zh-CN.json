@@ -308,7 +308,7 @@
   "room_summary_title": "房间 {room_number} - {adults}位成人，{children}位儿童",
   "required_fields_note": "* 必填项",
   "total_price_label": "总价:",
-  "confirm_reservation_button": "确认预订 • {} ",
+  "confirm_reservation_button": "确认预订 • {price} {currency}",
   "gender_required_message": "请为所有旅客选择性别。",
   "error_during_reservation": "预订期间出错。\n{args[0]}",
   "exception_during_reservation": "预订期间出现异常: {args[0]}",
@@ -389,7 +389,21 @@
   "phone_numbers": "电话号码",
   "close": "关闭",
   "circuit_summary_title": "行程摘要",
-  "choose_destination": "选择目的地"
+  "choose_destination": "选择目的地",
+  "prenom": "名字",
+  "enter_prenom": "请输入名字",
+  "age_label": "年龄",
+  "age_required_error": "年龄为必填项",
+  "invalid_child_age_error": "年龄必须在0到12岁之间",
+  "birthday_label": "出生日期",
+  "birthday_required_error": "出生日期为必填项",
+  "adults_section_title": "成人信息",
+  "children_section_title": "儿童信息",
+  "search_country": "搜索国家",
+  "showing_results": "显示 {count} 个结果",
+  "no_countries_found": "未找到国家",
+  "page_info": "第 {current} 页，共 {total} 页"
+
 
 
 

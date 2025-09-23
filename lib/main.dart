@@ -78,7 +78,7 @@ class MyApp extends StatelessWidget {
       supportedLocales: context.supportedLocales,
       locale: context.locale,
 
-      home: const CircuitReservationSuccessScreen(),
+      home: const SplashScreen(),
       debugShowCheckedModeBanner: false,
     );
   }

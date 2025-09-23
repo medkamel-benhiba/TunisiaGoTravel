@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:tunisiagotravel/screens/CircuitReservationSuccess_screen.dart';
+import 'package:tunisiagotravel/widgets/CountryPicker.dart';
 import '../services/api_service.dart';
 import '../theme/color.dart';
 
@@ -147,7 +148,6 @@ class _CircuitReservationFormScreenState extends State<CircuitReservationFormScr
       'alldestination': widget.formData['alldestination'] ?? [],
     };
 
-
     // Build rooms data
     List<Map<String, dynamic>> rooms = [];
     for (int roomIndex = 0; roomIndex < _adultsControllers.length; roomIndex++) {
@@ -197,8 +197,6 @@ class _CircuitReservationFormScreenState extends State<CircuitReservationFormScr
     };
   }
 
-
-
   Map<String, dynamic> _getDepartureCityData() {
     return {
       'id': widget.formData['departCityId'],
@@ -229,9 +227,6 @@ class _CircuitReservationFormScreenState extends State<CircuitReservationFormScr
       },
     );
   }
-
-
-
 
   Widget _buildTextField(
       TextEditingController controller, {
@@ -291,7 +286,27 @@ class _CircuitReservationFormScreenState extends State<CircuitReservationFormScr
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: _buildTextField(_countryController, label: 'country_label'.tr(), icon: Icons.flag, validator: (v) => v!.isEmpty ? 'country_required_error'.tr() : null),
+                child: GestureDetector(
+                  onTap: () async {
+                    final selectedCountry = await showCountryPicker(
+                      context: context,
+                      selectedCountry: _countryController.text,
+                    );
+                    if (selectedCountry != null) {
+                      setState(() {
+                        _countryController.text = selectedCountry.name;
+                      });
+                    }
+                  },
+                  child: AbsorbPointer(
+                    child: _buildTextField(
+                      _countryController,
+                      label: 'country_label'.tr(),
+                      icon: Icons.flag,
+                      validator: (v) => v!.isEmpty ? 'country_required_error'.tr() : null,
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
@@ -316,13 +331,13 @@ class _CircuitReservationFormScreenState extends State<CircuitReservationFormScr
     final title = 'adult_title'.tr(args: [travelerIndex.toString()]);
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-          color: Colors.grey[50],
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.grey[200]!)
-      ),
+        margin: const EdgeInsets.only(bottom: 16),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+            color: Colors.grey[50],
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.grey[200]!)
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -380,7 +395,6 @@ class _CircuitReservationFormScreenState extends State<CircuitReservationFormScr
             ),
           ],
         )
-
     );
   }
 
@@ -391,9 +405,9 @@ class _CircuitReservationFormScreenState extends State<CircuitReservationFormScr
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-          color: Colors.blue[50],
+          color: Colors.grey[50],
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.blue[200]!)
+          border: Border.all(color: Colors.grey[200]!)
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -420,7 +434,6 @@ class _CircuitReservationFormScreenState extends State<CircuitReservationFormScr
                   return null;
                 }),
               ),
-              const SizedBox(width: 12),
             ],
           ),
         ],
@@ -565,7 +578,6 @@ class _CircuitReservationFormScreenState extends State<CircuitReservationFormScr
 
                           // Adults section
                           if (_adultsControllers[roomIndex].isNotEmpty) ...[
-
                             for (int adultIndex = 0; adultIndex < _adultsControllers[roomIndex].length; adultIndex++)
                               _buildAdultForm(
                                 _adultsControllers[roomIndex][adultIndex],
@@ -577,7 +589,6 @@ class _CircuitReservationFormScreenState extends State<CircuitReservationFormScr
                           // Children section
                           if (roomIndex < _childrenControllers.length && _childrenControllers[roomIndex].isNotEmpty) ...[
                             const SizedBox(height: 16),
-
                             for (int childIndex = 0; childIndex < _childrenControllers[roomIndex].length; childIndex++)
                               _buildChildForm(
                                 _childrenControllers[roomIndex][childIndex],
@@ -665,10 +676,13 @@ class _CircuitReservationFormScreenState extends State<CircuitReservationFormScr
                 ),
               )
                   : Text(
-                'confirm_reservation_button'.tr(args: [
-                  (widget.formData['budget'] ?? '1000').toString(),
-                ]),
-                style: const TextStyle(
+                'confirm_reservation_button'.tr(
+                  namedArgs: {
+                    'price': (widget.formData['budget'] ?? '1000').toString(),
+                    'currency': 'TND', // or get it dynamically from your data
+                  },
+                ),
+              style: const TextStyle(
                   color: Colors.white,
                   fontSize: 16,
                   fontWeight: FontWeight.bold,

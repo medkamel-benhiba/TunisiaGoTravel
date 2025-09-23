@@ -308,7 +308,7 @@
   "room_summary_title": "Комната {room_number} - {adults} взросл. {children} дет.",
   "required_fields_note": "* Обязательные поля",
   "total_price_label": "Общая цена:",
-  "confirm_reservation_button": "Подтвердить бронирование • {} ",
+  "confirm_reservation_button": "Подтвердить бронирование • {price} {currency}",
   "gender_required_message": "Пожалуйста, выберите пол для всех путешественников.",
   "error_during_reservation": "Ошибка при бронировании.\n{args[0]}",
   "exception_during_reservation": "Исключение при бронировании: {args[0]}",
@@ -389,7 +389,21 @@
   "phone_numbers": "Номера телефонов",
   "close": "Закрыть",
   "circuit_summary_title": "Сводка маршрута",
-  "choose_destination": "Выберите место назначения"
+  "choose_destination": "Выберите место назначения",
+  "prenom": "Имя",
+  "enter_prenom": "Введите имя",
+  "age_label": "Возраст",
+  "age_required_error": "Возраст обязателен",
+  "invalid_child_age_error": "Возраст должен быть от 0 до 12",
+  "birthday_label": "Дата рождения",
+  "birthday_required_error": "Дата рождения обязательна",
+  "adults_section_title": "Информация для взрослых",
+  "children_section_title": "Информация для детей",
+  "search_country": "Поиск страны",
+  "showing_results": "Показано {count} результатов",
+  "no_countries_found": "Страны не найдены",
+  "page_info": "Страница {current} из {total}"
+
 
 
 

@@ -308,8 +308,7 @@
   "room_summary_title": "Chambre {room_number} - {adults} adulte(s), {children} enfant(s)",
   "required_fields_note": "* Champs obligatoires",
   "total_price_label": "Prix total:",
-  "confirm_reservation_button": "Confirmer la réservation • {} ",
-  "gender_required_message": "Veuillez sélectionner le genre pour tous les voyageurs.",
+  "confirm_reservation_button": "Confirmer la réservation • {price} {currency}",  "gender_required_message": "Veuillez sélectionner le genre pour tous les voyageurs.",
   "error_during_reservation": "Erreur lors de la réservation.\n{args[0]}",
   "exception_during_reservation": "Exception lors de la réservation : {args[0]}",
   "reservation_confirmed_title": "Réservation confirmée",
@@ -389,7 +388,21 @@
   "phone_numbers": "Numéros de téléphone",
   "close": "Fermer",
   "circuit_summary_title": "Résumé du circuit",
-  "choose_destination": "Choisir une destination"
+  "choose_destination": "Choisir une destination",
+  "prenom": "Prénom",
+  "enter_prenom": "Entrez le prénom",
+  "age_label": "Âge",
+  "age_required_error": "L'âge est requis",
+  "invalid_child_age_error": "L'âge doit être compris entre 0 et 12",
+  "birthday_label": "Date de naissance",
+  "birthday_required_error": "La date de naissance est requise",
+  "adults_section_title": "Informations sur les adultes",
+  "children_section_title": "Informations sur les enfants",
+  "search_country": "Rechercher un pays",
+  "showing_results": "Affichage de {count} résultats",
+  "no_countries_found": "Aucun pays trouvé",
+  "page_info": "Page {current} sur {total}"
+
 
 
 
