@@ -1,6 +1,13 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:tunisiagotravel/models/festival.dart';
+import 'package:tunisiagotravel/providers/activity_provider.dart';
+import 'package:tunisiagotravel/providers/event_provider.dart';
+import 'package:tunisiagotravel/providers/festival_provider.dart';
+import 'package:tunisiagotravel/providers/monument_provider.dart';
+import 'package:tunisiagotravel/providers/musee_provider.dart';
+import 'package:tunisiagotravel/providers/state_provider.dart';
 import 'package:tunisiagotravel/screens/main_wrapper_screen.dart';
 import 'package:tunisiagotravel/theme/color.dart';
 
@@ -25,10 +32,43 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   void initState() {
     super.initState();
 
-    // Fetch destinations
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<DestinationProvider>(context, listen: false).fetchDestinations();
     });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<StateProvider>(context, listen: false).fetchStates();
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<EventProvider>(context, listen: false).fetchEvents();
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<ActivityProvider>(context, listen: false).fetchAllActivities();
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<MonumentProvider>(context, listen: false).fetchMonuments();
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<MuseeProvider>(context, listen: false).fetchMusees();
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<FestivalProvider>(context, listen: false).fetchAllFestivals();
+    });
+
+
+
+
+
+
+
+
+
+
 
 
     // Fade animation for logo

@@ -401,13 +401,20 @@
   "search_country": "Rechercher un pays",
   "showing_results": "Affichage de {count} résultats",
   "no_countries_found": "Aucun pays trouvé",
-  "page_info": "Page {current} sur {total}"
-
-
-
-
-
-
-
+  "page_info": "Page {current} sur {total}",
+  "destination_in_state": "Destinations associées à {}",
+  "interactive_map": "Carte Interactive",
+  "selected_city": "Sélectionnée: {}",
+  "select_city": "Sélectionner une ville",
+  "explore": "Explorer",
+  "available_hotels": "Hôtels disponibles",
+  "available_restaurants": "Restaurants disponibles",
+  "see_all": "Voir tout",
+  "available_events": "Événements disponibles",
+  "available_monuments": "Monuments disponibles",
+  "available_musees": "Musées disponibles",
+  "available_festivals": "Festivals disponibles",
+  "available_activities": "Activités disponibles",
+  "destinations_in_state": "Destinations dans {}"
 
 }

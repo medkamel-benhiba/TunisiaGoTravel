@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tunisiagotravel/models/maisondHote.dart';
+import 'package:tunisiagotravel/models/state.dart';
 import '../models/activity.dart';
 import '../models/agil.dart';
 import '../models/artisanat.dart';
@@ -43,7 +44,23 @@ class ApiService {
     }
   }
 
-  Future<List<Hotel>> gethotels() async {
+  Future<List<StateApp>> fetchStates() async {
+    final response = await http.get(Uri.parse("$_baseUrl/utilisateur/states"));
+    print("fetching states....");
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      final List statesJson = data['states'] ?? [];
+      return statesJson.map((json) => StateApp.fromJson(json)).toList();
+    } else {
+      throw Exception("Erreur lors du chargement des states");
+
+    }
+
+  }
+
+
+Future<List<Hotel>> gethotels() async {
     try {
       final response =
       await http.get(Uri.parse('$_baseUrl/utilisateur/allhotels'));
@@ -160,7 +177,7 @@ class ApiService {
     }
   }
 
-  Future<List<Activity>> getallactivitys() async {
+  Future<List<Activity>> getallactivities() async {
     try {
       final response =
       await http.get(Uri.parse('$_baseUrl/utilisateur/allactivity'));

@@ -402,13 +402,19 @@
   "search_country": "搜索国家",
   "showing_results": "显示 {count} 个结果",
   "no_countries_found": "未找到国家",
-  "page_info": "第 {current} 页，共 {total} 页"
-
-
-
-
-
-
-
-
+  "page_info": "第 {current} 页，共 {total} 页",
+  "destination_in_state": "{} 的相关目的地",
+  "selected_city": "已选择: {}",
+  "select_city": "选择城市",
+  "interactive_map": "互动地图",
+  "explore": "探索",
+  "available_hotels": "可用的酒店",
+  "available_restaurants": "可用的餐厅",
+  "see_all": "查看全部",
+  "available_events": "可用活动",
+  "available_monuments": "可用的纪念碑",
+  "available_musees": "可用的博物馆",
+  "available_festivals": "可用的节日",
+  "available_activities": "可用的活动",
+  "destinations_in_state": "{} 的目的地"
 }

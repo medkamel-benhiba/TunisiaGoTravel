@@ -1,8 +1,13 @@
+import 'dart:ui' as ui;
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:path_drawing/path_drawing.dart';
+import 'package:provider/provider.dart';
+import 'package:tunisiagotravel/providers/destination_provider.dart';
 import 'package:tunisiagotravel/theme/color.dart';
 import 'package:xml/xml.dart';
+import 'package:tunisiagotravel/widgets/city_info_section.dart';
 
 class SimplifiedInteractiveMapDialog extends StatefulWidget {
   final Function(String) onCitySelected;
@@ -40,16 +45,10 @@ class _SimplifiedInteractiveMapDialogState
     super.dispose();
   }
 
-  void _confirmSelection() {
-    if (_selectedCity != null) {
-      widget.onCitySelected(_selectedCity!);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
-
+    print("*****SELECTED CITY*****:$_selectedCity ");
     return AnimatedBuilder(
       animation: _scaleAnimation,
       builder: (context, child) {
@@ -79,7 +78,7 @@ class _SimplifiedInteractiveMapDialogState
                   padding: const EdgeInsets.all(16),
                   decoration: const BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [Color(0xFF15A5DF), Color(0xFF0E7FA3)],
+                      colors: [ Color(0xFF11A2DC),Color(0xFF2B5CA1)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
@@ -96,8 +95,8 @@ class _SimplifiedInteractiveMapDialogState
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'Carte Interactive',
+                            Text(
+                              tr('interactive_map'),
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 17,
@@ -105,16 +104,23 @@ class _SimplifiedInteractiveMapDialogState
                               ),
                             ),
                             if (_selectedCity != null)
-                              Text(
-                                'Sélectionnée: $_selectedCity',
-                                style: TextStyle(
-                                  color: Colors.white.withOpacity(0.9),
-                                  fontSize: 14,
-                                ),
+                              Consumer<DestinationProvider>(
+                                builder: (context, provider, child) {
+                                  final destination = provider.getDestinationByName(_selectedCity!);
+                                  final localizedCityName = destination?.getName(context.locale) ?? _selectedCity!;
+
+                                  return Text(
+                                    tr('selected_city', args: [localizedCityName]),
+                                    style: TextStyle(
+                                      color: Colors.white.withOpacity(0.9),
+                                      fontSize: 14,
+                                    ),
+                                  );
+                                },
                               )
                             else
                               Text(
-                                'Sélectionner une ville',
+                                tr('select_city'),
                                 style: TextStyle(
                                   color: Colors.white.withOpacity(0.8),
                                   fontSize: 14,
@@ -131,6 +137,7 @@ class _SimplifiedInteractiveMapDialogState
                     ],
                   ),
                 ),
+                // Map
                 Flexible(
                   child: Container(
                     padding: const EdgeInsets.all(16),
@@ -140,14 +147,17 @@ class _SimplifiedInteractiveMapDialogState
                         return Center(
                           child: AspectRatio(
                             aspectRatio: 0.5,
-                            child: Container(
-                              width: double.infinity,
-                              child: ResponsiveInteractiveMap(
-                                onRegionTap: (region) {
-                                  setState(() {
-                                    _selectedCity = region.id;
-                                  });
-                                },
+                            child: Directionality(
+                              textDirection: ui.TextDirection.ltr,
+                              child: Container(
+                                width: double.infinity,
+                                child: ResponsiveInteractiveMap(
+                                  onRegionTap: (region) {
+                                    setState(() {
+                                      _selectedCity = region.id;
+                                    });
+                                  },
+                                ),
                               ),
                             ),
                           ),
@@ -156,7 +166,21 @@ class _SimplifiedInteractiveMapDialogState
                     ),
                   ),
                 ),
-                // Action buttons
+
+                // City Info Section
+                if (_selectedCity != null)
+                  Flexible(
+                    child: SingleChildScrollView(
+                      child: CityInfoDisplay(
+                        selectedCityId: _selectedCity,
+                        onClose: () {
+                          setState(() {
+                            _selectedCity = null;
+                          });
+                        },
+                      ),
+                    ),
+                  ),
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
@@ -165,48 +189,6 @@ class _SimplifiedInteractiveMapDialogState
                       bottomLeft: Radius.circular(20),
                       bottomRight: Radius.circular(20),
                     ),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: TextButton(
-                          onPressed: () => Navigator.of(context).pop(),
-                          style: TextButton.styleFrom(
-                            foregroundColor: Colors.grey.shade600,
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                          ),
-                          child: const Text(
-                            'Fermer',
-                            style: TextStyle(fontSize: 16),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        flex: 2,
-                        child: ElevatedButton(
-                          onPressed: _selectedCity != null ? _confirmSelection : null,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColorstatic.secondary,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(25),
-                            ),
-                            elevation: _selectedCity != null ? 4 : 0,
-                          ),
-                          child: Text(
-                            _selectedCity != null
-                                ? 'Choisir $_selectedCity'
-                                : 'Choisir une ville',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
                   ),
                 ),
               ],
@@ -218,7 +200,6 @@ class _SimplifiedInteractiveMapDialogState
   }
 }
 
-/// Responsive version of InteractiveMap without InteractiveViewer
 class ResponsiveInteractiveMap extends StatefulWidget {
   final Function(Region) onRegionTap;
 
@@ -362,4 +343,3 @@ class Region {
 
   Region({required this.id, required this.path});
 }
-

@@ -402,12 +402,19 @@
   "search_country": "국가 검색",
   "showing_results": "{count}개의 결과 표시",
   "no_countries_found": "국가를 찾을 수 없습니다",
-  "page_info": "{current} / {total} 페이지"
-
-
-
-
-
-
-
+  "page_info": "{current} / {total} 페이지",
+  "destination_in_state": "{}의 관련 목적지",
+  "interactive_map": "인터랙티브 지도",
+  "selected_city": "선택됨: {}",
+  "select_city": "도시 선택",
+  "explore": "탐험하기",
+  "available_hotels": "이용 가능한 호텔",
+  "available_restaurants": "이용 가능한 레스토랑",
+  "see_all": "모두 보기",
+  "available_events": "사용 가능한 이벤트",
+  "available_monuments": "사용 가능한 기념물",
+  "available_musees": "사용 가능한 박물관",
+  "available_festivals": "사용 가능한 축제",
+  "available_activities": "사용 가능한 활동",
+  "destinations_in_state": "{}의 여행지"
 }

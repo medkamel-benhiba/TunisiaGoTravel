@@ -9,7 +9,8 @@ import '../widgets/restaurant/restaurant_card.dart';
 import '../widgets/destinations_list.dart';
 
 class RestaurantsScreenContent extends StatefulWidget {
-  const RestaurantsScreenContent({super.key});
+  final String? initialDestinationId;
+  const RestaurantsScreenContent({super.key, this.initialDestinationId});
 
   @override
   State<RestaurantsScreenContent> createState() =>
@@ -19,6 +20,19 @@ class RestaurantsScreenContent extends StatefulWidget {
 class _RestaurantsScreenState extends State<RestaurantsScreenContent> {
   String? selectedDestinationId;
   String? selectedDestinationTitle;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialDestinationId != null) {
+      selectedDestinationId = widget.initialDestinationId;
+      // Update provider's current restaurants list
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Provider.of<RestaurantProvider>(context, listen: false)
+            .setRestaurantsByDestination(widget.initialDestinationId!);
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +63,9 @@ class _RestaurantsScreenState extends State<RestaurantsScreenContent> {
               }
 
               return ScreenTitle(
-                icon: selectedDestinationId == null ? Icons.location_on : Icons.restaurant,
+                icon: selectedDestinationId == null
+                    ? Icons.location_on
+                    : Icons.restaurant,
                 title: selectedDestinationId == null
                     ? 'restaurantsScreen.destinations'.tr()
                     : 'restaurantsScreen.restaurantsInDestination'.tr(
@@ -68,7 +84,7 @@ class _RestaurantsScreenState extends State<RestaurantsScreenContent> {
                   selectedDestinationId = destination.id;
                   selectedDestinationTitle = destination.name;
                 });
-                // Optional: update provider's current restaurants list
+                // Update provider's current restaurants list
                 provider.setRestaurantsByDestination(destination.id);
               },
             )

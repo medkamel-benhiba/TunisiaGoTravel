@@ -400,17 +400,21 @@
   "search_country": "ابحث عن الدولة",
   "showing_results": "عرض {count} نتيجة",
   "no_countries_found": "لم يتم العثور على دول",
-  "page_info": "الصفحة {current} من {total}"
-
-
-
-
-
-
-
-
-
-
+  "page_info": "الصفحة {current} من {total}",
+  "destination_in_state": "وجهات مرتبطة بـ {}",
+  "interactive_map": "خريطة تفاعلية",
+  "selected_city": "المحددة: {}",
+  "select_city": "اختر مدينة",
+  "explore": "اكتشف",
+  "available_hotels": "الفنادق المتاحة",
+  "available_restaurants": "المطاعم المتاحة",
+  "see_all": "عرض الكل",
+  "available_events": "الأحداث المتاحة",
+  "available_monuments": "المعالم المتاحة",
+  "available_musees": "المتاحف المتاحة",
+  "available_festivals": "المهرجانات المتاحة",
+  "available_activities": "الأنشطة المتاحة",
+  "destinations_in_state": "الوجهات في {}"
 }
 
 

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../screens/culture_screen.dart';
-import '../models/hotel.dart'; // â† Assure-toi que ton modÃ¨le Hotel est importÃ©
+import '../models/hotel.dart';
 
 enum AppPage {
   home,
@@ -18,7 +18,9 @@ enum AppPage {
   guide,
   login,
   signup,
-  chatbot
+  chatbot,
+  stateScreenDetails,
+
 }
 
 class GlobalProvider with ChangeNotifier {
@@ -38,6 +40,9 @@ class GlobalProvider with ChangeNotifier {
 
   String? get selectedCityForHotels => _selectedCityForHotels;
   List<Hotel> get availableHotels => _availableHotels;
+
+  String? _initialRestaurantDestinationId;
+  String? get initialRestaurantDestinationId => _initialRestaurantDestinationId;
 
   // 🔹 Add chatbot initial message storage
   String? _chatbotInitialMessage;
@@ -104,6 +109,16 @@ class GlobalProvider with ChangeNotifier {
   void clearChatbotInitialMessage() {
     _chatbotInitialMessage = null;
     // Don't call notifyListeners() here as it's used after navigation
+  }
+
+  void setInitialRestaurantDestinationId(String? id) {
+    _initialRestaurantDestinationId = id;
+    notifyListeners();
+  }
+
+  void clearInitialRestaurantDestinationId() {
+    _initialRestaurantDestinationId = null;
+    notifyListeners();
   }
 
 }

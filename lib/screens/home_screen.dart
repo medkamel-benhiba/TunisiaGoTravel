@@ -210,7 +210,7 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
                         provider.setCulturesInitialCategory(item['initialCategory'] as String?);
                       }
                     }
-                        : null,
+                    : null,
                   );
                 },
               ),

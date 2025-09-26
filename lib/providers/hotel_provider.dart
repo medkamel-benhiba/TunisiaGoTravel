@@ -81,7 +81,7 @@ class HotelProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // ===== Get hotels by destination from cache =====
+  // ===== Get hotels by destination from cache =======
   void setHotelsByDestination(String? destinationId) {
     _hotels = _hotelsByDestination[destinationId] ?? [];
     notifyListeners();

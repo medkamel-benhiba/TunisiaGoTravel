@@ -18,6 +18,7 @@ class MonumentProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
 
+  /// Fetch all monuments (paginated)
   Future<void> fetchMonuments({String page = '1'}) async {
     _isLoading = true;
     _error = null;
@@ -34,6 +35,7 @@ class MonumentProvider with ChangeNotifier {
     }
   }
 
+  /// Fetch monument details by slug
   Future<void> fetchMonumentBySlug(String slug) async {
     _isLoading = true;
     _error = null;
@@ -41,7 +43,6 @@ class MonumentProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      // First, try to find in existing monuments list
       final existingMonument = _monuments.firstWhere(
             (monument) => monument.slug == slug,
         orElse: () => Monument(
@@ -62,8 +63,6 @@ class MonumentProvider with ChangeNotifier {
       if (existingMonument.id.isNotEmpty) {
         _selectedMonument = existingMonument;
       } else {
-        // If not found in list, fetch from API
-        // You'll need to add this method to your ApiService
         _selectedMonument = await apiService.getMonumentBySlug(slug);
       }
     } catch (e) {
@@ -75,13 +74,18 @@ class MonumentProvider with ChangeNotifier {
     }
   }
 
-  // Clear selected monument (useful when navigating away)
+  /// 🔍 Filter monuments by destination (id or slug)
+  List<Monument> getMonumentsByDestination(String destinationId) {
+    return _monuments.where((m) => m.destination.id == destinationId).toList();
+  }
+
+  /// Clear selected monument (useful when navigating away)
   void clearSelectedMonument() {
     _selectedMonument = null;
     notifyListeners();
   }
 
-  // Reset error state
+  /// Reset error state
   void clearError() {
     _error = null;
     notifyListeners();

@@ -1,27 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../models/destination.dart';
+import 'package:tunisiagotravel/models/destination.dart';
+import 'package:tunisiagotravel/screens/StateScreenDetails.dart';
 
-class DestinationCard extends StatelessWidget {
+
+class DestCard extends StatelessWidget {
   final Destination destination;
-  final VoidCallback onTap;
+  final Locale locale;
   final double cardHeight;
   final double screenWidth;
 
-  const DestinationCard({
+  const DestCard({
     super.key,
     required this.destination,
-    required this.onTap,
+    required this.locale,
     required this.cardHeight,
     required this.screenWidth,
   });
 
   @override
   Widget build(BuildContext context) {
-    final locale = Localizations.localeOf(context);
-
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => StateScreenDetails(
+              selectedCityId: destination.id,
+            ),
+          ),
+        );
+      },
       child: Container(
         height: cardHeight,
         decoration: BoxDecoration(
@@ -36,6 +45,7 @@ class DestinationCard extends StatelessWidget {
         ),
         child: Stack(
           children: [
+            // Cover Image
             ClipRRect(
               borderRadius: BorderRadius.circular(screenWidth < 600 ? 12 : 16),
               child: CachedNetworkImage(
@@ -59,6 +69,7 @@ class DestinationCard extends StatelessWidget {
                 ),
               ),
             ),
+            // Overlay Gradient
             Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(screenWidth < 600 ? 12 : 16),
@@ -72,6 +83,7 @@ class DestinationCard extends StatelessWidget {
                 ),
               ),
             ),
+            // Destination Name
             Positioned(
               left: screenWidth < 600 ? 12 : 16,
               bottom: screenWidth < 600 ? 12 : 16,

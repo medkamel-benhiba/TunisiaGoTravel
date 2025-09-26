@@ -33,7 +33,6 @@ class MuseeProvider with ChangeNotifier {
   Future<void> fetchMuseeBySlug(String slug) async {
     _setLoading(true);
     try {
-      // Use the instance apiService
       selectedMusee = await apiService.getMuseeBySlug(slug);
       if (selectedMusee == null) {
         _error = "Musée introuvable";
@@ -50,9 +49,13 @@ class MuseeProvider with ChangeNotifier {
 
   Future<void> refreshMusees() async => fetchMusees();
 
+  /// 🔍 Filter musées par destination (id)
+  List<Musees> getMuseesByDestination(String destinationId) {
+    return _musees.where((m) => m.destinationId == destinationId).toList();
+  }
+
   void _setLoading(bool value) {
     _isLoading = value;
     notifyListeners();
   }
 }
-

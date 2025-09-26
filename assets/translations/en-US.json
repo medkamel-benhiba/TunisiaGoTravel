@@ -403,8 +403,21 @@
   "search_country": "Search country",
   "showing_results": "Showing {count} results",
   "no_countries_found": "No countries found",
-  "page_info": "Page {current} of {total}"
-
+  "page_info": "Page {current} of {total}",
+  "destination_in_state": "Related destinations in {}",
+  "selected_city": "Selected: {}",
+  "select_city": "Select a city",
+  "interactive_map": "Interactive Map",
+  "explore": "Explore",
+  "available_hotels": "Available Hotels",
+  "available_restaurants": "Available Restaurants",
+  "see_all": "See All",
+  "available_events": "Available Events",
+  "available_monuments": "Available Monuments",
+  "available_musees": "Available Museums",
+  "available_festivals": "Available Festivals",
+  "available_activities": "Available Activities",
+  "destinations_in_state": "Destinations in {}"
 
 
 }

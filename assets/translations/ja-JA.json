@@ -402,10 +402,19 @@
   "search_country": "国を検索",
   "showing_results": "{count} 件の結果を表示",
   "no_countries_found": "国が見つかりません",
-  "page_info": "{current} / {total} ページ"
-
-
-
-
-
+  "page_info": "{current} / {total} ページ",
+  "destination_in_state": "{} の関連する目的地",
+  "selected_city": "選択済み: {}",
+  "select_city": "都市を選択",
+  "interactive_map": "インタラクティブマップ",
+  "explore": "探索",
+  "available_hotels": "利用可能なホテル",
+  "available_restaurants": "利用可能なレストラン",
+  "see_all": "すべて見る",
+  "available_events": "利用可能なイベント",
+  "available_monuments": "利用可能な記念碑",
+  "available_musees": "利用可能な博物館",
+  "available_festivals": "利用可能な祭り",
+  "available_activities": "利用可能なアクティビティ",
+  "destinations_in_state": "{} の目的地"
 }

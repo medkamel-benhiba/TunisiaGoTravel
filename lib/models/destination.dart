@@ -58,8 +58,8 @@ class Destination {
   final String? titleEn;
   final String? titleAr;
 
-  final String? videoLink;
   final String? mobileVideo;
+  final String? thumbnail;
 
   final String? cover;
   final String? vignette;
@@ -117,8 +117,8 @@ class Destination {
     this.title,
     this.titleEn,
     this.titleAr,
-    this.videoLink,
     this.mobileVideo,
+    this.thumbnail,
     this.cover,
     required this.gallery,
     this.vignette,
@@ -176,8 +176,8 @@ class Destination {
       title: json["title"],
       titleEn: json["title_en"],
       titleAr: json["title_ar"],
-      videoLink: json["video_link"],
       mobileVideo: json["mobile_video"],
+      thumbnail: json["thumbnail"],
       cover: json["cover"],
       vignette: json["vignette"],
       gallery: List<String>.from(json["gallery"] ?? []),

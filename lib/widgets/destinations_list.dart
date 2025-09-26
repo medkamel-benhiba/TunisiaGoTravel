@@ -41,10 +41,24 @@ class DestinationsList extends StatelessWidget {
             ? provider.destinations
             : provider.destinations.toList();
 
-        if (destinations.isEmpty) {
+        if (destinations.isEmpty && category != null) {
           return Center(
             child: Text(tr('destinations.empty_category', args: [category!])),
           );
+        }
+
+        final screenWidth = MediaQuery.of(context).size.width;
+
+        // Responsive card dimensions
+        double cardHeight;
+        if (screenWidth < 600) {
+          cardHeight = 120; // Mobile
+        } else if (screenWidth < 900) {
+          cardHeight = 140; // Small tablet
+        } else if (screenWidth < 1200) {
+          cardHeight = 160; // Large tablet
+        } else {
+          cardHeight = 180; // Desktop
         }
 
         if (viewType == DestinationsViewType.list) {
@@ -58,6 +72,8 @@ class DestinationsList extends StatelessWidget {
               return DestinationCard(
                 destination: destination,
                 onTap: () => onDestinationSelected(destination),
+                cardHeight: cardHeight,
+                screenWidth: screenWidth,
               );
             },
           );
@@ -76,7 +92,7 @@ class DestinationsList extends StatelessWidget {
                 crossAxisCount = 3;
               }
 
-              double childAspectRatio = (width / crossAxisCount) / 260;
+              double childAspectRatio = (width / crossAxisCount) / cardHeight;
 
               return GridView.builder(
                 itemCount: destinations.length,
@@ -93,6 +109,8 @@ class DestinationsList extends StatelessWidget {
                   return DestinationCard(
                     destination: destination,
                     onTap: () => onDestinationSelected(destination),
+                    cardHeight: cardHeight,
+                    screenWidth: screenWidth,
                   );
                 },
               );

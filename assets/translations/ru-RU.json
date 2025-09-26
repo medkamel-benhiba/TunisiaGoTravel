@@ -402,11 +402,19 @@
   "search_country": "Поиск страны",
   "showing_results": "Показано {count} результатов",
   "no_countries_found": "Страны не найдены",
-  "page_info": "Страница {current} из {total}"
-
-
-
-
-
-
+  "page_info": "Страница {current} из {total}",
+  "destination_in_state": "Связанные направления в {}",
+  "selected_city": "Выбрано: {}",
+  "select_city": "Выберите город",
+  "interactive_map": "Интерактивная карта",
+  "explore": "Исследовать",
+  "available_hotels": "Доступные отели",
+  "available_restaurants": "Доступные рестораны",
+  "see_all": "Смотреть все",
+  "available_events": "Доступные события",
+  "available_monuments": "Доступные памятники",
+  "available_musees": "Доступные музеи",
+  "available_festivals": "Доступные фестивали",
+  "available_activities": "Доступные мероприятия",
+  "destinations_in_state": "Направления в {}"
 }

@@ -54,7 +54,7 @@ class _SearchSectionState extends State<SearchSection> {
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
-    final locale=context.locale;
+    final locale = context.locale;
 
     return SizedBox(
       height: screenHeight * 0.57,

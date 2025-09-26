@@ -28,7 +28,6 @@ class _EventScreenState extends State<EventScreenContent> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final provider = Provider.of<EventProvider>(context, listen: false);
       provider.fetchEvents().then((_) {
-        debugPrint("Fetched ${provider.events.length} events");
       });
     });
   }

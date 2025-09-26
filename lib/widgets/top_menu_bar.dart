@@ -364,5 +364,9 @@ String _getPageLabel(AppPage page, BuildContext context) {
       return 'connection'.tr();
     case AppPage.chatbot:
       return 'chatbot_title'.tr();
+    case AppPage.stateScreenDetails:
+      return 'stateScreenDetails'.tr();
+
   }
+
 }

@@ -56,6 +56,17 @@ class DestinationProvider extends ChangeNotifier {
     }
   }
 
+  /// Get destinations by state (case-insensitive)
+  List<Destination> getDestinationsByState(String state) {
+    try {
+      return _destinations
+          .where((d) => d.state.toLowerCase() == state.toLowerCase())
+          .toList();
+    } catch (e) {
+      return [];
+    }
+  }
+
   /// Get a destination's localized name
   String getDestinationName(String id, Locale locale) {
     final destination = getDestinationById(id);

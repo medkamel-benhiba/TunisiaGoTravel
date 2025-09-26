@@ -13,6 +13,7 @@ import 'package:tunisiagotravel/providers/manual_circuit_provider.dart';
 import 'package:tunisiagotravel/providers/monument_provider.dart';
 import 'package:tunisiagotravel/providers/musee_provider.dart';
 import 'package:tunisiagotravel/providers/restaurant_provider.dart';
+import 'package:tunisiagotravel/providers/state_provider.dart';
 import 'package:tunisiagotravel/providers/voyage_provider.dart';
 import 'package:tunisiagotravel/screens/CircuitReservationSuccess_screen.dart';
 import 'package:tunisiagotravel/screens/circuit_predifini_screen.dart';
@@ -39,7 +40,6 @@ void main() async {
         Locale('zh', 'CN'),
       ],
       path: 'assets/translations',
-      fallbackLocale: const Locale('fr', 'FR'),
       startLocale: null,
       child: MultiProvider(
         providers: [
@@ -59,6 +59,7 @@ void main() async {
           ChangeNotifierProvider(create: (_) => AutoCircuitProvider()),
           ChangeNotifierProvider(create: (_) => VoyageProvider(), child: const CircuitPreScreen()),
           ChangeNotifierProvider(create: (_) => AuthProvider()),
+          ChangeNotifierProvider(create: (_) => StateProvider(apiService: ApiService())),
         ],
         child: const MyApp(),
       ),

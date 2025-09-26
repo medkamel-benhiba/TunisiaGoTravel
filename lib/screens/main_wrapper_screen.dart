@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:tunisiagotravel/screens/activities_screen.dart';
 import 'package:tunisiagotravel/screens/agil_screen.dart';
 import 'package:tunisiagotravel/screens/circuit_predifini_screen.dart';
+import 'package:tunisiagotravel/screens/StateScreenDetails.dart';
 import 'package:tunisiagotravel/screens/event_screen.dart';
 import 'package:tunisiagotravel/screens/guide_screen.dart';
 import 'package:tunisiagotravel/screens/restaurants_screen.dart';
@@ -108,7 +109,11 @@ class _MainWrapperScreenState extends State<MainWrapperScreen> {
                       screen = HotelsScreenContent();
                       break;
                     case AppPage.restaurants:
-                      screen = RestaurantsScreenContent();
+                      final initialDestId = provider.initialRestaurantDestinationId;
+                        screen = RestaurantsScreenContent(initialDestinationId: initialDestId);
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          provider.clearInitialRestaurantDestinationId();
+                        });
                       break;
                     case AppPage.maisonsHotes:
                       screen = MaisonsScreenContent();
@@ -151,6 +156,11 @@ class _MainWrapperScreenState extends State<MainWrapperScreen> {
                       screen = ChatBotScreen(
                         apiResponse: {},
                         initialMessage: initialMessage,
+                      );
+                      break;
+                    case AppPage.stateScreenDetails:
+                      screen = StateScreenDetails(
+                        selectedCityId: "",
                       );
                       break;
                   }
