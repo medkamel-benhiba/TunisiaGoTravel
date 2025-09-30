@@ -18,7 +18,8 @@ class HotelInfoCard extends StatelessWidget {
     final locale = context.locale;
     final hotelName = hotel.getName(locale);
     final hotelAddress = hotel.getAddress(locale);
-    final hotelVille = hotel.getVille(locale); // Use getVille for localization
+    final hotelVille = hotel.getVille(locale);
+    final int hotelStars = int.parse(hotel.categoryCode!);
 
     return BaseCard(
       margin: const EdgeInsets.all(10),
@@ -53,6 +54,22 @@ class HotelInfoCard extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+          const SizedBox(height: 8),
+
+          // Star Rating Row
+          Padding(
+            padding: const EdgeInsets.only(left: 39),
+            child: Row(
+              children: List.generate(
+                hotelStars,
+                    (index) => Icon(
+                  Icons.star,
+                  size: 16,
+                  color: Colors.amber[700],
+                ),
+              ),
+            ),
           ),
 
           const SizedBox(height: 12),
@@ -127,7 +144,7 @@ class HotelInfoCard extends StatelessWidget {
                     );
                   },
                   icon: const Icon(Icons.book_online, size: 18),
-                  label: Text('book'.tr()), // multilingual
+                  label: Text('book'.tr()),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColorstatic.primary2,
                     foregroundColor: Colors.white,

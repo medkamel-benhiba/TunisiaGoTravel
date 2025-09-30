@@ -864,12 +864,11 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
                                       icon: Icon(Icons.delete_outline, color: Colors.red.shade400),
                                       tooltip: 'delete_conversation'.tr(),
                                       onPressed: () async {
-                                        // NOTE: This setState() call requires the containing widget to be Stateful.
-                                        // In a real app, you'd likely update the list via state management after the delete.
+                                        setState(() {}
+                                        );
                                         await ConversationHistoryService.deleteConversation(
                                             conversation.id);
-                                        // setState(() {});
-                                        // You must replace this with your actual state update logic (e.g., refetching the Future)
+                                        setState(() {});
                                       },
                                     ),
                                   ],
@@ -878,7 +877,6 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
                             ),
                           ),
                         );
-                        // --- ENHANCED UI/UX FOR CONVERSATION CARD ENDS HERE ---
                       },
                     );
                   },

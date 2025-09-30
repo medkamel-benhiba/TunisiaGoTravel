@@ -420,6 +420,8 @@
   "conversation_history": "История переписки",
   "no_conversation": "Разговоров пока нет",
   "search_conversations": "Поиск разговоров",
-  "all_destinations": "Все направления"
+  "all_destinations": "Все направления",
+  "google_signin_comingsoon": "Вход через Google: Скоро!",
+  "check_availability": "Проверить наличие"
 
 }

@@ -2,7 +2,7 @@ name: tunisiagotravel
 description: "Tunisia Go Travel Mobile App"
 publish_to: 'none' # Private package
 
-version: 2.0.8+71
+version: 2.0.9+72
 
 environment:
   sdk: ^3.8.1

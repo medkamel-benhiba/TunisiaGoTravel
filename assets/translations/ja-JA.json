@@ -420,7 +420,9 @@
   "conversation_history": "会話履歴",
   "no_conversation": "まだ会話がありません",
   "search_conversations": "会話を検索",
-  "all_destinations": "すべての目的地"
+  "all_destinations": "すべての目的地",
+  "google_signin_comingsoon": "Googleサインイン：近日公開！",
+  "check_availability": "空き状況を確認する"
 
 
 }

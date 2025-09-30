@@ -419,7 +419,10 @@
   "conversation_history": "Historique",
   "no_conversation": "Aucune conversation pour le moment",
   "search_conversations": "Rechercher...",
-  "all_destinations": "Toutes les destinations"
+  "all_destinations": "Toutes les destinations",
+  "google_signin_comingsoon": "Connexion Google : Bientôt disponible !",
+  "check_availability": "Vérifier la disponibilité"
+
 
 
 

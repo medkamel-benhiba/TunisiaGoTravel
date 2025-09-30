@@ -6,6 +6,7 @@ import 'package:tunisiagotravel/theme/color.dart';
 import '../providers/auth_provider.dart';
 import '../providers/global_provider.dart';
 import 'main_wrapper_screen.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -45,6 +46,8 @@ class _LoginScreenState extends State<LoginScreen> {
       );
     }
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -149,6 +152,26 @@ class _LoginScreenState extends State<LoginScreen> {
                               ? const CircularProgressIndicator(color: Colors.white)
                               : Text('login_button'.tr()),
                         ),
+                        /*const SizedBox(height: 16),*/
+                        /*ElevatedButton.icon(
+                          onPressed: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('google_signin_comingsoon'.tr())),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: Colors.black87,
+                            minimumSize: const Size(double.infinity, 50),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              side: BorderSide(color: Colors.grey.shade300),
+                            ),
+                            elevation: 2,
+                          ),
+                          icon: Image.asset('assets/images/google_logo.png', height: 24.0),
+                          label: Text('Sign in with Google'.tr()),
+                        ),*/
                       ],
                     ),
                   ),

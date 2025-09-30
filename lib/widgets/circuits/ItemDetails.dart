@@ -773,8 +773,8 @@ class _ItemDetailState extends State<ItemDetail> {
                         valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                       ),
                     )
-                        : const Text(
-                      "Vérifier la disponibilité",
+                        : Text(
+                      tr('check_availability'),
                       style: TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.w600),
                     ),
                   ),

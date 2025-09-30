@@ -418,7 +418,9 @@
   "conversation_history": "سجل المحادثات",
   "no_conversation": "لا توجد محادثات بعد",
   "search_conversations": "ابحث",
-  "all_destinations": "جميع الوجهات"
+  "all_destinations": "جميع الوجهات",
+  "google_signin_comingsoon": "تسجيل الدخول عبر Google: قريباً!",
+  "check_availability": "تحقق من التوفر"
 
 
 }

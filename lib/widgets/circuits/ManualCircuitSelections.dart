@@ -259,6 +259,8 @@ class CircuitSummaryCard extends StatelessWidget {
     final totalDays = destinations.fold<int>(0, (sum, dest) => sum + dest.days);
     final destinationsCount = destinations.length;
     final start= destinations.firstWhere((dest) => dest.isStart);
+    final destinationSelected = destinations.where((dest) => dest.days > 0).length;
+
     return Container(
 
       margin: const EdgeInsets.all(16),
@@ -299,7 +301,7 @@ class CircuitSummaryCard extends StatelessWidget {
                 child: _buildStat(
                   context,
                   Icons.location_on,
-                  "$destinationsCount",
+                  "$destinationSelected",
                   "destinations.title".tr(),
                 ),
               ),
@@ -339,7 +341,7 @@ class CircuitSummaryCard extends StatelessWidget {
               spacing: 8,
               runSpacing: 4,
               children: destinations
-                  .where((dest) => dest.days > 0) // <-- only destinations with days
+                  .where((dest) => dest.days > 0)
                   .map((dest) {
                 final name = dest.getName(context.locale);
                 final days = dest.days;

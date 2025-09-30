@@ -420,6 +420,8 @@
   "conversation_history": "聊天记录",
   "no_conversation": "还没有对话",
   "search_conversations": "搜索对话",
-  "all_destinations": "所有目的地"
+  "all_destinations": "所有目的地",
+  "google_signin_comingsoon": "Google 登录：即将推出！",
+  "check_availability": "检查可用性"
 
 }

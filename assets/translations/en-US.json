@@ -421,7 +421,9 @@
   "conversation_history": "History",
   "no_conversation": "No conversations yet",
   "search_conversations": "Search conversations",
-  "all_destinations": "All Destinations"
+  "all_destinations": "All Destinations",
+  "google_signin_comingsoon": "Google Sign-In: Coming Soon!",
+  "check_availability": "Check Availability"
 
 
 }
