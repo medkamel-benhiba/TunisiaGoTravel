@@ -14,7 +14,6 @@ import 'package:tunisiagotravel/providers/festival_provider.dart';
 import 'package:tunisiagotravel/providers/monument_provider.dart';
 import 'package:tunisiagotravel/providers/musee_provider.dart';
 import 'package:flutter_html/flutter_html.dart';
-import 'package:tunisiagotravel/screens/restaurants_screen.dart';
 import 'package:tunisiagotravel/theme/color.dart';
 import 'package:tunisiagotravel/widgets/destination/activity_card_dest.dart';
 import 'package:tunisiagotravel/widgets/destination/dest_card.dart';
@@ -152,7 +151,6 @@ class _StateScreenDetailsState extends State<StateScreenDetails> {
     // Handle based on the specified type
     switch (widget.locationType) {
       case LocationType.state:
-      // Force search only in states, try name then ID
         stateApp = stateProvider.getStateByName(widget.selectedCityId) ??
             stateProvider.getStateById(widget.selectedCityId);
         if (stateApp != null) {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tunisiagotravel/models/conversation.dart';
 import '../screens/culture_screen.dart';
 import '../models/hotel.dart';
 
@@ -48,6 +49,8 @@ class GlobalProvider with ChangeNotifier {
   String? _chatbotInitialMessage;
   String? get chatbotInitialMessage => _chatbotInitialMessage;
 
+  Conversation? _selectedConversation;
+  Conversation? get selectedConversation => _selectedConversation;
 
   void setPage(AppPage page) {
     _currentPage = page;
@@ -119,6 +122,17 @@ class GlobalProvider with ChangeNotifier {
   void clearInitialRestaurantDestinationId() {
     _initialRestaurantDestinationId = null;
     notifyListeners();
+  }
+
+  void setChatbotConversation(Conversation? conversation, {String? initialMessage}) {
+    _selectedConversation = conversation;
+    _chatbotInitialMessage = initialMessage;
+    setPage(AppPage.chatbot);
+  }
+
+  void clearChatbotConversation() {
+    _selectedConversation = null;
+    clearChatbotInitialMessage();
   }
 
 }

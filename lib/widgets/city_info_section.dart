@@ -138,7 +138,6 @@ class _CityInfoDisplayState extends State<CityInfoDisplay>
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Container(
-      margin: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),

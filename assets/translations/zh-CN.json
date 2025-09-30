@@ -416,5 +416,10 @@
   "available_musees": "可用的博物馆",
   "available_festivals": "可用的节日",
   "available_activities": "可用的活动",
-  "destinations_in_state": "{} 的目的地"
+  "destinations_in_state": "{} 的目的地",
+  "conversation_history": "聊天记录",
+  "no_conversation": "还没有对话",
+  "search_conversations": "搜索对话",
+  "all_destinations": "所有目的地"
+
 }

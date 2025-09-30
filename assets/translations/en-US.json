@@ -417,8 +417,11 @@
   "available_musees": "Available Museums",
   "available_festivals": "Available Festivals",
   "available_activities": "Available Activities",
-  "destinations_in_state": "Destinations in {}"
+  "destinations_in_state": "Destinations in {}",
+  "conversation_history": "History",
+  "no_conversation": "No conversations yet",
+  "search_conversations": "Search conversations",
+  "all_destinations": "All Destinations"
 
 
 }
-

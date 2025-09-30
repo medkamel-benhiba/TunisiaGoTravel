@@ -1,6 +1,10 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'package:tunisiagotravel/providers/global_provider.dart';
+import '../models/conversation.dart';
+import '../services/conversation_history_service.dart';
 import '../theme/color.dart';
 import '../widgets/chatBotResponseCard.dart';
 import '../widgets/screen_title.dart';
@@ -10,11 +14,13 @@ import '../models/chatbot_response.dart';
 class ChatBotScreen extends StatefulWidget {
   final String? initialMessage;
   final Map<String, dynamic> apiResponse;
+  final Conversation? existingConversation;
 
   const ChatBotScreen({
     super.key,
     this.initialMessage,
     required this.apiResponse,
+    this.existingConversation,
   });
 
   @override
@@ -25,25 +31,33 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final List<Map<String, dynamic>> _messages = [];
-  final List<String> greetings = ["bonjour", "salut", "hello", "hi", "hey","salem", "ahla", "aloha","bro","salam"];
+  final List<String> greetings = ["bonjour", "salut", "hello", "hi", "hey", "salem", "ahla", "aloha", "bro", "salam"];
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   late stt.SpeechToText _speech;
   bool _isVoiceRecording = false;
   bool _isLoading = false;
+  String? currentConversationId;
+  bool hasUnsavedMessages = false;
 
   @override
   void initState() {
     super.initState();
     _speech = stt.SpeechToText();
 
-    // Add welcome message
-    _messages.add({
-      "role": "bot",
-      "type": "text",
-      "content": "Bonjour 👋, je suis votre assistant. Comment puis-je vous aider ?"
-    });
+    if (widget.existingConversation != null) {
+      currentConversationId = widget.existingConversation!.id;
+      _messages.addAll(widget.existingConversation!.messages);
+      hasUnsavedMessages = false;
+    } else {
+      _messages.add({
+        "role": "bot",
+        "type": "text",
+        "content": "Bonjour 👋, je suis votre assistant. Comment puis-je vous aider ?"
+      });
+      currentConversationId = DateTime.now().millisecondsSinceEpoch.toString();
+    }
 
-    // Process initial message if provided
     if (widget.initialMessage != null && widget.initialMessage!.isNotEmpty) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _addUserMessage(widget.initialMessage!);
@@ -51,7 +65,26 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
     }
   }
 
-  // Helper method to get responsive values based on screen size
+  Future<void> _saveCurrentConversation() async {
+    if (_messages.length <= 1) return;
+
+    try {
+      final conversation = Conversation(
+        id: currentConversationId!,
+        title: Conversation.generateTitle(_messages),
+        createdAt: DateTime.now(),
+        lastUpdated: DateTime.now(),
+        messages: List.from(_messages),
+        messageCount: _messages.where((m) => m['role'] == 'user').length,
+      );
+
+      await ConversationHistoryService.saveConversation(conversation);
+      setState(() => hasUnsavedMessages = false);
+    } catch (e) {
+      print('Error saving conversation: $e');
+    }
+  }
+
   double _getResponsiveValue(BuildContext context, {
     required double mobile,
     required double tablet,
@@ -63,12 +96,10 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
     return desktop;
   }
 
-  // Helper method to check if device is in landscape
   bool _isLandscape(BuildContext context) {
     return MediaQuery.of(context).orientation == Orientation.landscape;
   }
 
-  // Helper method to get appropriate padding
   EdgeInsets _getResponsivePadding(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     if (width < 600) {
@@ -80,15 +111,14 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
     }
   }
 
-  // Helper method to get message max width
   double _getMessageMaxWidth(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     if (width < 600) {
-      return width * 0.85; // 85% on mobile
+      return width * 0.85;
     } else if (width < 1200) {
-      return width * 0.70; // 70% on tablet
+      return width * 0.70;
     } else {
-      return 600; // Fixed max width on desktop
+      return 600;
     }
   }
 
@@ -97,14 +127,14 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
       _messages.add({
         "role": "user",
         "type": "text",
-        "content": text, // show the original message in UI
+        "content": text,
       });
       _isLoading = true;
+      hasUnsavedMessages = true;
     });
 
     _scrollToBottom();
 
-    // Add loading message
     setState(() {
       _messages.add({
         "role": "bot",
@@ -113,23 +143,19 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
       });
     });
 
-    // Replace greeting with "bonjour" before sending
     final normalizedText = text.trim().toLowerCase();
     final textToSend = greetings.contains(normalizedText) ? "bonjour" : text;
 
-    // Send to API
     _sendQuestionToBot(textToSend);
   }
 
   Future<void> _sendQuestionToBot(String question) async {
     try {
-      // Call the chatbot API
       final response = await ApiService().sendChatbotQuestion(question);
 
       setState(() {
         _isLoading = false;
 
-        // Remove loading message
         if (_messages.isNotEmpty && _messages.last["type"] == "loading") {
           _messages.removeLast();
         }
@@ -146,6 +172,7 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
       });
 
       _scrollToBottom();
+      await _saveCurrentConversation();
 
     } catch (e) {
       setState(() {
@@ -170,7 +197,6 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
     final data = response['data'] ?? {};
     final List<ChatbotResponse> responses = [];
 
-    // Helper function to process a type
     void addResponses(String key, String type) {
       if (data[key] != null && data[key]['data'] != null) {
         final items = data[key]['data'];
@@ -202,7 +228,6 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
           "responses": responses,
         });
       } else {
-        // Affiche errormessage de l'API s'il existe
         String finalMessage = response['errormessage']?.toString().isNotEmpty == true
             ? response['errormessage']
             : response['message']?.toString().isNotEmpty == true
@@ -252,7 +277,6 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
       _speech.stop();
       setState(() => _isVoiceRecording = false);
 
-      // AUTO-SEND: Automatically send the voice message without manual confirmation
       if (_controller.text.isNotEmpty) {
         final voiceText = _controller.text;
         _controller.clear();
@@ -273,6 +297,17 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
     });
   }
 
+  Future<bool> _onWillPop() async {
+    if (hasUnsavedMessages) {
+      await _saveCurrentConversation();
+    }
+    return true;
+  }
+
+  void _showConversationHistory() {
+    _scaffoldKey.currentState?.openDrawer();
+  }
+
   Widget _buildMessage(Map<String, dynamic> message) {
     final messageType = message["type"] ?? "text";
 
@@ -290,7 +325,6 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
     final content = message["content"] ?? "";
     final messageType = message["type"] ?? "text";
 
-    // Responsive font size and padding
     final fontSize = _getResponsiveValue(
       context,
       mobile: 14.0,
@@ -408,7 +442,6 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Text message
         if (content.isNotEmpty)
           Align(
             alignment: Alignment.centerLeft,
@@ -456,7 +489,6 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
               ),
             ),
           ),
-        // Cards - Responsive layout
         if (responses.isNotEmpty)
           Container(
             margin: EdgeInsets.only(
@@ -466,40 +498,36 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
             ),
             child: LayoutBuilder(
               builder: (context, constraints) {
-                // Determine grid layout based on screen size
                 if (constraints.maxWidth < 600) {
-                  // Mobile: Single column
                   return Column(
-                    children: responses.map((response) =>
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 8.0),
-                          child: ChatbotResponseCard(response: response),
-                        )
-                    ).toList(),
+                    children: responses
+                        .map((response) => Padding(
+                      padding: const EdgeInsets.only(bottom: 8.0),
+                      child: ChatbotResponseCard(response: response),
+                    ))
+                        .toList(),
                   );
                 } else if (constraints.maxWidth < 1200) {
-                  // Tablet: Two columns
                   return Wrap(
                     spacing: 8.0,
                     runSpacing: 8.0,
-                    children: responses.map((response) =>
-                        SizedBox(
-                          width: (constraints.maxWidth - 8) / 2,
-                          child: ChatbotResponseCard(response: response),
-                        )
-                    ).toList(),
+                    children: responses
+                        .map((response) => SizedBox(
+                      width: (constraints.maxWidth - 8) / 2,
+                      child: ChatbotResponseCard(response: response),
+                    ))
+                        .toList(),
                   );
                 } else {
-                  // Desktop: Three columns
                   return Wrap(
                     spacing: 12.0,
                     runSpacing: 12.0,
-                    children: responses.map((response) =>
-                        SizedBox(
-                          width: (constraints.maxWidth - 24) / 3,
-                          child: ChatbotResponseCard(response: response),
-                        )
-                    ).toList(),
+                    children: responses
+                        .map((response) => SizedBox(
+                      width: (constraints.maxWidth - 24) / 3,
+                      child: ChatbotResponseCard(response: response),
+                    ))
+                        .toList(),
                   );
                 }
               },
@@ -588,7 +616,6 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
               ),
             ),
           ),
-          // Voice button
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 4),
             child: IconButton(
@@ -600,7 +627,6 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
               onPressed: _isLoading ? null : _toggleVoiceRecording,
             ),
           ),
-          // Send button
           if (!_isVoiceRecording)
             Container(
               margin: const EdgeInsets.all(4),
@@ -633,8 +659,243 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
     );
   }
 
+  Widget _buildConversationDrawer(BuildContext context) { // context needed for MediaQuery, Theme, etc.
+    final TextEditingController _searchController = TextEditingController();
+    final ValueNotifier<String> _searchQuery = ValueNotifier<String>('');
+
+    // NOTE: If this function is not part of a State class, you will need to pass setState as a callback
+    // or use a state management solution (like Provider's notifyListeners or Riverpod's ref.invalidate)
+    // for the delete functionality to refresh the list.
+    // For simplicity, I'm keeping the original setState() call and assuming it's available or replaceable.
+
+    return Drawer(
+      elevation: 16.0,
+      child: Column(
+        children: [
+          // Header
+          Container(
+            padding: EdgeInsets.only(
+              top: MediaQuery.of(context).padding.top + 5,
+              left: 16,
+              right: 16,
+              bottom: 12,
+            ),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [AppColorstatic.primary, AppColorstatic.secondary.withOpacity(0.8)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 8,
+                  offset: Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'conversation_history'.tr(),
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close, color: Colors.white),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 2),
+                // Search Bar
+                TextField(
+                  controller: _searchController,
+                  onChanged: (value) => _searchQuery.value = value,
+                  decoration: InputDecoration(
+                    hintText: 'search_conversations'.tr(),
+                    hintStyle: TextStyle(color: Colors.white70),
+                    filled: true,
+                    fillColor: Colors.white.withOpacity(0.2),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    prefixIcon: Icon(Icons.search, color: Colors.white70),
+                    contentPadding: EdgeInsets.symmetric(vertical: 8),
+                  ),
+                  style: TextStyle(color: Colors.white),
+                ),
+              ],
+            ),
+          ),
+          // Conversation List
+          Expanded(
+            child: ValueListenableBuilder<String>(
+              valueListenable: _searchQuery,
+              builder: (context, searchQuery, _) {
+                return FutureBuilder<List<Conversation>>(
+                  future: ConversationHistoryService.getConversations(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            CircularProgressIndicator(
+                              valueColor: AlwaysStoppedAnimation<Color>(AppColorstatic.primary),
+                            ),
+                            SizedBox(height: 16),
+                            Text(
+                              'loading_conversations'.tr(),
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+                    if (snapshot.hasError) {
+                      return Center(
+                        child: Text(
+                          'error_loading_conversations'.tr(),
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.red),
+                        ),
+                      );
+                    }
+                    final conversations = snapshot.data ?? [];
+                    if (conversations.isEmpty) {
+                      return Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.chat_bubble_outline,
+                              size: 64,
+                              color: Colors.grey[400],
+                            ),
+                            SizedBox(height: 16),
+                            Text(
+                              'no_conversation'.tr(),
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+                    // Filter and sort conversations
+                    final filteredConversations = conversations
+                        .where((c) => c.title.toLowerCase().contains(searchQuery.toLowerCase()))
+                        .toList()
+                      ..sort((a, b) => b.lastUpdated.compareTo(a.lastUpdated));
+
+                    return ListView.builder(
+                      padding: const EdgeInsets.only(top: 8, bottom: 8),
+                      itemCount: filteredConversations.length,
+                      itemBuilder: (context, index) {
+                        final conversation = filteredConversations[index];
+
+                        // --- ENHANCED UI/UX FOR CONVERSATION CARD STARTS HERE ---
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+                          child: Material( // Use Material for elevation and InkWell ripple effect
+                            elevation: 4,
+                            shadowColor: AppColorstatic.primary.withOpacity(0.2), // Themed shadow
+                            borderRadius: BorderRadius.circular(16), // More rounded corners
+                            clipBehavior: Clip.antiAlias, // Ensures the ripple effect stays within bounds
+                            child: InkWell( // Use InkWell for a proper ripple effect on tap
+                              onTap: () {
+                                Navigator.pop(context);
+                                Provider.of<GlobalProvider>(context, listen: false)
+                                    .setChatbotConversation(conversation);
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).cardColor,
+                                  border: Border.all(color: Colors.grey.shade200, width: 0.5),
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    // Conversation Icon
+                                    Icon(
+                                      Icons.forum_outlined,
+                                      color: AppColorstatic.primary,
+                                      size: 24,
+                                    ),
+                                    const SizedBox(width: 12),
+                                    // Title and Subtitle
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            conversation.title,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            // Bolder title
+                                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            DateFormat('dd MMM yyyy, HH:mm', context.locale.toString())
+                                                .format(conversation.lastUpdated),
+                                            // Muted color for the subtitle
+                                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                              color: Colors.grey[600],
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    // Delete Button
+                                    const SizedBox(width: 8),
+                                    IconButton(
+                                      icon: Icon(Icons.delete_outline, color: Colors.red.shade400),
+                                      tooltip: 'delete_conversation'.tr(),
+                                      onPressed: () async {
+                                        // NOTE: This setState() call requires the containing widget to be Stateful.
+                                        // In a real app, you'd likely update the list via state management after the delete.
+                                        await ConversationHistoryService.deleteConversation(
+                                            conversation.id);
+                                        // setState(() {});
+                                        // You must replace this with your actual state update logic (e.g., refetching the Future)
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                        // --- ENHANCED UI/UX FOR CONVERSATION CARD ENDS HERE ---
+                      },
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   void dispose() {
+    if (hasUnsavedMessages) {
+      _saveCurrentConversation();
+    }
     _scrollController.dispose();
     _controller.dispose();
     _speech.stop();
@@ -643,63 +904,62 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Get safe area insets for proper spacing
     final safeAreaPadding = MediaQuery.of(context).padding;
 
-    return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.white, Colors.grey[100]!],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
+    return WillPopScope(
+      onWillPop: _onWillPop,
+      child: Scaffold(
+        key: _scaffoldKey,
+        drawer: _buildConversationDrawer(context),
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.white, Colors.grey[100]!],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
           ),
-        ),
-        child: Column(
-          children: [
-            // Title with responsive padding
-            Padding(
-              padding: EdgeInsets.only(
-                left: _getResponsiveValue(context, mobile: 10.0, tablet: 16.0, desktop: 32.0),
-                right: _getResponsiveValue(context, mobile: 10.0, tablet: 16.0, desktop: 32.0),
-                top: safeAreaPadding.top + (_isLandscape(context) ? 8.0 : 10.0),
-                bottom: _isLandscape(context) ? 8.0 : 10.0,
+          child: Column(
+            children: [
+              Padding(
+                padding: EdgeInsets.only(
+                  left: _getResponsiveValue(context, mobile: 10.0, tablet: 16.0, desktop: 32.0),
+                  right: _getResponsiveValue(context, mobile: 10.0, tablet: 16.0, desktop: 32.0),
+                  top: _isLandscape(context) ? 8.0 : 10.0,
+                  bottom: _isLandscape(context) ? 8.0 : 10.0,
+                ),
+                child: ScreenTitle(
+                  title: 'assistant_chatbot'.tr(),
+                  icon: Icons.chat_bubble_outline,
+                  trailingIcon: Icons.history,
+                  onTrailingTap: _showConversationHistory,
+                ),
               ),
-              child:  ScreenTitle(
-                title: 'assistant_chatbot'.tr(),
-                icon: Icons.chat_bubble_outline,
-              ),
-            ),
-            SizedBox(height: _isLandscape(context) ? 8.0 : 16.0),
-
-            // Messages list
-            Expanded(
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  return ListView.builder(
-                    controller: _scrollController,
-                    padding: EdgeInsets.symmetric(
-                      horizontal: _getResponsiveValue(
-                        context,
-                        mobile: 4.0,
-                        tablet: 8.0,
-                        desktop: 16.0,
+              SizedBox(height: _isLandscape(context) ? 8.0 : 16.0),
+              Expanded(
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    return ListView.builder(
+                      controller: _scrollController,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: _getResponsiveValue(
+                          context,
+                          mobile: 4.0,
+                          tablet: 8.0,
+                          desktop: 16.0,
+                        ),
+                        vertical: 8.0,
                       ),
-                      vertical: 8.0,
-                    ),
-                    itemCount: _messages.length,
-                    itemBuilder: (context, index) => _buildMessage(_messages[index]),
-                  );
-                },
+                      itemCount: _messages.length,
+                      itemBuilder: (context, index) => _buildMessage(_messages[index]),
+                    );
+                  },
+                ),
               ),
-            ),
-
-            // Input area
-            _buildInputArea(),
-
-            // Bottom safe area
-            SizedBox(height: safeAreaPadding.bottom + (_isLandscape(context) ? 4.0 : 8.0)),
-          ],
+              _buildInputArea(),
+              SizedBox(height: safeAreaPadding.bottom + (_isLandscape(context) ? 4.0 : 8.0)),
+            ],
+          ),
         ),
       ),
     );

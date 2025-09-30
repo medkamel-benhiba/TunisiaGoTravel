@@ -416,5 +416,10 @@
   "available_musees": "Доступные музеи",
   "available_festivals": "Доступные фестивали",
   "available_activities": "Доступные мероприятия",
-  "destinations_in_state": "Направления в {}"
+  "destinations_in_state": "Направления в {}",
+  "conversation_history": "История переписки",
+  "no_conversation": "Разговоров пока нет",
+  "search_conversations": "Поиск разговоров",
+  "all_destinations": "Все направления"
+
 }

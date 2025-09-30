@@ -7,8 +7,6 @@ import '../widgets/event_card.dart';
 import '../widgets/destinations_list.dart';
 import '../widgets/screen_title.dart';
 
-enum EventsViewType { list, grid }
-
 class EventScreenContent extends StatefulWidget {
   const EventScreenContent({super.key});
 
@@ -19,7 +17,6 @@ class EventScreenContent extends StatefulWidget {
 class _EventScreenState extends State<EventScreenContent> {
   String? selectedDestinationId;
   String? selectedDestinationTitle;
-  EventsViewType _viewType = EventsViewType.list;
 
   @override
   void initState() {
@@ -71,28 +68,6 @@ class _EventScreenState extends State<EventScreenContent> {
             }),
           ),
 
-          // Toggle list / grid view
-          if (selectedDestinationId != null)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  ToggleButton(
-                    icon: Icons.list,
-                    isSelected: _viewType == EventsViewType.list,
-                    onTap: () => setState(() => _viewType = EventsViewType.list),
-                  ),
-                  const SizedBox(width: 8),
-                  ToggleButton(
-                    icon: Icons.grid_view,
-                    isSelected: _viewType == EventsViewType.grid,
-                    onTap: () => setState(() => _viewType = EventsViewType.grid),
-                  ),
-                ],
-              ),
-            ),
-
           // Main content: Destinations or filtered events
           Expanded(
             child: selectedDestinationId == null
@@ -125,55 +100,12 @@ class _EventScreenState extends State<EventScreenContent> {
       return const Center(child: Text('Aucun événement disponible pour cette destination'));
     }
 
-    return _viewType == EventsViewType.list
-        ? ListView.builder(
+    return ListView.builder(
       padding: const EdgeInsets.all(12),
       itemCount: events.length,
       itemBuilder: (context, index) {
         return EventCard(event: events[index]);
       },
-    )
-        : GridView.builder(
-      padding: const EdgeInsets.all(12),
-      itemCount: events.length,
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        mainAxisSpacing: 12,
-        crossAxisSpacing: 12,
-        childAspectRatio: 0.6,
-      ),
-      itemBuilder: (context, index) {
-        return EventCard(event: events[index]);
-      },
-    );
-  }
-}
-
-// ToggleButton widget
-class ToggleButton extends StatelessWidget {
-  final IconData icon;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const ToggleButton({
-    super.key,
-    required this.icon,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        decoration: BoxDecoration(
-          color: isSelected ? Colors.blue : Colors.grey[200],
-          borderRadius: BorderRadius.circular(8),
-        ),
-        padding: const EdgeInsets.all(8),
-        child: Icon(icon, color: isSelected ? Colors.white : Colors.black),
-      ),
     );
   }
 }

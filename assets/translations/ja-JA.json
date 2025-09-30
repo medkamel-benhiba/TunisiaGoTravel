@@ -416,5 +416,11 @@
   "available_musees": "利用可能な博物館",
   "available_festivals": "利用可能な祭り",
   "available_activities": "利用可能なアクティビティ",
-  "destinations_in_state": "{} の目的地"
+  "destinations_in_state": "{} の目的地",
+  "conversation_history": "会話履歴",
+  "no_conversation": "まだ会話がありません",
+  "search_conversations": "会話を検索",
+  "all_destinations": "すべての目的地"
+
+
 }

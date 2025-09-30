@@ -25,6 +25,7 @@ import 'login_screen.dart';
 import 'maisonDhote_screen.dart';
 import 'manual_circuit_screen.dart';
 
+
 class MainWrapperScreen extends StatefulWidget {
   const MainWrapperScreen({super.key});
 
@@ -150,12 +151,14 @@ class _MainWrapperScreenState extends State<MainWrapperScreen> {
                       break;
                     case AppPage.chatbot:
                       final initialMessage = provider.chatbotInitialMessage;
+                      final selectedConversation = provider.selectedConversation;
                       WidgetsBinding.instance.addPostFrameCallback((_) {
-                        provider.clearChatbotInitialMessage();
+                        provider.clearChatbotConversation(); // Clear conversation and initial message after use
                       });
                       screen = ChatBotScreen(
                         apiResponse: {},
                         initialMessage: initialMessage,
+                        existingConversation: selectedConversation,
                       );
                       break;
                     case AppPage.stateScreenDetails:

@@ -6,6 +6,7 @@ class ChatbotResponse {
   final String? description;
   final String? slug;
   final Map<String, dynamic>? circuit;
+  final String? categoryCode;
 
   ChatbotResponse({
     required this.type,
@@ -15,18 +16,19 @@ class ChatbotResponse {
     this.description,
     this.slug,
     this.circuit,
-
+    this.categoryCode,
   });
 
   factory ChatbotResponse.fromJson(Map<String, dynamic> json) {
     return ChatbotResponse(
       type: json['type'] ?? '',
       id: json['_id'] ?? json['id'] ?? '',
-      title: json['title'] ?? json['name'] ?? '',
+      title: json['title'] ?? json['name'] ?? json["Name"]?? '',
       cover: json['cover'] ?? json['image'] ?? '',
       description: json['description'],
       slug: json['slug'],
-      circuit: json['circuit']?['data']
+      circuit: json['circuit']?['data'],
+      categoryCode: json['category_code'],
     );
 
   }
@@ -40,6 +42,7 @@ class ChatbotResponse {
       'description': description,
       'slug': slug,
       'circuit': circuit,
+      'category_code': categoryCode,
     };
   }
 

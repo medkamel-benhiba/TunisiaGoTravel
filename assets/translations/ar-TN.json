@@ -414,7 +414,13 @@
   "available_musees": "المتاحف المتاحة",
   "available_festivals": "المهرجانات المتاحة",
   "available_activities": "الأنشطة المتاحة",
-  "destinations_in_state": "الوجهات في {}"
+  "destinations_in_state": "الوجهات في {}",
+  "conversation_history": "سجل المحادثات",
+  "no_conversation": "لا توجد محادثات بعد",
+  "search_conversations": "ابحث",
+  "all_destinations": "جميع الوجهات"
+
+
 }
 
 

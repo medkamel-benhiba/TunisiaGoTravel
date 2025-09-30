@@ -59,6 +59,7 @@ class _MapScreenState extends State<MapScreen> {
   BitmapDescriptor markerIconmusees = BitmapDescriptor.defaultMarker;
   BitmapDescriptor markerIconmaison = BitmapDescriptor.defaultMarker;
 
+  String? selectedCategory;
   String? selectedDestination1;
 
   @override
@@ -91,7 +92,6 @@ class _MapScreenState extends State<MapScreen> {
       if (maisonProvider.allMaisons.isEmpty) await maisonProvider.fetchMaisons();
       if (destinationProvider.destinations.isEmpty) await destinationProvider.fetchDestinations();
 
-      // Initialiser avec les hôtels par défaut
       setState(() {
         _markers = _createMarkers(hotelProvider.allHotels);
         destination = destinationProvider.destinations;
@@ -129,11 +129,10 @@ class _MapScreenState extends State<MapScreen> {
         appBar: AppBar(
           title: Text(
             'detailed_map'.tr(),
-            style: const TextStyle(
-              color: AppColorstatic.lightTextColor,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w500,
+            )
           ),
           iconTheme: const IconThemeData(color: Colors.white),
           backgroundColor: AppColorstatic.primary,
@@ -141,36 +140,45 @@ class _MapScreenState extends State<MapScreen> {
         body: Row(
           children: [
             Expanded(
-              flex: 3,
+              flex: 4,
               child: Column(
                 children: [
                   destination.isNotEmpty
                       ? SizedBox(
                     height: 60,
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
                       child: DropdownButton<String>(
                         value: selectedDestination1,
                         hint: Text('chooseDestination'.tr()),
-                        items: destination.map((d) {
-                          return DropdownMenuItem<String>(
-                            value: d.id,
-                            child: Text(d.getName(Localizations.localeOf(context)) ?? ""),
-                          );
-                        }).toList(),
+                        items: [
+                          DropdownMenuItem<String>(
+                            value: null,
+                            child: Text('all_destinations'.tr()),
+                          ),
+                          ...destination.map((d) {
+                            return DropdownMenuItem<String>(
+                              value: d.id,
+                              child: Text(d.getName(Localizations.localeOf(context)) ?? ""),
+                            );
+                          }).toList(),
+                        ],
                         onChanged: (String? dist) {
-                          if (dist != null) {
-                            Destination? selectedDestination = destination.firstWhere(
-                                  (d) => d.id == dist,
-                            );
-                            mapController?.animateCamera(
-                              CameraUpdate.newLatLng(LatLng(
-                                  selectedDestination.lat.toDouble(), selectedDestination.lng)),
-                            );
-                            setState(() {
-                              selectedDestination1 = dist;
-                            });
-                          }
+                          setState(() {
+                            selectedDestination1 = dist;
+                            _updateMarkers();
+                            if (dist != null) {
+                              Destination? selectedDestination = destination.firstWhere(
+                                    (d) => d.id == dist,
+                                orElse: () => destination.first,
+                              );
+                              mapController?.animateCamera(
+                                CameraUpdate.newLatLng(
+                                  LatLng(selectedDestination.lat.toDouble(), selectedDestination.lng),
+                                ),
+                              );
+                            }
+                          });
                         },
                       ),
                     ),
@@ -213,13 +221,14 @@ class _MapScreenState extends State<MapScreen> {
                               checkColor: Colors.white,
                               onChanged: (bool? value) {
                                 setState(() {
+                                  // Uncheck all categories
                                   for (var category in categories) {
                                     category['isChecked'] = false;
                                   }
+                                  // Check or uncheck the selected category
                                   categories[index]['isChecked'] = value!;
-                                  if (categories[index]['isChecked']) {
-                                    _handleCategorySelection(categories[index]['name']);
-                                  }
+                                  selectedCategory = value! ? categories[index]['name'] : null;
+                                  _updateMarkers(); // Update markers based on category and destination
                                 });
                               },
                             ),
@@ -238,9 +247,50 @@ class _MapScreenState extends State<MapScreen> {
     );
   }
 
+  // === Helper method to update markers ===
+  void _updateMarkers() {
+    setState(() {
+      if (selectedCategory == null) {
+        _markers = {}; // Clear markers if no category is selected
+        return;
+      }
+
+      switch (selectedCategory) {
+        case 'Hôtels':
+          final hotelProvider = Provider.of<HotelProvider>(context, listen: false);
+          _markers = _createMarkers(hotelProvider.allHotels);
+          break;
+        case 'Restaurants':
+          final restaurantProvider = Provider.of<RestaurantProvider>(context, listen: false);
+          _markers = _createMarkersrestaurant(restaurantProvider.allRestaurants);
+          break;
+        case 'event':
+          final eventProvider = Provider.of<EventProvider>(context, listen: false);
+          _markers = _createMarkersEvent(eventProvider.events);
+          break;
+        case 'Activity':
+          final activityProvider = Provider.of<ActivityProvider>(context, listen: false);
+          _markers = _createMarkersActivety(activityProvider.activities);
+          break;
+        case 'maison':
+          final maisonProvider = Provider.of<MaisonProvider>(context, listen: false);
+          _markers = _createMarkersmaison(maisonProvider.allMaisons);
+          break;
+        case 'musees':
+          final museeProvider = Provider.of<MuseeProvider>(context, listen: false);
+          _markers = _createMarkersmusees(museeProvider.musees);
+          break;
+        default:
+          _markers = {};
+      }
+    });
+  }
+
   // === Markers ===
   Set<Marker> _createMarkers(List<Hotel> hotels) {
-    return hotels.map((hotel) {
+    return hotels.where((hotel) {
+      return selectedDestination1 == null || hotel.destinationId == selectedDestination1;
+    }).map((hotel) {
       double lat = double.tryParse(hotel.lat ?? '') ?? 0.0;
       double lng = double.tryParse(hotel.lng ?? '') ?? 0.0;
       return Marker(
@@ -253,7 +303,9 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   Set<Marker> _createMarkersrestaurant(List<Restaurant> restaurants) {
-    return restaurants.map((r) {
+    return restaurants.where((r) {
+      return selectedDestination1 == null || r.destinationId == selectedDestination1;
+    }).map((r) {
       double lat = double.tryParse(r.lat ?? '') ?? 0.0;
       double lng = double.tryParse(r.lng ?? '') ?? 0.0;
       return Marker(
@@ -266,7 +318,9 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   Set<Marker> _createMarkersActivety(List<Activity> activities) {
-    return activities.map((a) {
+    return activities.where((a) {
+      return selectedDestination1 == null || a.destinationId == selectedDestination1;
+    }).map((a) {
       double lat = double.tryParse(a.lat ?? '') ?? 0.0;
       double lng = double.tryParse(a.lng ?? '') ?? 0.0;
       return Marker(
@@ -279,7 +333,9 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   Set<Marker> _createMarkersEvent(List<Event> events) {
-    return events.map((e) {
+    return events.where((e) {
+      return selectedDestination1 == null || e.destinationId == selectedDestination1;
+    }).map((e) {
       double lat = double.tryParse(e.lat ?? '') ?? 0.0;
       double lng = double.tryParse(e.lng ?? '') ?? 0.0;
       return Marker(
@@ -292,7 +348,9 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   Set<Marker> _createMarkersmaison(List<MaisonDHote> maisons) {
-    return maisons.map((m) {
+    return maisons.where((m) {
+      return selectedDestination1 == null || m.destinationId == selectedDestination1;
+    }).map((m) {
       double lat = double.tryParse(m.lat ?? '') ?? 0.0;
       double lng = double.tryParse(m.lng ?? '') ?? 0.0;
       return Marker(
@@ -305,7 +363,9 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   Set<Marker> _createMarkersmusees(List<Musees> musees) {
-    return musees.map((m) {
+    return musees.where((m) {
+      return selectedDestination1 == null || m.destinationId == selectedDestination1;
+    }).map((m) {
       double lat = double.tryParse(m.lat ?? '') ?? 0.0;
       double lng = double.tryParse(m.lng ?? '') ?? 0.0;
       return Marker(
@@ -344,38 +404,5 @@ class _MapScreenState extends State<MapScreen> {
         );
       },
     );
-  }
-
-  // === Handle category selection ===
-  void _handleCategorySelection(String category) {
-    if (category == 'Hôtels') {
-      final hotelProvider = Provider.of<HotelProvider>(context, listen: false);
-      setState(() => _markers = _createMarkers(hotelProvider.allHotels));
-    }
-
-    if (category == 'Restaurants') {
-      final restaurantProvider = Provider.of<RestaurantProvider>(context, listen: false);
-      setState(() => _markers = _createMarkersrestaurant(restaurantProvider.allRestaurants));
-    }
-
-    if (category == 'event') {
-      final eventProvider = Provider.of<EventProvider>(context, listen: false);
-      setState(() => _markers = _createMarkersEvent(eventProvider.events));
-    }
-
-    if (category == 'Activity') {
-      final activityProvider = Provider.of<ActivityProvider>(context, listen: false);
-      setState(() => _markers = _createMarkersActivety(activityProvider.activities));
-    }
-
-    if (category == 'maison') {
-      final maisonProvider = Provider.of<MaisonProvider>(context, listen: false);
-      setState(() => _markers = _createMarkersmaison(maisonProvider.allMaisons));
-    }
-
-    if (category == 'musees') {
-      final museeProvider = Provider.of<MuseeProvider>(context, listen: false);
-      setState(() => _markers = _createMarkersmusees(museeProvider.musees));
-    }
   }
 }

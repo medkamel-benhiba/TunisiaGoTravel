@@ -416,5 +416,10 @@
   "available_musees": "사용 가능한 박물관",
   "available_festivals": "사용 가능한 축제",
   "available_activities": "사용 가능한 활동",
-  "destinations_in_state": "{}의 여행지"
+  "destinations_in_state": "{}의 여행지",
+  "conversation_history": "대화 기록",
+  "no_conversation": "아직 대화가 없습니다",
+  "search_conversations": "대화 검색",
+  "all_destinations": "모든 목적지"
+
 }

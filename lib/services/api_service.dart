@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
-import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tunisiagotravel/models/maisondHote.dart';
 import 'package:tunisiagotravel/models/state.dart';
@@ -1256,50 +1255,8 @@ Future<List<Hotel>> gethotels() async {
     }
   }
 
-  /*
-  Future<bool> createCircuitReservation({
-    required Map<String, dynamic> planing,
-    required List<Map<String, dynamic>> hotelsReservation,
-    required List<Map<String, dynamic>> restaurantReservation,
-    required Map<String, dynamic> reservation,
-    required Map<String, dynamic> user,
-  }) async {
-    final url = Uri.parse('$_baseUrl/utilisateur/newreservationcircuit');
-
-    final body = jsonEncode({
-      'planing': planing,
-      'hotelsReservation': hotelsReservation,
-      'restaurantReservation': restaurantReservation,
-      'reservation': reservation,
-      'user': user,
-    });
-
-    try {
-      final response = await http.post(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: body,
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        return data['success'] == true;
-      } else {
-        print('Erreur API: ${response.statusCode}');
-        return false;
-      }
-    } catch (e) {
-      print('Exception: $e');
-      return false;
-    }
-  }
-
-   */
-
   Future<Map<String, dynamic>> createCircuitReservation(Map<String, dynamic> reservationData) async {
-    const String Url = 'https://backend.tunisiagotravel.com/utilisateur/newreservationcircuit';
+    const String Url = '$_baseUrl/utilisateur/newreservationcircuit';
 
     try {
       final response = await http.post(
