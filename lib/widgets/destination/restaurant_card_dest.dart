@@ -45,10 +45,10 @@ class RestaurantCardDest extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(screenWidth < 600 ? 12 : 16),
               child: CachedNetworkImage(
-                imageUrl: restaurant.cover ?? '',
+                imageUrl: restaurant.images.first ?? restaurant.cover ?? '',
                 width: double.infinity,
                 height: double.infinity,
-                fit: BoxFit.cover,
+                fit: BoxFit.fill,
                 placeholder: (context, url) => Container(
                   color: Colors.grey.shade200,
                   child: const Center(

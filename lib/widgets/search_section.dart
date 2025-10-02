@@ -141,20 +141,19 @@ class _SearchSectionState extends State<SearchSection> {
                     onTap: _showInteractiveMap,
                     child: Column(
                       children: [
-                        Container(
-                          height: screenHeight * 0.26,
-                          width: screenWidth * 0.5,
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Stack(
-                            children: [
-                              SvgPicture.asset(
-                                'assets/images/map.svg',
-                                fit: BoxFit.contain,
-                              ),
-                            ],
+                        Align(
+                          alignment: Alignment.center, // center horizontally
+                          child: Container(
+                            height: screenHeight * 0.26,
+                            width: screenWidth * 0.5,
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: SvgPicture.asset(
+                              'assets/images/map.svg',
+                              fit: BoxFit.contain,
+                            ),
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -164,7 +163,7 @@ class _SearchSectionState extends State<SearchSection> {
                         ),
                       ],
                     ),
-                  ),
+                  )
                 ],
               ),
             ),

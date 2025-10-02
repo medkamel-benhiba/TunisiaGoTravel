@@ -1,5 +1,6 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:tunisiagotravel/theme/color.dart';
 import 'package:latlong2/latlong.dart';
 import '../../models/maisondHote.dart';
@@ -35,240 +36,162 @@ class MaisonCard extends StatelessWidget {
         );
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Format de coordonnées invalide")),
+          SnackBar(content: Text('restaurantsScreen.invalidCoordinates'.tr())),
         );
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Coordonnées non disponibles")),
+        SnackBar(content: Text('restaurantsScreen.addressUnavailable'.tr())),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final imageUrl = maison.cover.isNotEmpty
-        ? maison.cover
-        : (maison.images.isNotEmpty ? maison.images.first : null);
     final locale = context.locale;
+    final screenWidth = MediaQuery.of(context).size.width;
 
+    // Responsive card height
+    double cardHeight;
+    if (screenWidth < 600) {
+      cardHeight = 190; // Mobile
+    } else if (screenWidth < 900) {
+      cardHeight = 210; // Small tablet
+    } else if (screenWidth < 1200) {
+      cardHeight = 230; // Large tablet
+    } else {
+      cardHeight = 250; // Desktop
+    }
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      clipBehavior: Clip.antiAlias,
-      elevation: 4,
-      shadowColor: Colors.black.withOpacity(0.1),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Image with gradient overlay
-          Stack(
-            children: [
-              if (imageUrl != null)
-                Image.network(
-                  imageUrl,
-                  height: 150,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  loadingBuilder: (context, child, loadingProgress) {
-                    if (loadingProgress == null) return child;
-                    return Container(
-                      height: 150,
-                      color: Colors.grey[200],
-                      child: const Center(
-                        child: CircularProgressIndicator(),
-                      ),
-                    );
-                  },
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      height: 150,
-                      color: Colors.grey[200],
-                      child: const Center(
-                        child: Icon(Icons.home,
-                            size: 50, color: Colors.grey),
-                      ),
-                    );
-                  },
-                )
-              else
-                Container(
-                  height: 150,
+    return GestureDetector(
+      onTap: () => _navigateToDetails(context),
+      child: Container(
+        height: cardHeight,
+        margin: const EdgeInsets.only(bottom: 16),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(screenWidth < 600 ? 12 : 16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: screenWidth < 600 ? 6 : 10,
+              offset: Offset(0, screenWidth < 600 ? 2 : 4),
+            ),
+          ],
+        ),
+        child: Stack(
+          children: [
+            // Background image
+            ClipRRect(
+              borderRadius: BorderRadius.circular(screenWidth < 600 ? 12 : 16),
+              child: CachedNetworkImage(
+                imageUrl: maison.images.first ?? '',
+                width: double.infinity,
+                height: double.infinity,
+                fit: BoxFit.cover,
+                placeholder: (context, url) => Container(
                   color: Colors.grey[200],
                   child: const Center(
-                    child: Icon(Icons.home, size: 50, color: Colors.grey),
+                    child: CircularProgressIndicator(),
                   ),
                 ),
-
-              // Gradient overlay at bottom
-              Positioned(
-                bottom: 0,
-                left: 0,
-                right: 0,
-                child: Container(
-                  height: 60,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.transparent,
-                        Colors.black.withOpacity(0.3),
-                      ],
+                errorWidget: (context, url, error) => Container(
+                  color: Colors.grey[200],
+                  child: Center(
+                    child: Icon(
+                      Icons.home,
+                      size: screenWidth < 600 ? 30 : 40,
+                      color: Colors.grey,
                     ),
                   ),
                 ),
               ),
-
-              // Special tag if maison is special
-              if (maison.isSpecial == 'true')
-                Positioned(
-                  top: 8,
-                  left: 8,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.redAccent,
-                      borderRadius: BorderRadius.circular(12),
+            ),
+            // Gradient overlay
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(screenWidth < 600 ? 12 : 16),
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.transparent,
+                    AppColorstatic.primary.withOpacity(0.70),
+                  ],
+                ),
+              ),
+            ),
+            // Maison name
+            Positioned(
+              left: screenWidth < 600 ? 12 : 16,
+              bottom: screenWidth < 600 ? 45 : 55,
+              right: screenWidth < 600 ? 12 : 16,
+              child: Text(
+                maison.getName(locale),
+                style: TextStyle(
+                  fontSize: screenWidth < 600 ? 14 : 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+                maxLines: screenWidth < 600 ? 2 : 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            // Rating and price
+            Positioned(
+              left: screenWidth < 600 ? 12 : 16,
+              bottom: screenWidth < 600 ? 25 : 35,
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.star,
+                    color: Colors.amber,
+                    size: screenWidth < 600 ? 14 : 16,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    maison.noteGoogle.isNotEmpty ? maison.noteGoogle : '0.0',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: screenWidth < 600 ? 10 : 12,
+                      fontWeight: FontWeight.w500,
                     ),
-                    child: const Text(
-                      'Spécial',
+                  ),
+                  const SizedBox(width: 8),
+                  if (maison.startingPrice > 0)
+                    Text(
+                      '${'restaurantsScreen.startingFrom'.tr()} ${maison.startingPrice.toStringAsFixed(0)} TND',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-            ],
-          ),
-
-          // Content
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Maison name
-                Text(
-                  maison.getName(locale),
-                  maxLines: 2,
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                    color: Colors.black87,
-                  ),
-                ),
-
-                const SizedBox(height: 8),
-
-                // Rating and price row
-                Row(
-                  children: [
-                    Icon(
-                      Icons.star,
-                      color: Colors.amber[700],
-                      size: 18,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      maison.noteGoogle.isNotEmpty ? maison.noteGoogle : '0.0',
-                      style: TextStyle(
-                        color: Colors.grey[800],
-                        fontSize: 14,
+                        fontSize: screenWidth < 600 ? 10 : 12,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    const Spacer(),
-                    Text(
-                      maison.startingPrice > 0
-                          ? '${maison.startingPrice.toStringAsFixed(0)} TND'
-                          : '',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.blueGrey[900],
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 12),
-
-                // Location
-                Row(
-                  children: [
-                    Icon(
-                      Icons.location_on,
-                      size: 16,
-                      color: AppColorstatic.primary,
-                    ),
-                    const SizedBox(width: 4),
-                    Expanded(
-                      child: Text(
-                        maison.getAddress(locale).isNotEmpty
-                            ? '${maison.getAddress(locale)}, ${maison.getVille(locale)}'
-                            : 'restaurantsScreen.addressUnavailable'.tr(),
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors.grey[600],
-                          fontSize: 13,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 16),
-
-                // Action buttons
-                Row(
-                  children: [
-                    // Details button
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () => _navigateToDetails(context),
-                        icon: const Icon(Icons.info_outline, size: 16),
-                        label: Text('details'.tr()),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: AppColorstatic.primary,
-                          side: BorderSide(color: AppColorstatic.primary),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(width: 8),
-
-                    // Itinerary button
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: () => _handleItinerary(context),
-                        icon: const Icon(Icons.directions, size: 16),
-                        label: Text('itinerary'.tr()),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColorstatic.primary,
-                          foregroundColor: Colors.white,
-                          elevation: 2,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+            // Special tag
+            if (maison.isSpecial)
+              Positioned(
+                top: 8,
+                left: 8,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppColorstatic.primary2.withOpacity(0.8),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    'restaurantsScreen.special'.tr(),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

@@ -42,9 +42,22 @@ class _CulturesScreenState extends State<CulturesScreen> {
     });
   }
 
+  int _getCrossAxisCount(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    if (screenWidth < 600) {
+      return 2; // Mobile
+    } else if (screenWidth < 900) {
+      return 2; // Small tablet
+    } else if (screenWidth < 1200) {
+      return 3; // Large tablet
+    } else {
+      return 4; // Desktop
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final locale=context.locale;
+    final locale = context.locale;
     final menuItems = [
       {
         'title': tr('museums'),
@@ -146,7 +159,6 @@ class _CulturesScreenState extends State<CulturesScreen> {
   Widget _buildCategoryContent(CulturesCategory category) {
     switch (category) {
       case CulturesCategory.musee:
-        final locale = context.locale;
         return Consumer<MuseeProvider>(
           builder: (context, provider, child) {
             if (provider.isLoading && provider.musees.isEmpty) {
@@ -165,9 +177,15 @@ class _CulturesScreenState extends State<CulturesScreen> {
               }
             });
 
-            return ListView.builder(
+            return GridView.builder(
               controller: scrollController,
               padding: const EdgeInsets.all(8.0),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: _getCrossAxisCount(context),
+                mainAxisSpacing: 0,
+                crossAxisSpacing: 12,
+                childAspectRatio: 0.8,
+              ),
               itemCount: provider.musees.length,
               itemBuilder: (context, index) {
                 final item = provider.musees[index];
@@ -191,25 +209,28 @@ class _CulturesScreenState extends State<CulturesScreen> {
         );
 
       case CulturesCategory.monument:
-        final locale = context.locale;
-
         return Consumer<MonumentProvider>(
           builder: (context, provider, child) {
             if (provider.monuments.isEmpty) {
               return Center(child: Text(tr("no_monument_available")));
             }
 
-            return ListView.builder(
+            return GridView.builder(
+              padding: const EdgeInsets.all(8.0),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: _getCrossAxisCount(context),
+                mainAxisSpacing: 0,
+                crossAxisSpacing: 12,
+                childAspectRatio: 0.8,
+              ),
               itemCount: provider.monuments.length,
               itemBuilder: (context, index) {
                 final item = provider.monuments[index];
                 return ItemTile(
                   title: item.getName(Localizations.localeOf(context)),
-                  subtitle:
-                  item.destination.getName(Localizations.localeOf(context)),
-                  imageUrl: item.cover,
-                  description:
-                  item.getDescription(Localizations.localeOf(context)),
+                  subtitle: item.destination.getName(Localizations.localeOf(context)),
+                  imageUrl: item.images.first,
+                  description: item.getDescription(Localizations.localeOf(context)),
                   onTap: () {
                     Navigator.push(
                       context,
@@ -226,8 +247,6 @@ class _CulturesScreenState extends State<CulturesScreen> {
         );
 
       case CulturesCategory.festival:
-        final locale = context.locale;
-
         return Consumer<FestivalProvider>(
           builder: (context, provider, child) {
             if (provider.isLoading && provider.festivals.isEmpty) {
@@ -247,18 +266,23 @@ class _CulturesScreenState extends State<CulturesScreen> {
               }
             });
 
-            return ListView.builder(
+            return GridView.builder(
               controller: scrollController,
               padding: const EdgeInsets.all(8.0),
-              itemCount:
-              provider.festivals.length + (provider.hasMore ? 1 : 0),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: _getCrossAxisCount(context),
+                mainAxisSpacing: 0,
+                crossAxisSpacing: 12,
+                childAspectRatio: 0.8,
+              ),
+              itemCount: provider.festivals.length + (provider.hasMore ? 1 : 0),
               itemBuilder: (context, index) {
                 if (index < provider.festivals.length) {
                   final item = provider.festivals[index];
                   return ItemTile(
                     title: item.getName(Localizations.localeOf(context)),
                     subtitle: item.getDestinationName(Localizations.localeOf(context)),
-                    imageUrl: item.cover,
+                    imageUrl: item.images.first ?? item.cover ?? "",
                     description: item.getDescription(Localizations.localeOf(context)),
                     onTap: () {
                       Navigator.push(
@@ -271,9 +295,11 @@ class _CulturesScreenState extends State<CulturesScreen> {
                     },
                   );
                 } else {
-                  return const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 16.0),
-                    child: Center(child: CircularProgressIndicator()),
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: CircularProgressIndicator(),
+                    ),
                   );
                 }
               },
@@ -282,8 +308,6 @@ class _CulturesScreenState extends State<CulturesScreen> {
         );
 
       case CulturesCategory.artisanat:
-        final locale = context.locale;
-
         return Consumer<ArtisanatProvider>(
           builder: (context, provider, child) {
             if (provider.isLoading) {
@@ -296,9 +320,14 @@ class _CulturesScreenState extends State<CulturesScreen> {
               return Center(child: Text(tr("no_craft_available")));
             }
 
-
-            return ListView.builder(
+            return GridView.builder(
               padding: const EdgeInsets.all(8.0),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: _getCrossAxisCount(context),
+                mainAxisSpacing: 0,
+                crossAxisSpacing: 12,
+                childAspectRatio: 0.8,
+              ),
               itemCount: provider.artisanats.length,
               itemBuilder: (context, index) {
                 final item = provider.artisanats[index];
@@ -322,10 +351,8 @@ class _CulturesScreenState extends State<CulturesScreen> {
           },
         );
 
-
       default:
         return const SizedBox.shrink();
     }
   }
 }
-

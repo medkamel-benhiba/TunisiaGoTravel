@@ -39,7 +39,7 @@ class DestinationCard extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(screenWidth < 600 ? 12 : 16),
               child: CachedNetworkImage(
-                imageUrl: destination.cover ?? '',
+                imageUrl: destination.gallery.first ?? '',
                 width: double.infinity,
                 height: double.infinity,
                 fit: BoxFit.cover,

@@ -1,13 +1,15 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:tunisiagotravel/models/state.dart';
 import 'package:flutter_html/flutter_html.dart';
+import 'package:tunisiagotravel/models/state.dart';
 import 'package:tunisiagotravel/providers/state_provider.dart';
 import 'package:tunisiagotravel/screens/StateScreenDetails.dart';
 import 'package:tunisiagotravel/theme/color.dart';
 
+/// A widget that displays information about a selected city with an animated image slider.
 class CityInfoDisplay extends StatefulWidget {
   final String? selectedCityId;
   final VoidCallback? onClose;
@@ -37,21 +39,16 @@ class _CityInfoDisplayState extends State<CityInfoDisplay>
       vsync: this,
     );
 
-    _slideAnimation = Tween<double>(
-      begin: 1.0,
-      end: 0.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeOutCubic,
-    ));
+    _slideAnimation = Tween<double>(begin: 0.5, end: 0.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOutCubic),
+    );
 
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: const Interval(0.3, 1.0, curve: Curves.easeOut),
-    ));
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: const Interval(0.3, 0.5, curve: Curves.easeOut),
+      ),
+    );
 
     if (widget.selectedCityId != null) {
       _animationController.forward();
@@ -85,11 +82,9 @@ class _CityInfoDisplayState extends State<CityInfoDisplay>
     return Consumer<StateProvider>(
       builder: (context, provider, child) {
         final stateApp = provider.getStateByName(widget.selectedCityId!);
-
         if (stateApp == null) {
           return _buildErrorState();
         }
-
         return AnimatedBuilder(
           animation: _animationController,
           builder: (context, child) {
@@ -106,6 +101,7 @@ class _CityInfoDisplayState extends State<CityInfoDisplay>
     );
   }
 
+  /// Builds an error state widget when the city is not found.
   Widget _buildErrorState() {
     return Container(
       margin: const EdgeInsets.all(16),
@@ -122,10 +118,7 @@ class _CityInfoDisplayState extends State<CityInfoDisplay>
           Expanded(
             child: Text(
               tr('cityNotFound'),
-              style: TextStyle(
-                color: Colors.red.shade800,
-                fontWeight: FontWeight.w500,
-              ),
+              style: TextStyle(color: Colors.red.shade800, fontWeight: FontWeight.w500),
             ),
           ),
         ],
@@ -133,10 +126,9 @@ class _CityInfoDisplayState extends State<CityInfoDisplay>
     );
   }
 
+  /// Builds the main city info container with header, image slider, and description.
   Widget _buildCityInfo(StateApp stateApp) {
     final locale = context.locale;
-    final screenWidth = MediaQuery.of(context).size.width;
-
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -153,215 +145,66 @@ class _CityInfoDisplayState extends State<CityInfoDisplay>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildHeader(stateApp, locale),
-          _buildImageGallery(stateApp, screenWidth),
+          _buildImageSlider(stateApp),
           _buildDescription(stateApp, locale),
         ],
       ),
     );
   }
 
+  /// Builds the header with city name and close button.
   Widget _buildHeader(StateApp stateApp, Locale locale) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 1.0, horizontal: 12.0),
-      decoration: BoxDecoration(
+      padding: const EdgeInsets.symmetric(vertical: 1, horizontal: 16),
+      decoration: const BoxDecoration(
         gradient: LinearGradient(
           colors: [Color(0xFFFB9504), Color(0xFFFFCB66)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(16),
-          topRight: Radius.circular(16),
-        ),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       child: Row(
         children: [
-          const Icon(
-            Icons.location_city,
-            color: Colors.white,
-            size: 24,
-          ),
+          const Icon(Icons.location_city, color: Colors.white, size: 24),
           const SizedBox(width: 8),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  stateApp.getName(locale),
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
+            child: Text(
+              stateApp.getName(locale),
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
             ),
           ),
           if (widget.onClose != null)
             IconButton(
               onPressed: widget.onClose,
-              icon: const Icon(Icons.close),
-              style: IconButton.styleFrom(
-                foregroundColor: Colors.white,
-              ),
+              icon: const Icon(Icons.close, color: Colors.white),
             ),
         ],
       ),
     );
   }
 
-  Widget _buildImageGallery(StateApp stateApp, double screenWidth) {
+  /// Builds the image slider or a placeholder if no images are available.
+  Widget _buildImageSlider(StateApp stateApp) {
     if (stateApp.images.isEmpty) {
       return _buildNoImagesPlaceholder();
     }
-
-    final displayImages = stateApp.images.take(4).toList();
-    final isTablet = screenWidth > 600;
-
-    return Container(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                tr('images'),
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF2C3E50),
-                ),
-              ),
-              TextButton(
-                onPressed: () {
-                  // Close the dialog
-                  Navigator.pop(context);
-                  // Navigate to StateScreenDetails
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => StateScreenDetails(
-                        selectedCityId: widget.selectedCityId!,
-                        locationType: LocationType.state, // Specify as state since CityInfoDisplay uses StateProvider
-                      ),
-                    ),
-                  );
-                },
-                style: TextButton.styleFrom(
-                  backgroundColor: AppColorstatic.primary2,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 14),
-                ),
-                child: Text(
-                  tr('explore'),
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          _buildResponsiveGallery(displayImages, isTablet),
-        ],
-      ),
+    return _ImageSlider(
+      images: stateApp.images.take(4).toList(),
+      selectedCityId: widget.selectedCityId!,
     );
   }
 
-  Widget _buildResponsiveGallery(List<String> images, bool isTablet) {
-    if (isTablet) {
-      return _buildTabletGallery(images);
-    } else {
-      return _buildMobileGallery(images);
-    }
-  }
-
-  Widget _buildTabletGallery(List<String> images) {
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-        childAspectRatio: 1.5,
-      ),
-      itemCount: images.length,
-      itemBuilder: (context, index) {
-        return _buildGalleryImage(images[index], index);
-      },
-    );
-  }
-
-  Widget _buildMobileGallery(List<String> images) {
-    return SizedBox(
-      height: 120,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: images.length,
-        itemBuilder: (context, index) {
-          return Container(
-            width: 130,
-            margin: EdgeInsets.only(
-              right: index < images.length - 1 ? 12 : 0,
-            ),
-            child: _buildGalleryImage(images[index], index),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildGalleryImage(String imageUrl, int index) {
-    return Hero(
-      tag: 'gallery_image_$index',
-      child: GestureDetector(
-        onTap: () => _showImageFullscreen(imageUrl, index),
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: CachedNetworkImage(
-              imageUrl: imageUrl,
-              fit: BoxFit.cover,
-              placeholder: (context, url) => Container(
-                color: Colors.grey.shade200,
-                child: const Center(
-                  child: CircularProgressIndicator(),
-                ),
-              ),
-              errorWidget: (context, url, error) => Container(
-                color: Colors.grey.shade200,
-                child: Icon(
-                  Icons.image_not_supported,
-                  color: Colors.grey.shade400,
-                  size: 40,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
+  /// Builds a placeholder for when no images are available.
   Widget _buildNoImagesPlaceholder() {
     return Container(
       padding: const EdgeInsets.all(20),
       child: Container(
-        height: 120,
+        height: 100,
         decoration: BoxDecoration(
           color: Colors.grey.shade100,
           borderRadius: BorderRadius.circular(12),
@@ -371,18 +214,11 @@ class _CityInfoDisplayState extends State<CityInfoDisplay>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.photo_library_outlined,
-                size: 40,
-                color: Colors.grey.shade400,
-              ),
+              Icon(Icons.photo_library_outlined, size: 40, color: Colors.grey.shade400),
               const SizedBox(height: 8),
               Text(
                 tr('noImagesAvailable'),
-                style: TextStyle(
-                  color: Colors.grey.shade600,
-                  fontSize: 14,
-                ),
+                style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
               ),
             ],
           ),
@@ -391,17 +227,16 @@ class _CityInfoDisplayState extends State<CityInfoDisplay>
     );
   }
 
+  /// Builds the description section with expandable text.
   Widget _buildDescription(StateApp stateApp, Locale locale) {
     final description = stateApp.getDescription(locale);
-
     if (description == null || description.isEmpty) {
       return _buildNoDescriptionPlaceholder();
     }
 
-    const int previewLength = 214;
-    final String previewText = description.length > previewLength
-        ? '${description.substring(0, previewLength)}...'
-        : description;
+    const previewLength = 214;
+    final previewText =
+    description.length > previewLength ? '${description.substring(0, previewLength)}...' : description;
 
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
@@ -430,21 +265,14 @@ class _CityInfoDisplayState extends State<CityInfoDisplay>
                 Html(
                   data: _isExpanded ? description : previewText,
                   style: {
-                    'body': Style(
-                      fontSize: FontSize(16),
-                      color: const Color(0xFF34495E),
-                    ),
+                    'body': Style(fontSize: FontSize(16), color: const Color(0xFF34495E)),
                   },
                 ),
                 if (description.length > previewLength)
                   GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _isExpanded = !_isExpanded;
-                      });
-                    },
+                    onTap: () => setState(() => _isExpanded = !_isExpanded),
                     child: Padding(
-                      padding: const EdgeInsets.only(top: 8.0),
+                      padding: const EdgeInsets.only(top: 8),
                       child: Text(
                         _isExpanded ? tr('see_less') : tr('see_more'),
                         style: const TextStyle(
@@ -463,6 +291,7 @@ class _CityInfoDisplayState extends State<CityInfoDisplay>
     );
   }
 
+  /// Builds a placeholder for when no description is available.
   Widget _buildNoDescriptionPlaceholder() {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
@@ -475,18 +304,12 @@ class _CityInfoDisplayState extends State<CityInfoDisplay>
         ),
         child: Row(
           children: [
-            Icon(
-              Icons.description_outlined,
-              color: Colors.grey.shade400,
-            ),
+            Icon(Icons.description_outlined, color: Colors.grey.shade400),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
                 tr('noDescriptionAvailable'),
-                style: TextStyle(
-                  color: Colors.grey.shade600,
-                  fontSize: 16,
-                ),
+                style: TextStyle(color: Colors.grey.shade600, fontSize: 16),
               ),
             ),
           ],
@@ -494,64 +317,236 @@ class _CityInfoDisplayState extends State<CityInfoDisplay>
       ),
     );
   }
-
-  void _showImageFullscreen(String imageUrl, int index) {
-    Navigator.of(context).push(
-      PageRouteBuilder(
-        opaque: false,
-        pageBuilder: (context, animation, secondaryAnimation) {
-          return FadeTransition(
-            opacity: animation,
-            child: ImageFullscreenViewer(
-              imageUrl: imageUrl,
-              heroTag: 'gallery_image_$index',
-            ),
-          );
-        },
-      ),
-    );
-  }
 }
 
-class ImageFullscreenViewer extends StatelessWidget {
-  final String imageUrl;
-  final String heroTag;
+/// A widget that displays an auto-scrolling image slider with fade transitions and navigation dots.
+class _ImageSlider extends StatefulWidget {
+  final List<String> images;
+  final String selectedCityId;
 
-  const ImageFullscreenViewer({
-    super.key,
-    required this.imageUrl,
-    required this.heroTag,
+  const _ImageSlider({
+    required this.images,
+    required this.selectedCityId,
   });
 
   @override
+  State<_ImageSlider> createState() => _ImageSliderState();
+}
+
+class _ImageSliderState extends State<_ImageSlider>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _fadeController;
+  late Timer _autoScrollTimer;
+  int _currentPage = 0;
+  double _dragStartX = 0.0;
+  bool _isDragging = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _fadeController = AnimationController(
+      duration: const Duration(milliseconds: 500),
+      vsync: this,
+    );
+    _startAutoScroll();
+  }
+
+  /// Starts the auto-scroll timer if there are multiple images.
+  void _startAutoScroll() {
+    if (widget.images.length > 1) {
+      _autoScrollTimer = Timer.periodic(const Duration(seconds: 3), (_) {
+        if (!_isDragging) {
+          _nextPage();
+        }
+      });
+    }
+  }
+
+  /// Advances to the next page with a fade animation.
+  void _nextPage({bool animate = true}) {
+    if (!mounted) return;
+    setState(() {
+      _currentPage = (_currentPage + 1) % widget.images.length;
+    });
+    if (animate) {
+      _fadeController.forward().then((_) => _fadeController.reverse());
+    }
+  }
+
+  /// Goes to the previous page with a fade animation.
+  void _previousPage({bool animate = true}) {
+    if (!mounted) return;
+    setState(() {
+      _currentPage =
+          (_currentPage - 1 + widget.images.length) % widget.images.length;
+    });
+    if (animate) {
+      _fadeController.forward().then((_) => _fadeController.reverse());
+    }
+  }
+
+  /// Handles horizontal drag for manual navigation.
+  void _onHorizontalDragStart(DragStartDetails details) {
+    _isDragging = true;
+    _autoScrollTimer.cancel();
+    _dragStartX = details.globalPosition.dx;
+  }
+
+  void _onHorizontalDragUpdate(DragUpdateDetails details) {
+    // Optional: Add drag preview if needed
+  }
+
+  void _onHorizontalDragEnd(DragEndDetails details) {
+    _isDragging = false;
+    final dx = details.primaryVelocity ?? 0;
+    final distance = details.globalPosition.dx - _dragStartX;
+    if (dx > 0 || distance > 50) {
+      _previousPage();
+    } else if (dx < 0 || distance < -50) {
+      _nextPage();
+    }
+    _startAutoScroll();
+  }
+
+  @override
+  void dispose() {
+    _autoScrollTimer.cancel();
+    _fadeController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black87,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
-        leading: IconButton(
-          icon: const Icon(Icons.close),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-      ),
-      body: Center(
-        child: Hero(
-          tag: heroTag,
-          child: InteractiveViewer(
-            child: CachedNetworkImage(
-              imageUrl: imageUrl,
-              fit: BoxFit.contain,
-              placeholder: (context, url) => const Center(
-                child: CircularProgressIndicator(color: Colors.white),
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                tr('media'),
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF2C3E50),
+                ),
               ),
-              errorWidget: (context, url, error) => const Icon(
-                Icons.error,
-                color: Colors.white,
-                size: 60,
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          StateScreenDetails(
+                            selectedCityId: widget.selectedCityId,
+                            locationType: LocationType.state,
+                          ),
+                    ),
+                  );
+                },
+                style: TextButton.styleFrom(
+                  backgroundColor: AppColorstatic.primary2,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                ),
+                child: Text(
+                  tr('explore'),
+                  style: const TextStyle(
+                      fontSize: 13, fontWeight: FontWeight.w700),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            height: 200,
+            child: GestureDetector(
+              onHorizontalDragStart: _onHorizontalDragStart,
+              onHorizontalDragUpdate: _onHorizontalDragUpdate,
+              onHorizontalDragEnd: _onHorizontalDragEnd,
+              onTap: (){},
+              child: Stack(
+                fit: StackFit.expand,
+                children: List.generate(widget.images.length, (index) {
+                  final isCurrent = index == _currentPage;
+                  return Positioned.fill(
+                    child: AnimatedOpacity(
+                      opacity: isCurrent ? 1.0 : 0.0,
+                      duration: const Duration(milliseconds: 500),
+                      child: IgnorePointer(
+                        ignoring: !isCurrent,
+                        child: _buildGalleryImage(
+                            widget.images[index], index, isCurrent),
+                      ),
+                    ),
+                  );
+                }),
               ),
             ),
+          ),
+          const SizedBox(height: 12),
+          Center(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: List.generate(widget.images.length, (index) {
+                return GestureDetector(
+                  onTap: () => setState(() => _currentPage = index),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    width: _currentPage == index ? 12 : 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: _currentPage == index
+                          ? const Color(0xFFFB9504)
+                          : Colors.grey.shade400,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                );
+              }),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Builds an individual gallery image with Hero animation for fullscreen view.
+  Widget _buildGalleryImage(String imageUrl, int index, bool isCurrent) {
+    return Hero(
+      tag: 'gallery_image_$index',
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: CachedNetworkImage(
+            imageUrl: imageUrl,
+            fit: BoxFit.cover,
+            placeholder: (context, url) =>
+                Container(
+                  color: Colors.grey.shade200,
+                  child: const Center(child: CircularProgressIndicator()),
+                ),
+            errorWidget: (context, url, error) =>
+                Container(
+                  color: Colors.grey.shade200,
+                  child: Icon(
+                      Icons.image_not_supported, color: Colors.grey.shade400,
+                      size: 40),
+                ),
           ),
         ),
       ),

@@ -659,14 +659,9 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
     );
   }
 
-  Widget _buildConversationDrawer(BuildContext context) { // context needed for MediaQuery, Theme, etc.
+  Widget _buildConversationDrawer(BuildContext context) {
     final TextEditingController _searchController = TextEditingController();
     final ValueNotifier<String> _searchQuery = ValueNotifier<String>('');
-
-    // NOTE: If this function is not part of a State class, you will need to pass setState as a callback
-    // or use a state management solution (like Provider's notifyListeners or Riverpod's ref.invalidate)
-    // for the delete functionality to refresh the list.
-    // For simplicity, I'm keeping the original setState() call and assuming it's available or replaceable.
 
     return Drawer(
       elevation: 16.0,

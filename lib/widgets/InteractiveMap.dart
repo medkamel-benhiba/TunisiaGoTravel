@@ -26,6 +26,8 @@ class _SimplifiedInteractiveMapDialogState
   late AnimationController _animationController;
   late Animation<double> _scaleAnimation;
 
+  final GlobalKey<_ResponsiveInteractiveMapState> _mapKey = GlobalKey();
+
   @override
   void initState() {
     super.initState();
@@ -48,7 +50,6 @@ class _SimplifiedInteractiveMapDialogState
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
-    print("*****SELECTED CITY*****:$_selectedCity ");
     return AnimatedBuilder(
       animation: _scaleAnimation,
       builder: (context, child) {
@@ -78,7 +79,7 @@ class _SimplifiedInteractiveMapDialogState
                   padding: const EdgeInsets.all(16),
                   decoration: const BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [ Color(0xFF11A2DC),Color(0xFF2B5CA1)],
+                      colors: [Color(0xFF11A2DC), Color(0xFF2B5CA1)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
@@ -97,7 +98,7 @@ class _SimplifiedInteractiveMapDialogState
                           children: [
                             Text(
                               tr('interactive_map'),
-                              style: TextStyle(
+                              style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 17,
                                 fontWeight: FontWeight.bold,
@@ -137,6 +138,7 @@ class _SimplifiedInteractiveMapDialogState
                     ],
                   ),
                 ),
+
                 // Map
                 Flexible(
                   child: Container(
@@ -152,6 +154,7 @@ class _SimplifiedInteractiveMapDialogState
                               child: Container(
                                 width: double.infinity,
                                 child: ResponsiveInteractiveMap(
+                                  key: _mapKey,
                                   onRegionTap: (region) {
                                     setState(() {
                                       _selectedCity = region.id;
@@ -177,12 +180,14 @@ class _SimplifiedInteractiveMapDialogState
                           setState(() {
                             _selectedCity = null;
                           });
+                          _mapKey.currentState?.clearSelection();
                         },
                       ),
                     ),
                   ),
+
                 Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     color: Colors.grey.shade50,
                     borderRadius: const BorderRadius.only(
@@ -248,6 +253,12 @@ class _ResponsiveInteractiveMapState extends State<ResponsiveInteractiveMap> {
       regions.add(Region(id: partId, path: partPath));
     }
     return regions;
+  }
+
+  void clearSelection() {
+    setState(() {
+      selectedRegion = null;
+    });
   }
 
   @override

@@ -21,6 +21,7 @@ class Hotel {
   final String? address_zh;
 
   final String cover;
+  final List<String>? images;
   final bool reservable;
   final String slug;
   final String lat;
@@ -53,6 +54,7 @@ class Hotel {
     required this.name_zh,
     required this.address,
     required this.cover,
+    required this.images,
     required this.lat,
     required this.lng,
     required this.reservable,
@@ -102,6 +104,9 @@ class Hotel {
 
 
       cover: json['cover'] ?? '',
+      images: json['images'] != null
+          ? List<String>.from(json['images'])
+          : [],
       lat: json['lat'] ?? '',
       lng: json['lng'] ?? '',
 

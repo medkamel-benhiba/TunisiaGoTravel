@@ -56,6 +56,10 @@ class HotelProvider with ChangeNotifier {
   int _searchDisponibilityPage = 1;
   int _searchSimplePage = 1;
 
+  final Map<String, List<Hotel>> _hotelsByState = {};
+  List<Hotel> get hotelsByState => _currentState != null ? _hotelsByState[_currentState!] ?? [] : [];
+  String? _currentState;
+
 
   // ===== Fetch all hotels once =====
   Future<void> fetchAllHotels() async {
@@ -693,5 +697,36 @@ class HotelProvider with ChangeNotifier {
     _searchSimplePage = 1;
     notifyListeners();
   }
+
+  //hotels by state
+  Future<void> fetchHotelsByState(String state) async {
+    _isLoading = true;
+    _currentState = state;
+    notifyListeners();
+
+    try {
+      debugPrint("🔍 Fetching hotels for state: '$state'");
+      final hotels = await _apiService.getHotelsByState(state);
+      debugPrint("✅ Received ${hotels.length} hotels for state: '$state'");
+
+      _hotelsByState[state] = hotels;
+      _hotels = hotels;
+    } catch (e) {
+      debugPrint("❌ Error fetching hotels by state '$state': $e");
+      _hotels = [];
+      _hotelsByState[state] = [];
+    }
+
+    _isLoading = false;
+    notifyListeners();
+  }
+
+
+// hotels by current state
+  List<Hotel> getCurrentStateHotels() {
+    if (_currentState == null) return [];
+    return _hotelsByState[_currentState!] ?? [];
+  }
+
 
 }

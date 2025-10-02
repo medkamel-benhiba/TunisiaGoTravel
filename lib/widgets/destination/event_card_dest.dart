@@ -21,7 +21,7 @@ class EventCardDest extends StatelessWidget {
     if (dateStr == null || dateStr.isEmpty) return '';
     try {
       final date = DateTime.parse(dateStr);
-      return DateFormat.yMMMd().format(date); // Example: Sep 25, 2025
+      return DateFormat.yMMMd().format(date);
     } catch (_) {
       return dateStr;
     }

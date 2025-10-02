@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:tunisiagotravel/models/destination.dart';
+import 'package:tunisiagotravel/models/restaurant.dart';
 import 'package:tunisiagotravel/models/state.dart';
 import 'package:tunisiagotravel/providers/destination_provider.dart';
 import 'package:tunisiagotravel/providers/global_provider.dart';
@@ -25,6 +26,8 @@ import 'package:tunisiagotravel/widgets/destination/restaurant_card_dest.dart';
 import 'package:tunisiagotravel/widgets/destination/musees_card_dest.dart';
 import 'package:video_player/video_player.dart';
 import 'package:tunisiagotravel/providers/event_provider.dart';
+import 'package:carousel_slider/carousel_slider.dart';
+import '../models/hotel.dart';
 
 // Add an enum for location type
 enum LocationType { state, destination, auto }
@@ -82,7 +85,7 @@ class UnifiedLocationData {
       description: destination.description!,
       images: allImages,
       videoUrl: destination.mobileVideo,
-      thumbnail: destination.thumbnail,
+      thumbnail: destination.thumbnail ?? destination.gallery.first,
       isState: false,
       destination: destination,
       destinationIds: null,
@@ -126,6 +129,7 @@ class _StateScreenDetailsState extends State<StateScreenDetails> {
   bool _isVideoInitialized = false;
   bool _isVideoPlaying = false;
   UnifiedLocationData? _locationData;
+  int _currentCarouselIndex = 0;
 
   @override
   void initState() {
@@ -148,7 +152,6 @@ class _StateScreenDetailsState extends State<StateScreenDetails> {
     StateApp? stateApp;
     Destination? destination;
 
-    // Handle based on the specified type
     switch (widget.locationType) {
       case LocationType.state:
         stateApp = stateProvider.getStateByName(widget.selectedCityId) ??
@@ -157,13 +160,13 @@ class _StateScreenDetailsState extends State<StateScreenDetails> {
           setState(() {
             _locationData = UnifiedLocationData.fromState(stateApp!);
           });
+          _loadDataForState(stateApp);
           _initializeVideo();
           return;
         }
         break;
 
       case LocationType.destination:
-      // Force search only in destinations, try name then ID
         destination = destinationProvider.getDestinationByName(widget.selectedCityId) ??
             destinationProvider.getDestinationById(widget.selectedCityId);
         if (destination != null) {
@@ -177,13 +180,13 @@ class _StateScreenDetailsState extends State<StateScreenDetails> {
         break;
 
       case LocationType.auto:
-      // Auto-detect: try states (name then ID), then destinations (name then ID)
         stateApp = stateProvider.getStateByName(widget.selectedCityId) ??
             stateProvider.getStateById(widget.selectedCityId);
         if (stateApp != null) {
           setState(() {
             _locationData = UnifiedLocationData.fromState(stateApp!);
           });
+          _loadDataForState(stateApp);
           _initializeVideo();
           return;
         }
@@ -201,10 +204,46 @@ class _StateScreenDetailsState extends State<StateScreenDetails> {
         break;
     }
 
-    // If not found, set to null
     setState(() {
       _locationData = null;
     });
+  }
+
+  void _loadDataForState(StateApp state) {
+    _loadHotelsForState(state);
+    _loadRestaurantsForState(state);
+  }
+
+  String _formatStateName(String stateName) {
+    String formatted = stateName.toLowerCase();
+
+    if (formatted == "médenine") {
+      formatted = "mdenine";
+    }
+    if (formatted == "kébili") {
+      formatted = "kebili";
+    }
+    if (formatted == "béja") {
+      formatted = "beja";
+    }
+    if (formatted == "gabès") {
+      formatted = "gabes";
+    }
+
+    formatted = formatted.replaceAll(' ', '-');
+    return formatted;
+  }
+
+  void _loadHotelsForState(StateApp state) {
+    final hotelProvider = Provider.of<HotelProvider>(context, listen: false);
+    final formattedStateName = _formatStateName(state.name);
+    hotelProvider.fetchHotelsByState(formattedStateName);
+  }
+
+  void _loadRestaurantsForState(StateApp state) {
+    final restaurantProvider = Provider.of<RestaurantProvider>(context, listen: false);
+    final formattedStateName = _formatStateName(state.name);
+    restaurantProvider.fetchRestaurantsByState(formattedStateName);
   }
 
   void _loadDataForDestination(Destination destination) {
@@ -283,14 +322,6 @@ class _StateScreenDetailsState extends State<StateScreenDetails> {
   void _initializeVideo() {
     if (_locationData?.videoUrl != null && _locationData!.videoUrl!.isNotEmpty) {
       String videoUrl = _locationData!.videoUrl!;
-
-      // Handle different video URL formats
-      if (_locationData!.isState && !videoUrl.startsWith('http')) {
-        // For StateApp, videoId might need to be converted to full URL
-        // Adjust this based on your video URL structure
-        videoUrl = 'https://your-video-domain.com/$videoUrl';
-      }
-
       try {
         _videoController = VideoPlayerController.networkUrl(Uri.parse(videoUrl));
         _videoController!.initialize().then((_) {
@@ -374,51 +405,120 @@ class _StateScreenDetailsState extends State<StateScreenDetails> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (_locationData!.videoUrl != null) _buildVideoSection(screenWidth),
-          _buildImageGallery(screenWidth),
+          _buildMediaCarousel(screenWidth),
           _buildDescription(locale, screenWidth),
           _buildRelatedDestinations(locale, screenWidth),
-          if (!_locationData!.isState) ...[
-            _buildHotelsSection(screenWidth),
-            _buildRestaurantsSection(screenWidth),
-            _buildActivitiesSection(screenWidth),
-            _buildFestivalsSection(screenWidth),
-            _buildMonumentsSection(screenWidth),
-            _buildMuseesSection(screenWidth),
-            _buildEventsSection(screenWidth),
-          ],
+          _buildHotelsSection(screenWidth),
+          _buildRestaurantsSection(screenWidth),
+          _buildActivitiesSection(screenWidth),
+          _buildFestivalsSection(screenWidth),
+          _buildMonumentsSection(screenWidth),
+          _buildMuseesSection(screenWidth),
+          _buildEventsSection(screenWidth),
           const SizedBox(height: 40),
         ],
       ),
     );
   }
 
-  Widget _buildVideoSection(double screenWidth) {
+  Widget _buildMediaCarousel(double screenWidth) {
+    final mediaItems = <Widget>[];
+    final hasVideo = _locationData!.videoUrl != null && _locationData!.videoUrl!.isNotEmpty;
+    final hasImages = _locationData!.images.isNotEmpty;
+
+    if (!hasVideo && !hasImages) {
+      return _buildNoMediaPlaceholder(screenWidth);
+    }
+
+    // Add video as the first item if available
+    if (hasVideo) {
+      mediaItems.add(_buildVideoItem(screenWidth));
+    }
+
+    // Add images
+    mediaItems.addAll(_locationData!.images.asMap().entries.map((entry) {
+      final index = entry.key + (hasVideo ? 1 : 0);
+      return _buildGalleryImage(context, entry.value, index);
+    }).toList());
+
     return Container(
       padding: EdgeInsets.all(screenWidth < 600 ? 16 : 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 12),
-          Container(
-            height: screenWidth < 600 ? 200 : 300,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: _buildDirectVideo(screenWidth),
+          Text(
+            tr('media'),
+            style: TextStyle(
+              fontSize: screenWidth < 600 ? 16 : 18,
+              fontWeight: FontWeight.bold,
+              color: const Color(0xFF2C3E50),
             ),
           ),
+          const SizedBox(height: 12),
+          Stack(
+            alignment: Alignment.bottomCenter,
+            children: [
+              CarouselSlider(
+                options: CarouselOptions(
+                  height: screenWidth < 600 ? 200 : 300,
+                  viewportFraction: 1.0,
+                  enableInfiniteScroll: mediaItems.length > 1,
+                  autoPlay: false,
+                  enlargeCenterPage: true,
+                  onPageChanged: (index, reason) {
+                    setState(() {
+                      _currentCarouselIndex = index;
+                      if (_isVideoPlaying && index != 0) {
+                        _videoController?.pause();
+                        _isVideoPlaying = false;
+                      }
+                    });
+                  },
+                ),
+                items: mediaItems,
+              ),
+              if (mediaItems.length > 1)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: mediaItems.asMap().entries.map((entry) {
+                      return Container(
+                        width: 8.0,
+                        height: 8.0,
+                        margin: const EdgeInsets.symmetric(horizontal: 4.0),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: _currentCarouselIndex == entry.key
+                              ? Colors.white
+                              : Colors.white.withOpacity(0.4),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+            ],
+          ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildVideoItem(double screenWidth) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: _buildDirectVideo(screenWidth),
       ),
     );
   }
@@ -538,57 +638,6 @@ class _StateScreenDetailsState extends State<StateScreenDetails> {
     );
   }
 
-  Widget _buildImageGallery(double screenWidth) {
-    final allImages = _locationData!.images;
-
-    if (allImages.isEmpty) {
-      return _buildNoImagesPlaceholder(screenWidth);
-    }
-
-    int crossAxisCount;
-    if (screenWidth < 600) {
-      crossAxisCount = 2;
-    } else if (screenWidth < 900) {
-      crossAxisCount = 3;
-    } else if (screenWidth < 1200) {
-      crossAxisCount = 4;
-    } else {
-      crossAxisCount = 5;
-    }
-
-    return Container(
-      padding: EdgeInsets.all(screenWidth < 600 ? 16 : 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            tr('images'),
-            style: TextStyle(
-              fontSize: screenWidth < 600 ? 16 : 18,
-              fontWeight: FontWeight.bold,
-              color: const Color(0xFF2C3E50),
-            ),
-          ),
-          const SizedBox(height: 12),
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: crossAxisCount,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              childAspectRatio: 1.5,
-            ),
-            itemCount: allImages.length,
-            itemBuilder: (context, index) {
-              return _buildGalleryImage(context, allImages[index], index);
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildGalleryImage(BuildContext context, String imageUrl, int index) {
     return Hero(
       tag: 'gallery_image_$index',
@@ -633,7 +682,7 @@ class _StateScreenDetailsState extends State<StateScreenDetails> {
     );
   }
 
-  Widget _buildNoImagesPlaceholder(double screenWidth) {
+  Widget _buildNoMediaPlaceholder(double screenWidth) {
     return Container(
       padding: EdgeInsets.all(screenWidth < 600 ? 16 : 20),
       child: Container(
@@ -654,7 +703,7 @@ class _StateScreenDetailsState extends State<StateScreenDetails> {
               ),
               const SizedBox(height: 8),
               Text(
-                tr('noImagesAvailable'),
+                tr('noMediaAvailable'),
                 style: TextStyle(
                   color: Colors.grey.shade600,
                   fontSize: screenWidth < 600 ? 13 : 14,
@@ -701,7 +750,7 @@ class _StateScreenDetailsState extends State<StateScreenDetails> {
           Container(
             padding: EdgeInsets.all(screenWidth < 600 ? 12 : 16),
             decoration: BoxDecoration(
-              color: Colors.grey.shade50,
+              color: AppColorstatic.secondary.withOpacity(0.02),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: Colors.grey.shade200),
             ),
@@ -786,14 +835,12 @@ class _StateScreenDetailsState extends State<StateScreenDetails> {
     List<Destination> relatedDestinations = [];
 
     if (_locationData!.isState && _locationData!.stateApp != null && _locationData!.destinationIds != null) {
-      // For states, fetch destinations using the destination IDs
       relatedDestinations = _locationData!.destinationIds!
           .map((id) => destinationProvider.getDestinationById(id))
           .where((dest) => dest != null)
           .cast<Destination>()
           .toList();
     } else if (!_locationData!.isState && _locationData!.destination != null) {
-      // For destinations, fetch related destinations in the same state
       final destination = _locationData!.destination!;
       relatedDestinations = destinationProvider
           .getDestinationsByState(destination.state)
@@ -882,13 +929,17 @@ class _StateScreenDetailsState extends State<StateScreenDetails> {
   }
 
   Widget _buildHotelsSection(double screenWidth) {
-    if (_locationData!.isState || _locationData!.destination == null) {
-      return const SizedBox.shrink();
-    }
-
     return Consumer<HotelProvider>(
       builder: (context, hotelProvider, child) {
-        final hotels = hotelProvider.getHotelsByDestination(_locationData!.destination!.id);
+        List<Hotel> hotels;
+
+        if (_locationData!.isState) {
+          hotels = hotelProvider.getCurrentStateHotels();
+        } else if (_locationData!.destination != null) {
+          hotels = hotelProvider.getHotelsByDestination(_locationData!.destination!.id);
+        } else {
+          return const SizedBox.shrink();
+        }
 
         if (hotels.isEmpty && !hotelProvider.isLoading) {
           return const SizedBox.shrink();
@@ -968,14 +1019,21 @@ class _StateScreenDetailsState extends State<StateScreenDetails> {
                       onPressed: () {
                         final globalProvider = Provider.of<GlobalProvider>(context, listen: false);
                         final locale = context.locale;
-                        final hotelProvider = Provider.of<HotelProvider>(context, listen: false);
 
-                        // Set the destination name in the appropriate locale
-                        String destinationName = _locationData!.destination!.getName(locale);
-                        print("Navigating to hotels for destination: $destinationName");
-                        globalProvider.setSelectedCityForHotels(destinationName);
-                        globalProvider.setAvailableHotels(hotels);
-                        hotelProvider.setHotelsByDestination(_locationData!.destination!.id);
+                        if (_locationData!.isState) {
+                          String stateName = _locationData!.getName(locale);
+                          print("Navigating to hotels for state: $stateName");
+                          globalProvider.setSelectedCityForHotels(stateName);
+                          globalProvider.setAvailableHotels(hotels);
+                          hotelProvider.fetchHotelsByState(_locationData!.stateApp!.name);
+                        } else {
+                          String destinationName = _locationData!.destination!.getName(locale);
+                          print("Navigating to hotels for destination: $destinationName");
+                          globalProvider.setSelectedCityForHotels(destinationName);
+                          globalProvider.setAvailableHotels(hotels);
+                          hotelProvider.setHotelsByDestination(_locationData!.destination!.id);
+                        }
+
                         globalProvider.setPage(AppPage.hotels);
                         Navigator.pop(context);
                       },
@@ -1016,13 +1074,17 @@ class _StateScreenDetailsState extends State<StateScreenDetails> {
   }
 
   Widget _buildRestaurantsSection(double screenWidth) {
-    if (_locationData!.isState || _locationData!.destination == null) {
-      return const SizedBox.shrink();
-    }
-
     return Consumer<RestaurantProvider>(
       builder: (context, restaurantProvider, child) {
-        final restaurants = restaurantProvider.getRestaurantsByDestination(_locationData!.destination!.id);
+        List<Restaurant> restaurants;
+
+        if (_locationData!.isState) {
+          restaurants = restaurantProvider.getCurrentStateRestaurants();
+        } else if (_locationData!.destination != null) {
+          restaurants = restaurantProvider.getRestaurantsByDestination(_locationData!.destination!.id);
+        } else {
+          return const SizedBox.shrink();
+        }
 
         if (restaurants.isEmpty && !restaurantProvider.isLoading) {
           return const SizedBox.shrink();
@@ -1101,7 +1163,13 @@ class _StateScreenDetailsState extends State<StateScreenDetails> {
                     TextButton(
                       onPressed: () {
                         final globalProvider = Provider.of<GlobalProvider>(context, listen: false);
-                        globalProvider.setInitialRestaurantDestinationId(_locationData!.destination!.id);
+
+                        if (_locationData!.isState) {
+                          restaurantProvider.fetchRestaurantsByState(_locationData!.stateApp!.name);
+                        } else {
+                          globalProvider.setInitialRestaurantDestinationId(_locationData!.destination!.id);
+                        }
+
                         globalProvider.setPage(AppPage.restaurants);
                         Navigator.pop(context);
                       },
@@ -1336,7 +1404,6 @@ class _StateScreenDetailsState extends State<StateScreenDetails> {
                       ),
                     ],
                   ),
-
                 ],
               ),
               const SizedBox(height: 12),
@@ -1739,12 +1806,10 @@ class ImageFullscreenViewer extends StatelessWidget {
             child: CachedNetworkImage(
               imageUrl: imageUrl,
               fit: BoxFit.contain,
-              placeholder: (context, url) =>
-              const Center(
+              placeholder: (context, url) => const Center(
                 child: CircularProgressIndicator(color: Colors.white),
               ),
-              errorWidget: (context, url, error) =>
-              const Icon(
+              errorWidget: (context, url, error) => const Icon(
                 Icons.error,
                 color: Colors.white,
                 size: 60,

@@ -1287,9 +1287,40 @@ Future<List<Hotel>> gethotels() async {
     }
   }
 
+  Future<List<Restaurant>> getRestaurantsByState(String state) async {
+    final uri = Uri.parse('$_baseUrl/utilisateur/restaurantsbystate/$state');
 
+    final response = await http.get(uri, headers: {
+      'Accept': 'application/json',
+    });
 
+    if (response.statusCode == 200) {
+      final decoded = json.decode(response.body);
 
+      final List<dynamic> list = decoded['restaurants']?['data'] ?? [];
+
+      return list.map((e) => Restaurant.fromJson(e)).toList();
+    } else {
+      throw Exception('Erreur serveur: ${response.statusCode}');
+    }
+  }
+
+  Future<List<Hotel>> getHotelsByState(String state) async {
+    final uri = Uri.parse('$_baseUrl/utilisateur/hotelsbystate/$state');
+    final response = await http.get(uri, headers: {
+      'Accept': 'application/json',
+    });
+
+    if (response.statusCode == 200) {
+      final decoded = json.decode(response.body);
+      print("*************hotels by state ${response.contentLength}");
+      final List<dynamic> list = decoded['hotels']?['data'] ?? [];
+
+      return list.map((e) => Hotel.fromJson(e)).toList();
+    } else {
+      throw Exception('Erreur serveur: ${response.statusCode}');
+    }
+  }
 }
 
 

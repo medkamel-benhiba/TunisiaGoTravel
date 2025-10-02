@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:tunisiagotravel/models/activity.dart';
 import 'package:tunisiagotravel/screens/activity_details_screen.dart';
 
@@ -45,7 +44,7 @@ class ActivityCardDest extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(screenWidth < 600 ? 12 : 16),
               child: CachedNetworkImage(
-                imageUrl: activity.cover ?? '',
+                imageUrl: activity.images!.first ?? activity.cover ?? '',
                 width: double.infinity,
                 height: double.infinity,
                 fit: BoxFit.cover,

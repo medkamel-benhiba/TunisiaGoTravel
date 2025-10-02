@@ -45,7 +45,7 @@ class MonumentCardDest extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(screenWidth < 600 ? 12 : 16),
               child: CachedNetworkImage(
-                imageUrl: monument.cover,
+                imageUrl: monument.images.first ?? monument.cover,
                 width: double.infinity,
                 height: double.infinity,
                 fit: BoxFit.cover,

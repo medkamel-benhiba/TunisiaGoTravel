@@ -22,7 +22,9 @@ class _ChatbotOverlayState extends State<ChatbotOverlay> {
   bool _isListening = false;
   bool _showChatbotOverlay = false;
   bool _isProcessingVoice = false;
+  bool _speechInitialized = false;
   String _voiceText = '';
+  bool _isNavigating = false;
 
   @override
   void initState() {
@@ -32,12 +34,41 @@ class _ChatbotOverlayState extends State<ChatbotOverlay> {
     _flutterTts.setSpeechRate(0.7);
   }
 
+  Future<void> _initializeSpeech() async {
+    try {
+      _speechInitialized = await _speech.initialize(
+        onStatus: (status) {
+          print('🎤 Speech status: $status, _isListening=$_isListening, _isProcessingVoice=$_isProcessingVoice');
+          if (!mounted) return;
+
+          if (status == 'listening' && !_isListening) {
+            setState(() => _isListening = true);
+          } else if (status == 'notListening' && _isListening) {
+            setState(() => _isListening = false);
+          }
+        },
+        onError: (error) {
+          print('❌ Speech error: $error');
+          if (mounted) {
+            setState(() => _isListening = false);
+          }
+        },
+      );
+      print('🎤 Speech initialized: $_speechInitialized');
+    } catch (e) {
+      print('❌ Failed to initialize speech: $e');
+      _speechInitialized = false;
+    }
+  }
+
   Future<void> _speak(String text) async {
     await _flutterTts.stop();
     await _flutterTts.speak(text);
   }
 
   Future<void> _startListening() async {
+    print('🎤 Starting to listen...');
+
     var status = await Permission.microphone.request();
     if (!status.isGranted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -46,115 +77,195 @@ class _ChatbotOverlayState extends State<ChatbotOverlay> {
       return;
     }
 
-    bool available = await _speech.initialize(
-      onStatus: (status) {
-        print('Speech status: $status');
-        if (status == 'done' || status == 'notListening') {
-          _stopListening();
-        }
-      },
-      onError: (error) {
-        print('Speech error: $error');
-      },
-    );
+    if (!_speechInitialized) {
+      await _initializeSpeech();
+    }
 
-    if (available) {
-      setState(() {
-        _isListening = true;
-        _voiceText = '';
-      });
-      _speech.listen(
-        onResult: (val) => setState(() => _voiceText = val.recognizedWords),
-        listenFor: const Duration(seconds: 13),
-        pauseFor: const Duration(seconds: 5),
+    if (_speechInitialized && _speech.isAvailable) {
+      if (mounted) {
+        setState(() {
+          _isListening = true;
+          _voiceText = '';
+          _isNavigating = false;
+        });
+      }
+
+      await Future.delayed(const Duration(milliseconds: 50));
+
+      await _speech.listen(
+        onResult: (val) {
+          if (!mounted) return;
+
+          setState(() {
+            _voiceText = val.recognizedWords;
+            print('🎤 Recognized: $_voiceText');
+          });
+
+          if (val.finalResult &&
+              _voiceText.isNotEmpty &&
+              !_isProcessingVoice &&
+              !_isNavigating) {
+            print('🎤 Final result, processing voice input');
+            Future.microtask(_processVoiceInput);
+          }
+        },
+        listenFor: const Duration(seconds: 12),
+        pauseFor: const Duration(seconds: 4),
+        cancelOnError: true,
+        partialResults: true,
       );
+      print('🎤 Listening started, _isListening=$_isListening');
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(tr('voiceNotAvailable'))),
-      );
+      print('❌ Speech not available');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(tr('voiceNotAvailable'))),
+        );
+      }
     }
   }
 
-  Future<void> _stopListening() async {
-    await _speech.stop();
+  Future<void> _processVoiceInput() async {
+    if (_isProcessingVoice || _isNavigating) {
+      print('⚠️ Already processing or navigating, skipping');
+      return;
+    }
+
+    print('🎤 Stopping listening and processing voice input');
+
+    if (_speech.isListening) {
+      await _speech.stop();
+    }
+
+    if (!mounted) return;
+
     setState(() => _isListening = false);
 
-    if (_voiceText.isNotEmpty) {
-      setState(() => _isProcessingVoice = true);
+    if (_voiceText.isEmpty) {
+      print('⚠️ No voice text to process');
+      await _speak(tr('didntUnderstand'));
+      if (mounted) {
+        setState(() {
+          _showChatbotOverlay = false;
+        });
+      }
+      return;
+    }
 
-      try {
-        final greetings = [
-          tr('chatbot.greetingWord1'),
-          tr('chatbot.greetingWord2'),
-          tr('chatbot.greetingWord3'),
-          tr('chatbot.greetingWord4'),
-        ];
+    setState(() => _isProcessingVoice = true);
 
-        final greetingResponses = [
-          tr('chatbot.greeting1'),
-          tr('chatbot.greeting2'),
-          tr('chatbot.greeting3'),
-          tr('chatbot.greeting4'),
-        ];
+    try {
+      print('🎤 Processing: $_voiceText');
 
-        if (greetings.any((g) => _voiceText.toLowerCase().contains(g.toLowerCase()))) {
-          final random = Random();
-          final response = greetingResponses[random.nextInt(greetingResponses.length)];
-          await _speak(response);
-        } else {
-          await _speak(tr('understood'));
-          if (mounted) {
-            final provider = Provider.of<GlobalProvider>(context, listen: false);
-            provider.setChatbotInitialMessage(_voiceText);
-            provider.setPage(AppPage.chatbot);
-          }
+      final greetings = [
+        tr('chatbot.greetingWord1'),
+        tr('chatbot.greetingWord2'),
+        tr('chatbot.greetingWord3'),
+        tr('chatbot.greetingWord4'),
+      ];
+
+      final greetingResponses = [
+        tr('chatbot.greeting1'),
+        tr('chatbot.greeting2'),
+        tr('chatbot.greeting3'),
+        tr('chatbot.greeting4'),
+      ];
+
+      final isGreeting = greetings.any((g) =>
+          _voiceText.toLowerCase().contains(g.toLowerCase()));
+
+      if (isGreeting) {
+        print('👋 Detected greeting');
+        final random = Random();
+        final response = greetingResponses[random.nextInt(greetingResponses.length)];
+        await _speak(response);
+
+        if (mounted) {
+          setState(() {
+            _isProcessingVoice = false;
+            _voiceText = '';
+            _showChatbotOverlay = false;
+          });
         }
-      } catch (e) {
+      } else {
+        print('🚀 Navigating to chatbot with message: $_voiceText');
+        setState(() => _isNavigating = true);
+
+        await _speak(tr('understood'));
+        await Future.delayed(const Duration(milliseconds: 300));
+
+        if (mounted) {
+          final provider = Provider.of<GlobalProvider>(context, listen: false);
+          final messageToSend = _voiceText;
+
+          setState(() {
+            _isProcessingVoice = false;
+            _voiceText = '';
+            _showChatbotOverlay = false;
+            _isNavigating = false;
+          });
+
+          provider.setChatbotInitialMessage(messageToSend);
+          provider.setPage(AppPage.chatbot);
+          print('✅ Navigation completed');
+        }
+      }
+    } catch (e) {
+      print('❌ Error processing voice: $e');
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text("${tr('processingError')} $e"),
             backgroundColor: Colors.red,
           ),
         );
-      } finally {
         setState(() {
           _isProcessingVoice = false;
           _voiceText = '';
           _showChatbotOverlay = false;
+          _isNavigating = false;
         });
       }
-    } else {
-      await _speak(tr('didntUnderstand'));
     }
   }
 
   void _handleChatbotTap() {
     if (!_showChatbotOverlay) {
+      print('🤖 Opening chatbot overlay');
       setState(() => _showChatbotOverlay = true);
       _speak(tr('chatbotGreeting'));
     }
   }
 
   void _handleChatbotOverlayTap() {
-    if (_isProcessingVoice) return;
+    if (_isProcessingVoice || _isNavigating) {
+      print('⚠️ Already processing or navigating');
+      return;
+    }
     if (!_isListening) {
       _startListening();
     }
   }
 
   void _dismissChatbotOverlay() {
-    if (_isListening) {
+    print('❌ Dismissing overlay');
+    if (_speech.isListening) {
       _speech.stop();
-      setState(() => _isListening = false);
     }
-    setState(() {
-      _showChatbotOverlay = false;
-      _voiceText = '';
-    });
+    if (mounted) {
+      setState(() {
+        _isListening = false;
+        _showChatbotOverlay = false;
+        _voiceText = '';
+        _isProcessingVoice = false;
+        _isNavigating = false;
+      });
+    }
   }
 
   @override
   void dispose() {
+    print('🗑️ Disposing ChatbotOverlay');
     _speech.stop();
     _flutterTts.stop();
     super.dispose();
@@ -190,7 +301,6 @@ class _ChatbotOverlayState extends State<ChatbotOverlay> {
               ),
             ),
           ),
-        // Chatbot overlay
         if (_showChatbotOverlay)
           Positioned.fill(
             child: GestureDetector(

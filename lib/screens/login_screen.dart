@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:tunisiagotravel/screens/signup_screen.dart';
 import 'package:tunisiagotravel/theme/color.dart';
 import '../providers/auth_provider.dart';
 import '../providers/global_provider.dart';
 import 'main_wrapper_screen.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});

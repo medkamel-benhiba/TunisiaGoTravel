@@ -20,6 +20,12 @@ class RestaurantProvider with ChangeNotifier {
 
   Restaurant? _selectedRestaurant;
   Restaurant? get selectedRestaurant => _selectedRestaurant;
+//state
+  final Map<String, List<Restaurant>> _restaurantsByState = {};
+  List<Restaurant> get restaurantsByState =>
+      _currentState != null ? _restaurantsByState[_currentState!] ?? [] : [];
+  String? _currentState;
+
 
 
   // ===== Fetch all restaurants once =====
@@ -61,6 +67,37 @@ class RestaurantProvider with ChangeNotifier {
     );
     _selectedRestaurant = i != -1 ? allRestaurants[i] : null;
     notifyListeners();
+  }
+
+
+  //restaurants by state
+  Future<void> fetchRestaurantsByState(String state) async {
+    _isLoading = true;
+    _currentState = state;
+    notifyListeners();
+
+    try {
+      final restaurants = await _apiService.getRestaurantsByState(state);
+
+      // Stocke dans cache dédié
+      _restaurantsByState[state] = restaurants;
+
+      // Mets à jour la liste affichée
+      _restaurants = restaurants;
+    } catch (e) {
+      debugPrint("Error fetching restaurants by state $state: $e");
+      _restaurants = [];
+      _restaurantsByState[state] = [];
+    }
+
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  // restaurants by current state
+  List<Restaurant> getCurrentStateRestaurants() {
+    if (_currentState == null) return [];
+    return _restaurantsByState[_currentState!] ?? [];
   }
 
 
