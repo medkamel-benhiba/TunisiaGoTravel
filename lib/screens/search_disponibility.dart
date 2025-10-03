@@ -35,8 +35,16 @@ class _SearchDisponibilityScreenState extends State<SearchDisponibilityScreen> {
   Future<void> _selectDate(BuildContext context, bool isStart) async {
     final picked = await showDatePicker(
       context: context,
-      initialDate: DateTime.now().add(const Duration(days: 1)),
-      firstDate: DateTime.now(),
+      initialDate: isStart
+          ? DateTime.now().add(const Duration(days: 1))
+          : _startDate != null
+          ? _startDate!.add(const Duration(days: 1))
+          : DateTime.now().add(const Duration(days: 1)),
+      firstDate: isStart
+          ? DateTime.now()
+          : _startDate != null
+          ? _startDate!.add(const Duration(days: 1))
+          : DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 365)),
     );
     print("picked: $picked");
@@ -186,7 +194,7 @@ class _SearchDisponibilityScreenState extends State<SearchDisponibilityScreen> {
           final hotelBhr = HotelBhr.fromAvailabilityJson(
             rawResponse,
             widget.hotel,
-            idHotelBbx: widget.hotel.idHotelBbx, // <-- pass it here
+            idHotelBbx: widget.hotel.idHotelBbx,
           );
 
           print("hotelBhr: $hotelBhr");

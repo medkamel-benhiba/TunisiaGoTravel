@@ -11,9 +11,31 @@ class BudgetInput extends StatelessWidget {
     return TextField(
       controller: controller,
       decoration: InputDecoration(
-        labelText: tr('budget'), // clé de traduction
+        hintText: tr('please_enter_budget'),
+        hintStyle: const TextStyle(color: Colors.grey),
+        labelText: tr('budget'),
+        labelStyle: const TextStyle(color: Colors.black),
+        filled: true,
+        fillColor: Colors.white,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(
+            width: 0.0,
+          ),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(
+            width: 0.0,
+            color: Colors.grey,
+          ),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(
+            width: 0.4,
+            color: Colors.blue,
+          ),
         ),
         prefixIcon: const Icon(Icons.money_sharp),
       ),

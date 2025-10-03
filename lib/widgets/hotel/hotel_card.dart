@@ -527,8 +527,7 @@ class HotelCard extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(screenWidth < 600 ? 12 : 16),
               child: CachedNetworkImage(
-                imageUrl: hotel.images!.first?? hotel.cover?? "",
-                width: double.infinity,
+                imageUrl: hotel.images != null && hotel.images!.isNotEmpty ? hotel.images!.first : hotel.cover ?? "",                width: double.infinity,
                 height: double.infinity,
                 fit: BoxFit.cover,
                 placeholder: (context, url) => Container(

@@ -545,7 +545,7 @@ class HotelProvider with ChangeNotifier {
 
 // 🚀 LOAD MORE RESULTS IN BACKGROUND (Silent loading)
   void _loadMoreSearchResultsInBackground() async {
-    int maxPages = 8; // Reasonable limit
+    int maxPages = 12; // Reasonable limit
     int currentIteration = 0;
 
     while (_hasMoreSearchResults && _currentSearchParams != null && currentIteration < maxPages) {
@@ -571,10 +571,10 @@ class HotelProvider with ChangeNotifier {
     try {
       final futures = <Future>[];
 
-      if (_searchDisponibilityPage <= 8) {
+      if (_searchDisponibilityPage <= 12) {
         futures.add(_loadSearchDisponibilityPage(_searchDisponibilityPage));
       }
-      if (_searchSimplePage <= 8) {
+      if (_searchSimplePage <= 12) {
         futures.add(_loadSearchSimplePage(_searchSimplePage));
       }
 

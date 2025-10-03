@@ -45,7 +45,7 @@ class _EventScreenState extends State<EventScreenContent> {
         children: [
           // Screen title
           Padding(
-            padding: const EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 5.0),
+            padding: const EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 0.0),
             child: Builder(builder: (context) {
               final destinationProvider =
               Provider.of<DestinationProvider>(context, listen: false);
@@ -67,6 +67,26 @@ class _EventScreenState extends State<EventScreenContent> {
               );
             }),
           ),
+
+          if (selectedDestinationId != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 1.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  TextButton.icon(
+                    onPressed: () {
+                      setState(() {
+                        selectedDestinationId = null;
+                        selectedDestinationTitle = null;
+                      });
+                    },
+                    icon: const Icon(Icons.arrow_back, size: 16),
+                    label: Text('restaurantsScreen.destinations'.tr()),
+                  ),
+                ],
+              ),
+            ),
 
           // Main content: Destinations or filtered events
           Expanded(
@@ -101,7 +121,7 @@ class _EventScreenState extends State<EventScreenContent> {
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 12.0),
       itemCount: events.length,
       itemBuilder: (context, index) {
         return EventCard(event: events[index]);

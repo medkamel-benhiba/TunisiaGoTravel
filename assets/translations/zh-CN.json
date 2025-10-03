@@ -58,7 +58,11 @@
     "hotelsCount": "酒店（加载中...）",
     "reserve": "预订",
     "viewDetails": "查看详情",
-    "processing": "加载中..."
+    "processing": "加载中...",
+    "filterByCategory": "按类别筛选",
+    "clearFilters": "清除筛选",
+    "filter": "筛选"
+
   },
   "buttons": {
     "back": "返回",
@@ -423,6 +427,10 @@
   "all_destinations": "所有目的地",
   "google_signin_comingsoon": "Google 登录：即将推出！",
   "check_availability": "检查可用性",
-  "media": "媒体精选"
+  "media": "媒体精选",
+  "common": {
+    "cancel": "取消",
+    "apply": "应用"
+  }
 
 }

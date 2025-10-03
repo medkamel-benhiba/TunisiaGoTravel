@@ -36,7 +36,7 @@ class HotelDetail {
 
   final bool isSpecial;
   final Links links;
-  final List<dynamic> options; // Assuming dynamic for now, as it's empty in sample
+  final List<dynamic> options;
   final bool reservable;
   final List<Bio> bios;
   final List<dynamic> cancellations; // Empty in sample
@@ -503,6 +503,43 @@ class Bio {
       'hotel_ids': hotelIds,
       'id': id,
     };
+  }
+  String getName(Locale locale) {
+    switch (locale.languageCode) {
+      case 'ru':
+        return nameRu.isNotEmpty ? nameRu : name;
+      case 'ar':
+        return nameAr.isNotEmpty ? nameAr : name;
+      case 'zh':
+        return nameZh.isNotEmpty ? nameZh : name;
+      case 'ko':
+        return nameKo.isNotEmpty ? nameKo : name;
+      case 'ja':
+        return nameJa.isNotEmpty ? nameJa : name;
+      case 'en':
+        return nameEn.isNotEmpty ? nameEn : name;
+      default:
+        return name;
+    }
+  }
+
+  String getDescription(Locale locale) {
+    switch (locale.languageCode) {
+      case 'ru':
+        return descriptionRu.isNotEmpty ? descriptionRu : description;
+      case 'ar':
+        return descriptionAr.isNotEmpty ? descriptionAr : description;
+      case 'zh':
+        return descriptionZh.isNotEmpty ? descriptionZh : description;
+      case 'ko':
+        return descriptionKo.isNotEmpty ? descriptionKo : description;
+      case 'ja':
+        return descriptionJa.isNotEmpty ? descriptionJa : description;
+      case 'en':
+        return descriptionEn.isNotEmpty ? descriptionEn : description;
+      default:
+        return description;
+    }
   }
 }
 

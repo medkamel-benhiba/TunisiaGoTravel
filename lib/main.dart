@@ -15,10 +15,10 @@ import 'package:tunisiagotravel/providers/musee_provider.dart';
 import 'package:tunisiagotravel/providers/restaurant_provider.dart';
 import 'package:tunisiagotravel/providers/state_provider.dart';
 import 'package:tunisiagotravel/providers/voyage_provider.dart';
-import 'package:tunisiagotravel/screens/CircuitReservationSuccess_screen.dart';
 import 'package:tunisiagotravel/screens/circuit_predifini_screen.dart';
 import 'package:tunisiagotravel/screens/splash_screen.dart';
 import 'package:tunisiagotravel/services/api_service.dart';
+import 'package:tunisiagotravel/theme/color.dart';
 import 'providers/global_provider.dart';
 import 'providers/destination_provider.dart';
 import 'providers/hotel_provider.dart';
@@ -73,12 +73,14 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      theme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(seedColor: AppColorstatic.primary),
+      ),
       title: 'Tunisia Go Travel',
-
       localizationsDelegates: context.localizationDelegates,
       supportedLocales: context.supportedLocales,
       locale: context.locale,
-
       home: const SplashScreen(),
       debugShowCheckedModeBanner: false,
     );

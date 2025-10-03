@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:tunisiagotravel/widgets/hotel/hotel_bio_card.dart';
 import '../../models/hotel_details.dart';
 import '../../providers/hotel_provider.dart';
 import '../../theme/color.dart';
@@ -25,17 +26,17 @@ class _HotelDetailsScreenState extends State<HotelDetailsScreen> {
     super.initState();
     Future.microtask(() async {
       final provider = Provider.of<HotelProvider>(context, listen: false);
-      await provider.fetchHotelDetail(widget.hotelSlug); // Wait for fetch to complete
+      await provider.fetchHotelDetail(widget.hotelSlug);
       if (provider.selectedHotel?.cover != null) {
         final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('hotel_cover', provider.selectedHotel!.cover!); // Use a more descriptive key
+        await prefs.setString('hotel_cover', provider.selectedHotel!.cover!);
       }
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final locale=context.locale;
+    final locale = context.locale;
     return Consumer<HotelProvider>(
       builder: (context, provider, child) {
         final HotelDetail? hotel = provider.selectedHotel;
@@ -75,15 +76,33 @@ class _HotelDetailsScreenState extends State<HotelDetailsScreen> {
                         hotel.categoryCode != null))
                   HotelInfoCard(hotel: hotel),
 
-                // Description
-                if (hotel != null && (hotel.description ?? '').isNotEmpty)
-                  HotelDescriptionCard(hotel: hotel),
+                // Bio cards
+                if (hotel?.bios != null && hotel!.bios!.isNotEmpty)
+                  SizedBox(
+                    height: 200,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: hotel.bios!.length,
+                      itemBuilder: (context, index) {
+                        return HotelBioCard(
+                          bio: hotel.bios![index],
+                          locale: locale,
+                        );
+                      },
+                    ),
+                  ),
 
                 // Contact info
                 if (hotel != null &&
                     ((hotel.phone ?? '').isNotEmpty ||
                         (hotel.email ?? '').isNotEmpty))
                   HotelContactCard(hotel: hotel),
+
+
+
+                // Description
+                if (hotel != null && (hotel.description ?? '').isNotEmpty)
+                  HotelDescriptionCard(hotel: hotel),
 
                 // Fallback if nothing exists
                 if (hotel == null)

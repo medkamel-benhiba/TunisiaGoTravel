@@ -58,7 +58,11 @@
     "hotelsCount": "الفنادق (جاري التحميل...)",
     "reserve": "احجز",
     "viewDetails": "عرض التفاصيل",
-    "processing": "جارٍ التحميل"
+    "processing": "جارٍ التحميل",
+    "filterByCategory": "تصفية حسب الفئة",
+    "clearFilters": "مسح الفلاتر",
+    "filter": "تصفية"
+
   },
   "buttons": {
     "back": "رجوع",
@@ -421,7 +425,12 @@
   "all_destinations": "جميع الوجهات",
   "google_signin_comingsoon": "تسجيل الدخول عبر Google: قريباً!",
   "check_availability": "تحقق من التوفر",
-  "media": "أبرز الوسائط"
+  "media": "أبرز الوسائط",
+  "common": {
+    "cancel": "إلغاء",
+    "apply": "تطبيق"
+  }
+
 }
 
 

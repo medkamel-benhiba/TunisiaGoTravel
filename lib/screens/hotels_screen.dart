@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:tunisiagotravel/providers/destination_provider.dart';
+import 'package:tunisiagotravel/theme/color.dart';
 import '../providers/global_provider.dart';
 import '../providers/hotel_provider.dart';
 import '../widgets/hotel/hotel_card.dart';
@@ -23,6 +24,7 @@ class _HotelsScreenState extends State<HotelsScreenContent> {
   String? selectedDestinationTitle;
   HotelsViewType _viewType = HotelsViewType.list;
   bool _isFromSearch = false;
+  Set<String> _selectedCategories = {};
 
   @override
   void initState() {
@@ -76,18 +78,114 @@ class _HotelsScreenState extends State<HotelsScreenContent> {
     }
   }
 
+  void _showFilterDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: Text('hotelsScreen.filterByCategory'.tr()),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildCategoryCheckbox('1', '⭐', setDialogState),
+                    _buildCategoryCheckbox('2', '⭐⭐', setDialogState),
+                    _buildCategoryCheckbox('3', '⭐⭐⭐', setDialogState),
+                    _buildCategoryCheckbox('4', '⭐⭐⭐⭐', setDialogState),
+                    _buildCategoryCheckbox('5', '⭐⭐⭐⭐⭐', setDialogState),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    setDialogState(() {
+                      _selectedCategories.clear();
+                    });
+                    setState(() {});
+                    Navigator.of(context).pop();
+                  },
+                  child: Text('hotelsScreen.clearFilters'.tr(),
+                  style: TextStyle(
+                    color: AppColorstatic.darker.withOpacity(0.4)
+                  )
+                    ),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: Text('common.cancel'.tr()),
+                    ),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColorstatic.primary,
+                      ),
+                      onPressed: () {
+                        setState(() {});
+                        Navigator.of(context).pop();
+                      },
+                      child: Text(
+                        'common.apply'.tr(),
+                        style: TextStyle(
+                          color: AppColorstatic.lightTextColor
+                        ),
+
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildCategoryCheckbox(String code, String label, StateSetter setDialogState) {
+    return CheckboxListTile(
+      title: Text(label),
+      value: _selectedCategories.contains(code),
+      onChanged: (bool? value) {
+        setDialogState(() {
+          if (value == true) {
+            _selectedCategories.add(code);
+          } else {
+            _selectedCategories.remove(code);
+          }
+        });
+      },
+    );
+  }
+
+  List<dynamic> _applyFilters(List<dynamic> hotels) {
+    if (_selectedCategories.isEmpty) {
+      return hotels;
+    }
+    return hotels.where((hotel) {
+      final categoryCode = hotel.categoryCode?.toString() ?? '';
+      return _selectedCategories.contains(categoryCode);
+    }).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final locale=context.locale;
+    final locale = context.locale;
     final hotelProvider = Provider.of<HotelProvider>(context);
     final globalProvider = Provider.of<GlobalProvider>(context);
 
     final List<dynamic> filteredHotels;
     if (_isFromSearch) {
-      filteredHotels = globalProvider.availableHotels;
+      filteredHotels = _applyFilters(globalProvider.availableHotels);
     } else if (selectedDestinationId != null) {
-      filteredHotels =
-          hotelProvider.getHotelsByDestination(selectedDestinationId!);
+      filteredHotels = _applyFilters(
+          hotelProvider.getHotelsByDestination(selectedDestinationId!));
     } else {
       filteredHotels = <dynamic>[];
     }
@@ -99,12 +197,11 @@ class _HotelsScreenState extends State<HotelsScreenContent> {
         children: [
           // Screen title
           Padding(
-            padding: const EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 5.0),
+            padding: const EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 0.0),
             child: Builder(builder: (context) {
               final destinationProvider =
               Provider.of<DestinationProvider>(context, listen: false);
 
-              // Get the localized destination name if selected
               String displayDestination = '';
               if (selectedDestinationId != null) {
                 displayDestination = destinationProvider
@@ -122,14 +219,11 @@ class _HotelsScreenState extends State<HotelsScreenContent> {
             }),
           ),
 
-
-
-          // Back button and hotel count
+          // Back button, filter button.
           if (selectedDestinationTitle != null)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 1.0),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   TextButton.icon(
                     onPressed: () {
@@ -137,6 +231,7 @@ class _HotelsScreenState extends State<HotelsScreenContent> {
                         selectedDestinationId = null;
                         selectedDestinationTitle = null;
                         _isFromSearch = false;
+                        _selectedCategories.clear();
                       });
                       Provider.of<GlobalProvider>(context, listen: false)
                           .setAvailableHotels([]);
@@ -147,6 +242,38 @@ class _HotelsScreenState extends State<HotelsScreenContent> {
                       builder: (context) =>
                           Text('hotelsScreen.destinations'.tr()),
                     ),
+                  ),
+                  const SizedBox(width: 8),
+
+                  const Spacer(),
+                  // Filter button
+                  Stack(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.filter_list, size: 20),
+                        onPressed: _showFilterDialog,
+                        tooltip: 'hotelsScreen.filter'.tr(),
+                      ),
+                      if (_selectedCategories.isNotEmpty)
+                        Positioned(
+                          top: 4,
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: const BoxDecoration(
+                              color: Colors.red,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Text(
+                              _selectedCategories.length.toString(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                   if (_isFromSearch)
                     Padding(
@@ -222,7 +349,7 @@ class _HotelsScreenState extends State<HotelsScreenContent> {
 
     return ListView.builder(
       controller: _scrollController,
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 12.0),
       itemCount: hotels.length,
       itemBuilder: (_, index) => HotelCard(
         hotel: hotels[index],

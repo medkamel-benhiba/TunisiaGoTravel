@@ -58,7 +58,11 @@
     "hotelsCount": "ホテル（読み込み中...）",
     "reserve": "予約",
     "viewDetails": "詳細を見る",
-    "processing": "読み込み中..."
+    "processing": "読み込み中...",
+    "filterByCategory": "カテゴリーで絞り込む",
+    "clearFilters": "フィルターをクリア",
+    "filter": "フィルター"
+
   },
   "buttons": {
     "back": "戻る",
@@ -423,5 +427,10 @@
   "all_destinations": "すべての目的地",
   "google_signin_comingsoon": "Googleサインイン：近日公開！",
   "check_availability": "空き状況を確認する",
-  "media": "メディアハイライト"
+  "media": "メディアハイライト",
+  "common": {
+    "cancel": "キャンセル",
+    "apply": "適用"
+  }
+
 }

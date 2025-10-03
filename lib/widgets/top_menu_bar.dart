@@ -53,14 +53,12 @@ class _TopMenuBar1State extends State<TopMenuBar1> {
                         onTap: toggleDestination,
                         child: Container(
                           padding: EdgeInsets.symmetric(
-                              horizontal: horizontalPadding,
-                              vertical: horizontalPadding),
+                              horizontal: horizontalPadding, vertical: horizontalPadding),
                           height: iconButtonHeight,
                           decoration: BoxDecoration(
-                            color: AppColorstatic.secondary,
+                            color: isDestinationOpen ? Colors.white : AppColorstatic.secondary,
                             border: const Border(
-                              left:
-                              BorderSide(color: AppColorstatic.primary2, width: 3),
+                              left: BorderSide(color: AppColorstatic.primary2, width: 3),
                             ),
                             borderRadius: BorderRadius.circular(6),
                           ),
@@ -68,12 +66,12 @@ class _TopMenuBar1State extends State<TopMenuBar1> {
                             children: [
                               Text(
                                 'destination_title'.tr(),
-                                style: Appstylestatic.textStyletitle2,
+                                style: Appstylestatic.textStyletitle2.copyWith(
+                                  color: isDestinationOpen ? AppColorstatic.secondary : Appstylestatic.textStyletitle2.color,
+                                ),
                               ),
                               Icon(
-                                isDestinationOpen
-                                    ? Icons.arrow_drop_up
-                                    : Icons.arrow_drop_down,
+                                isDestinationOpen ? Icons.arrow_drop_up : Icons.arrow_drop_down,
                                 color: Colors.orange,
                               ),
                             ],
@@ -158,7 +156,13 @@ class _TopMenuBar1State extends State<TopMenuBar1> {
             if (isDestinationOpen) ...[
               Container(
                 color: AppColorstatic.white80,
-                child: const DestinationDropSection(),
+                child: DestinationDropSection(
+                    onSearchComplete: () {
+                      setState(() {
+                        isDestinationOpen= false;
+                      });
+                    },
+                ),
               ),
             ],
 

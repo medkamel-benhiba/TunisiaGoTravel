@@ -58,7 +58,11 @@
     "hotelsCount": "호텔 (로딩 중...)",
     "reserve": "예약",
     "viewDetails": "세부 정보 보기",
-    "processing": "로딩 중..."
+    "processing": "로딩 중...",
+    "filterByCategory": "카테고리별 필터",
+    "clearFilters": "필터 지우기",
+    "filter": "필터"
+
   },
   "buttons": {
     "back": "뒤로",
@@ -423,5 +427,10 @@
   "all_destinations": "모든 목적지",
   "google_signin_comingsoon": "Google 로그인: 곧 제공 예정!",
   "check_availability": "사용 가능 여부 확인",
-  "media": "미디어 하이라이트"
+  "media": "미디어 하이라이트",
+  "common": {
+    "cancel": "취소",
+    "apply": "적용"
+  }
+
 }

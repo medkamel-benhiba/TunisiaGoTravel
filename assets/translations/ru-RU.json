@@ -58,7 +58,11 @@
     "hotelsCount": "Отели (загрузка...)",
     "reserve": "Забронировать",
     "viewDetails": "Посмотреть детали",
-    "processing": "Загрузка..."
+    "processing": "Загрузка...",
+    "filterByCategory": "Фильтровать по категории",
+    "clearFilters": "Сбросить фильтры",
+    "filter": "Фильтр"
+
   },
   "buttons": {
     "back": "Назад",
@@ -423,5 +427,10 @@
   "all_destinations": "Все направления",
   "google_signin_comingsoon": "Вход через Google: Скоро!",
   "check_availability": "Проверить наличие",
-  "media": "Основные моменты медиа"
+  "media": "Основные моменты медиа",
+  "common": {
+    "cancel": "Отмена",
+    "apply": "Применить"
+  }
+
 }

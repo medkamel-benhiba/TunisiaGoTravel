@@ -27,6 +27,14 @@ Future<LatLng?> getCurrentLocation() async {
   }
 
   try {
+    // Configure high accuracy settings
+    await location.changeSettings(
+      accuracy: LocationAccuracy.high,
+      interval: 5000,
+      distanceFilter: 10,
+    );
+    print('Location settings configured for high accuracy');
+
     // Obtenir la localisation actuelle avec des paramètres de précision
     final locData = await location.getLocation();
 

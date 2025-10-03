@@ -460,7 +460,7 @@ class _ImageSliderState extends State<_ImageSlider>
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 6),
           SizedBox(
             height: 200,
             child: GestureDetector(

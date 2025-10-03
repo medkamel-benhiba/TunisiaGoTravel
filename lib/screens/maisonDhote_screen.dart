@@ -44,7 +44,7 @@ class _MaisonsScreenState extends State<MaisonsScreenContent> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 5.0),
+            padding: const EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 0.0),
             child: Builder(builder: (context) {
               final destinationProvider =
               Provider.of<DestinationProvider>(context, listen: false);
@@ -66,6 +66,26 @@ class _MaisonsScreenState extends State<MaisonsScreenContent> {
               );
             }),
           ),
+
+          if (selectedDestinationId != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 1.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  TextButton.icon(
+                    onPressed: () {
+                      setState(() {
+                        selectedDestinationId = null;
+                        selectedDestinationTitle = null;
+                      });
+                    },
+                    icon: const Icon(Icons.arrow_back, size: 16),
+                    label: Text('restaurantsScreen.destinations'.tr()),
+                  ),
+                ],
+              ),
+            ),
 
           Expanded(
             child: selectedDestinationId == null
@@ -101,7 +121,7 @@ class _MaisonsScreenState extends State<MaisonsScreenContent> {
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 12.0),
       itemCount: maisons.length,
       itemBuilder: (context, index) {
         return MaisonCard(maison: maisons[index]);

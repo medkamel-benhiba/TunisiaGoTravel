@@ -25,8 +25,8 @@ android {
         applicationId = "com.nadas.group.tunisiagotravel"
         minSdk = 21
         targetSdk = 35
-        versionCode = 72
-        versionName = "2.0.9"
+        versionCode = 73
+        versionName = "2.1.0"
     }
 
     compileOptions {

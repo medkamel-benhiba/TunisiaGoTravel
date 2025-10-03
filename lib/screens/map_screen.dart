@@ -145,9 +145,9 @@ class _MapScreenState extends State<MapScreen> {
                 children: [
                   destination.isNotEmpty
                       ? SizedBox(
-                    height: 60,
+                    height: 50,
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                       child: DropdownButton<String>(
                         value: selectedDestination1,
                         hint: Text('chooseDestination'.tr()),
@@ -221,14 +221,12 @@ class _MapScreenState extends State<MapScreen> {
                               checkColor: Colors.white,
                               onChanged: (bool? value) {
                                 setState(() {
-                                  // Uncheck all categories
                                   for (var category in categories) {
                                     category['isChecked'] = false;
                                   }
-                                  // Check or uncheck the selected category
                                   categories[index]['isChecked'] = value!;
                                   selectedCategory = value! ? categories[index]['name'] : null;
-                                  _updateMarkers(); // Update markers based on category and destination
+                                  _updateMarkers();
                                 });
                               },
                             ),
@@ -251,10 +249,9 @@ class _MapScreenState extends State<MapScreen> {
   void _updateMarkers() {
     setState(() {
       if (selectedCategory == null) {
-        _markers = {}; // Clear markers if no category is selected
+        _markers = {};
         return;
       }
-
       switch (selectedCategory) {
         case 'Hôtels':
           final hotelProvider = Provider.of<HotelProvider>(context, listen: false);

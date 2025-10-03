@@ -8,10 +8,14 @@ import '../../providers/global_provider.dart';
 import '../../providers/hotel_provider.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:easy_localization/easy_localization.dart'; // Import easy_localization
+import 'package:easy_localization/easy_localization.dart';
 
 class DestinationDropSection extends StatefulWidget {
-  const DestinationDropSection({super.key});
+  final VoidCallback? onSearchComplete;
+  const DestinationDropSection({
+    this.onSearchComplete,
+    super.key
+  });
 
   @override
   State<DestinationDropSection> createState() => _DestinationDropSectionState();
@@ -252,6 +256,7 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
                         // Hide the section after search
                         setState(() {
                           _isVisible = false;
+                          widget.onSearchComplete!();
                         });
 
                         // Navigate to HotelsScreenContent
@@ -460,7 +465,7 @@ class _DestinationDropSectionState extends State<DestinationDropSection> {
           return jsonData['last_page'] as int;
         }
       }
-      return 1; // Default to 1 if no pagination info
+      return 1;
     } catch (e) {
       print("Error fetching last page for available hotels: $e");
       return 1;

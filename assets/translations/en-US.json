@@ -58,7 +58,11 @@
     "hotelsCount": "Hotels (loading...)",
     "reserve": "Reserve",
     "viewDetails": "View Details",
-    "processing": "Loading..."
+    "processing": "Loading...",
+    "filterByCategory": "Filter by Category",
+    "clearFilters": "Clear Filters",
+    "filter": "Filter"
+
   },
   "buttons": {
     "back": "Back",
@@ -424,5 +428,9 @@
   "all_destinations": "All Destinations",
   "google_signin_comingsoon": "Google Sign-In: Coming Soon!",
   "check_availability": "Check Availability",
-  "media": "Media Highlights"
+  "media": "Media Highlights",
+  "common": {
+    "cancel": "Cancel",
+    "apply": "Apply"
+  }
 }

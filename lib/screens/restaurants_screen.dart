@@ -50,7 +50,7 @@ class _RestaurantsScreenState extends State<RestaurantsScreenContent> {
         children: [
           // Screen title
           Padding(
-            padding: const EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 5.0),
+            padding: const EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 0.0),
             child: Builder(builder: (context) {
               final destinationProvider =
               Provider.of<DestinationProvider>(context, listen: false);
@@ -74,6 +74,27 @@ class _RestaurantsScreenState extends State<RestaurantsScreenContent> {
               );
             }),
           ),
+
+          // Back button
+          if (selectedDestinationId != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 1.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  TextButton.icon(
+                    onPressed: () {
+                      setState(() {
+                        selectedDestinationId = null;
+                        selectedDestinationTitle = null;
+                      });
+                    },
+                    icon: const Icon(Icons.arrow_back, size: 16),
+                    label: Text('restaurantsScreen.destinations'.tr()),
+                  ),
+                ],
+              ),
+            ),
 
           // Main content: Destinations list or filtered restaurants
           Expanded(
@@ -110,7 +131,7 @@ class _RestaurantsScreenState extends State<RestaurantsScreenContent> {
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 12.0),
       itemCount: restaurants.length,
       itemBuilder: (context, index) {
         return RestaurantCard(restaurant: restaurants[index]);

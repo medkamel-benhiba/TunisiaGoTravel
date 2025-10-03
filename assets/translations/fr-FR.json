@@ -58,7 +58,11 @@
     "hotelsCount": "Hôtels (chargement...)",
     "reserve": "Réserver",
     "viewDetails": "Voir les détails",
-    "processing": "Chargement..."
+    "processing": "Chargement...",
+    "filterByCategory": "Filtrer par catégorie",
+    "clearFilters": "Effacer les filtres",
+    "filter": "Filtrer"
+
   },
   "buttons": {
     "back": "Retour",
@@ -422,11 +426,10 @@
   "all_destinations": "Toutes les destinations",
   "google_signin_comingsoon": "Connexion Google : Bientôt disponible !",
   "check_availability": "Vérifier la disponibilité",
-  "media": "À la une"
-
-
-
-
-
+  "media": "À la une",
+  "common": {
+    "cancel": "Annuler",
+    "apply": "Appliquer"
+  }
 
 }
